@@ -13,7 +13,7 @@
 
 
 """
-Prowlarr plugin tags configuration.
+Radarr plugin tags configuration.
 """
 
 
@@ -22,24 +22,24 @@ from __future__ import annotations
 from logging import getLogger
 from typing import Dict, Set
 
-import prowlarr
+import radarr
 
 from buildarr.types import NonEmptyStr
 from typing_extensions import Self
 
-from ...api import prowlarr_api_client
-from ...secrets import ProwlarrSecrets
-from ..types import ProwlarrConfigBase
+from ...api import radarr_api_client
+from ...secrets import RadarrSecrets
+from ..types import RadarrConfigBase
 
 logger = getLogger(__name__)
 
 
-class ProwlarrTagsSettings(ProwlarrConfigBase):
+class RadarrTagsSettings(RadarrConfigBase):
     """
     Tags are used to associate media files with certain resources (e.g. indexers).
 
     ```yaml
-    prowlarr:
+    radarr:
       settings:
         tags:
           definitions:
@@ -56,26 +56,26 @@ class ProwlarrTagsSettings(ProwlarrConfigBase):
     Define tags that are used within Buildarr here.
 
     If they are not defined here, you may get errors resulting from non-existent
-    tags from either Buildarr or Prowlarr.
+    tags from either Buildarr or Radarr.
     """
 
     @classmethod
-    def from_remote(cls, secrets: ProwlarrSecrets) -> Self:
-        with prowlarr_api_client(secrets=secrets) as api_client:
-            tags = prowlarr.TagApi(api_client).list_tag()
+    def from_remote(cls, secrets: RadarrSecrets) -> Self:
+        with radarr_api_client(secrets=secrets) as api_client:
+            tags = radarr.TagApi(api_client).list_tag()
         return cls(definitions=[tag.label for tag in tags])
 
     def update_remote(
         self,
         tree: str,
-        secrets: ProwlarrSecrets,
+        secrets: RadarrSecrets,
         remote: Self,
         check_unmanaged: bool = False,
     ) -> bool:
-        # This only does creations and updates, as Prowlarr automatically cleans up unused tags.
+        # This only does creations and updates, as Radarr automatically cleans up unused tags.
         changed = False
-        with prowlarr_api_client(secrets=secrets) as api_client:
-            tag_api = prowlarr.TagApi(api_client)
+        with radarr_api_client(secrets=secrets) as api_client:
+            tag_api = radarr.TagApi(api_client)
             current_tags: Dict[str, int] = {tag.label: tag.id for tag in tag_api.list_tag()}
             if self.definitions:
                 for i, tag in enumerate(self.definitions):
@@ -83,6 +83,6 @@ class ProwlarrTagsSettings(ProwlarrConfigBase):
                         logger.debug("%s.definitions[%i]: %s (exists)", tree, i, repr(tag))
                     else:
                         logger.info("%s.definitions[%i]: %s -> (created)", tree, i, repr(tag))
-                        tag_api.create_tag(prowlarr.TagResource.from_dict({"label": tag}))
+                        tag_api.create_tag(radarr.TagResource.from_dict({"label": tag}))
                         changed = True
         return changed
