@@ -28,6 +28,7 @@ from .apps import RadarrAppsSettings
 from .download_clients import RadarrDownloadClientsSettings
 from .general import RadarrGeneralSettings
 from .indexers import RadarrIndexersSettings
+from .media_management import RadarrMediaManagementSettings
 from .notifications import RadarrNotificationsSettings
 from .tags import RadarrTagsSettings
 from .ui import RadarrUISettings
@@ -41,6 +42,7 @@ class RadarrSettings(RadarrConfigBase):
     Radarr settings, used to configure a remote Radarr instance.
     """
 
+    media_management: RadarrMediaManagementSettings = RadarrMediaManagementSettings()
     indexers: RadarrIndexersSettings = RadarrIndexersSettings()
     apps: RadarrAppsSettings = RadarrAppsSettings()
     download_clients: RadarrDownloadClientsSettings = RadarrDownloadClientsSettings()
@@ -58,7 +60,8 @@ class RadarrSettings(RadarrConfigBase):
     ) -> bool:
         # Overload base function to guarantee execution order of section updates.
         # 1. Tags must be created before everything else.
-        # 2. Apps/Sync Profiles must be created before Indexers.
+        # 2. Qualities must be updated before quality profiles.
+        # 3. Download clients must be created before indexers.
         return any(
             [
                 self.tags.update_remote(
@@ -67,16 +70,10 @@ class RadarrSettings(RadarrConfigBase):
                     remote.tags,
                     check_unmanaged=check_unmanaged,
                 ),
-                self.apps.update_remote(
-                    f"{tree}.apps",
+                self.quality.update_remote(
+                    f"{tree}.quality",
                     secrets,
-                    remote.apps,
-                    check_unmanaged=check_unmanaged,
-                ),
-                self.indexers.update_remote(
-                    f"{tree}.indexers",
-                    secrets,
-                    remote.indexers,
+                    remote.quality,
                     check_unmanaged=check_unmanaged,
                 ),
                 self.download_clients.update_remote(
@@ -85,10 +82,40 @@ class RadarrSettings(RadarrConfigBase):
                     remote.download_clients,
                     check_unmanaged=check_unmanaged,
                 ),
-                self.notifications.update_remote(
-                    f"{tree}.notifications",
+                self.indexers.update_remote(
+                    f"{tree}.indexers",
                     secrets,
-                    remote.notifications,
+                    remote.indexers,
+                    check_unmanaged=check_unmanaged,
+                ),
+                self.media_management.update_remote(
+                    f"{tree}.media_management",
+                    secrets,
+                    remote.media_management,
+                    check_unmanaged=check_unmanaged,
+                ),
+                self.profiles.update_remote(
+                    f"{tree}.profiles",
+                    secrets,
+                    remote.profiles,
+                    check_unmanaged=check_unmanaged,
+                ),
+                self.import_lists.update_remote(
+                    f"{tree}.import_lists",
+                    secrets,
+                    remote.import_lists,
+                    check_unmanaged=check_unmanaged,
+                ),
+                self.connect.update_remote(
+                    f"{tree}.connect",
+                    secrets,
+                    remote.connect,
+                    check_unmanaged=check_unmanaged,
+                ),
+                self.metadata.update_remote(
+                    f"{tree}.metadata",
+                    secrets,
+                    remote.metadata,
                     check_unmanaged=check_unmanaged,
                 ),
                 self.general.update_remote(
@@ -108,22 +135,30 @@ class RadarrSettings(RadarrConfigBase):
 
     def delete_remote(self, tree: str, secrets: RadarrSecrets, remote: Self) -> bool:
         # Overload base function to guarantee execution order of section deletions.
-        # 1. Indexers must be deleted before Apps/Sync Profiles.
+        # 1. Indexers must be deleted before download clients.
         return any(
             [
+                self.profiles.delete_remote(f"{tree}.profiles", secrets, remote.profiles),
                 self.indexers.delete_remote(f"{tree}.indexers", secrets, remote.indexers),
-                self.apps.delete_remote(f"{tree}.apps", secrets, remote.apps),
                 self.download_clients.delete_remote(
                     f"{tree}.download_clients",
                     secrets,
                     remote.download_clients,
                 ),
-                self.notifications.delete_remote(
-                    f"{tree}.notifications",
+                self.media_management.delete_remote(
+                    f"{tree}.media_management",
                     secrets,
-                    remote.notifications,
+                    remote.media_management,
                 ),
+                self.import_lists.delete_remote(
+                    f"{tree}.import_lists",
+                    secrets,
+                    remote.import_lists,
+                ),
+                self.connect.delete_remote(f"{tree}.connect", secrets, remote.connect),
                 self.tags.delete_remote(f"{tree}.tags", secrets, remote.tags),
+                self.quality.delete_remote(f"{tree}.quality", secrets, remote.quality),
+                self.metadata.delete_remote(f"{tree}.metadata", secrets, remote.metadata),
                 self.general.delete_remote(f"{tree}.general", secrets, remote.general),
                 self.ui.delete_remote(f"{tree}.ui", secrets, remote.ui),
             ],
