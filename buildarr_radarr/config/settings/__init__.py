@@ -30,6 +30,7 @@ from .general import RadarrGeneralSettings
 from .indexers import RadarrIndexersSettings
 from .media_management import RadarrMediaManagementSettings
 from .notifications import RadarrNotificationsSettings
+from .profiles import RadarrProfilesSettings
 from .tags import RadarrTagsSettings
 from .ui import RadarrUISettings
 
@@ -43,6 +44,7 @@ class RadarrSettings(RadarrConfigBase):
     """
 
     media_management: RadarrMediaManagementSettings = RadarrMediaManagementSettings()
+    profiles: RadarrProfilesSettings = RadarrProfilesSettings()
     indexers: RadarrIndexersSettings = RadarrIndexersSettings()
     apps: RadarrAppsSettings = RadarrAppsSettings()
     download_clients: RadarrDownloadClientsSettings = RadarrDownloadClientsSettings()

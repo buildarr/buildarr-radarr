@@ -136,21 +136,16 @@ class QualityProfile(RadarrConfigBase):
     This attribute is required if `upgrades_allowed` is set to `True`.
     """
 
-    # cutoffFormatScore
     minimum_custom_format_score: int = 0
+    """ """
 
-    # formatItems
-    # [
-    #   {"format": 2 (ID), "name": "Test2", "score": 10}
-    #   {"format": 1 (ID), "name": "Test", "score": 0}
-    # ]
     custom_formats: Dict[str, int] = {}
     """
     If not defined here, add it with a score of 0 to the request.
     """
 
-    # language = {"id": 1, "name": "English"}
     language: NonEmptyStr = "English"  # type: ignore[assignment]
+    """ """
 
     @validator("qualities")
     def validate_qualities(
@@ -181,8 +176,8 @@ class QualityProfile(RadarrConfigBase):
                 quality_name_map[name] = quality
         return value
 
-    @validator("upgrade_until")
-    def validate_upgrade_until(
+    @validator("upgrade_until_quality")
+    def validate_upgrade_until_quality(
         cls,
         value: Optional[str],
         values: Dict[str, Any],
@@ -192,7 +187,7 @@ class QualityProfile(RadarrConfigBase):
             qualities: Sequence[Union[str, QualityGroup]] = values["qualities"]
         except KeyError:
             return value
-        # If `upgrades_allowed` is `False`, set `upgrade_until` to `None`
+        # If `upgrades_allowed` is `False`, set `upgrade_until_quality` to `None`
         # to make sure Buildarr ignores whatever it is currently set to
         # on the remote instance.
         if not upgrades_allowed:
@@ -213,26 +208,12 @@ class QualityProfile(RadarrConfigBase):
     def _get_remote_map(
         cls,
         api_qualities: Mapping[str, radarr.Quality] = {},
+        api_customformats: Mapping[str, radarr.CustomFormatResource] = {},
+        api_languages: Mapping[str, radarr.LanguageResource] = {},
         group_ids: Mapping[str, int] = {},
     ) -> List[RemoteMapEntry]:
         return [
             ("upgrades_allowed", "upgradeAllowed", {}),
-            (
-                "upgrade_until",
-                "cutoff",
-                {
-                    "root_decoder": lambda vs: cls._upgrade_until_decoder(
-                        items=vs["items"],
-                        cutoff=vs["cutoff"],
-                    ),
-                    "root_encoder": lambda vs: cls._upgrade_until_encoder(
-                        api_qualities=api_qualities,
-                        group_ids=group_ids,
-                        qualities=vs.qualities,
-                        upgrade_until=vs.upgrade_until,
-                    ),
-                },
-            ),
             (
                 "qualities",
                 "items",
@@ -241,10 +222,55 @@ class QualityProfile(RadarrConfigBase):
                     "encoder": lambda v: cls._qualities_encoder(api_qualities, group_ids, v),
                 },
             ),
+            (
+                "upgrade_until_quality",
+                "cutoff",
+                {
+                    "root_decoder": lambda vs: cls._upgrade_until_quality_decoder(
+                        items=vs["items"],
+                        cutoff=vs["cutoff"],
+                    ),
+                    "root_encoder": lambda vs: cls._upgrade_until_quality_encoder(
+                        api_qualities=api_qualities,
+                        group_ids=group_ids,
+                        qualities=vs.qualities,
+                        upgrade_until=vs.upgrade_until,
+                    ),
+                },
+            ),
+            ("minimum_custom_format_score", "cutoffFormatScore", {}),
+            # TODO: Error handler for defined custom formats that don't exist.
+            (
+                "custom_formats",
+                "formatItems",
+                {
+                    "decoder": lambda v: {f["name"]: f["score"] for f in v},
+                    "encoder": lambda v: sorted(
+                        [
+                            {"format": api_customformat.id, "name": name, "score": v.get(name, 0)}
+                            for name, api_customformat in api_customformats.items()
+                        ],
+                        key=lambda f: (-f["score"], f["name"]),
+                    ),
+                },
+            ),
+            # TODO: Error handler for defined languages that don't exist.
+            (
+                "language",
+                "language",
+                {
+                    "decoder": lambda v: v["name"],
+                    "equals": lambda a, b: a.lower() == b.lower(),
+                    "encoder": lambda v: {
+                        "id": api_languages[v.lower()].id,
+                        "name": api_languages[v.lower()].name,
+                    },
+                },
+            ),
         ]
 
     @classmethod
-    def _upgrade_until_decoder(
+    def _upgrade_until_quality_decoder(
         cls,
         items: Sequence[Mapping[str, Any]],
         cutoff: int,
@@ -263,7 +289,7 @@ class QualityProfile(RadarrConfigBase):
         )
 
     @classmethod
-    def _upgrade_until_encoder(
+    def _upgrade_until_quality_encoder(
         cls,
         api_qualities: Mapping[str, radarr.Quality],
         group_ids: Mapping[str, int],
@@ -335,6 +361,8 @@ class QualityProfile(RadarrConfigBase):
         tree: str,
         secrets: RadarrSecrets,
         api_qualities: Mapping[str, radarr.Quality],
+        api_customformats: Mapping[str, radarr.CustomFormatResource],
+        api_languages: Mapping[str, radarr.LanguageResource],
         profile_name: str,
     ) -> None:
         group_ids: Dict[str, int] = {
@@ -351,7 +379,12 @@ class QualityProfile(RadarrConfigBase):
                         "name": profile_name,
                         **self.get_create_remote_attrs(
                             tree,
-                            self._get_remote_map(api_qualities, group_ids),
+                            self._get_remote_map(
+                                api_qualities=api_qualities,
+                                api_customformats=api_customformats,
+                                api_languages=api_languages,
+                                group_ids=group_ids,
+                            ),
                         ),
                     },
                 ),
@@ -363,6 +396,8 @@ class QualityProfile(RadarrConfigBase):
         secrets: RadarrSecrets,
         remote: Self,
         api_qualities: Mapping[str, radarr.Quality],
+        api_customformats: Mapping[str, radarr.CustomFormatResource],
+        api_languages: Mapping[str, radarr.LanguageResource],
         api_profile: radarr.QualityProfileResource,
     ) -> bool:
         group_ids: Dict[str, int] = {
@@ -375,7 +410,12 @@ class QualityProfile(RadarrConfigBase):
         updated, updated_attrs = self.get_update_remote_attrs(
             tree,
             remote,
-            self._get_remote_map(api_qualities, group_ids),
+            self._get_remote_map(
+                api_qualities=api_qualities,
+                api_customformats=api_customformats,
+                api_languages=api_languages,
+                group_ids=group_ids,
+            ),
             check_unmanaged=True,
             set_unchanged=True,
         )
@@ -448,6 +488,14 @@ class RadarrQualityProfilesSettings(RadarrConfigBase):
                     reverse=True,
                 )
             }
+            api_customformats: Dict[str, radarr.CustomFormatResource] = {
+                api_customformat.name: api_customformat
+                for api_customformat in radarr.CustomFormatApi(api_client).list_custom_format()
+            }
+            api_languages: Dict[str, radarr.LanguageResource] = {
+                api_language.name_lower: api_language
+                for api_language in radarr.LanguageApi(api_client).list_language()
+            }
         for profile_name, profile in self.definitions.items():
             profile_tree = f"{tree}.definitions[{repr(profile_name)}]"
             if profile_name not in remote.definitions:
@@ -455,6 +503,8 @@ class RadarrQualityProfilesSettings(RadarrConfigBase):
                     tree=profile_tree,
                     secrets=secrets,
                     api_qualities=api_qualities,
+                    api_customformats=api_customformats,
+                    api_languages=api_languages,
                     profile_name=profile_name,
                 )
                 updated = True
@@ -463,6 +513,8 @@ class RadarrQualityProfilesSettings(RadarrConfigBase):
                 secrets=secrets,
                 remote=remote.definitions[profile_name],
                 api_qualities=api_qualities,
+                api_customformats=api_customformats,
+                api_languages=api_languages,
                 api_profile=api_profiles[profile_name],
             ):
                 updated = True
