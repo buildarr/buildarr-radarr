@@ -13,20 +13,19 @@
 
 
 """
-Prowlarr plugin torrent download client definitions.
+Radarr plugin torrent download client definitions.
 """
 
 
 from __future__ import annotations
 
 from logging import getLogger
-from typing import Any, Dict, List, Literal, Mapping, Optional, Set
+from typing import Any, List, Literal, Mapping, Optional, Set
 
 from buildarr.config import RemoteMapEntry
 from buildarr.types import BaseEnum, NonEmptyStr, Password, Port
 from pydantic import validator
 
-from ....types import LowerCaseNonEmptyStr
 from .base import DownloadClient
 
 logger = getLogger(__name__)
@@ -259,11 +258,11 @@ class DelugeDownloadClient(TorrentDownloadClient):
     Password to use to authenticate the download client user.
     """
 
-    category: Optional[str] = "prowlarr"
+    category: Optional[str] = "radarr"
     """
-    Associate media from Prowlarr with a category.
+    Associate media from Radarr with a category.
 
-    Adding a category specific to Prowlarr avoids conflicts with unrelated non-Prowlarr downloads.
+    Adding a category specific to Radarr avoids conflicts with unrelated non-Radarr downloads.
     Using a category is optional, but strongly recommended.
     """
 
@@ -277,46 +276,24 @@ class DelugeDownloadClient(TorrentDownloadClient):
     * `first`
     """
 
-    category_mappings: Dict[NonEmptyStr, Set[LowerCaseNonEmptyStr]] = {}
-    """
-    Category mappings for associating a category on the download client
-    with the selected Prowlarr categories.
-    """
-
     _implementation: str = "Deluge"
-
-    @classmethod
-    def _get_base_remote_map(
-        cls,
-        category_ids: Mapping[str, int],
-        tag_ids: Mapping[str, int],
-    ) -> List[RemoteMapEntry]:
-        return [
-            *super()._get_base_remote_map(category_ids, tag_ids),
-            ("host", "host", {"is_field": True}),
-            ("port", "port", {"is_field": True}),
-            ("use_ssl", "useSsl", {"is_field": True}),
-            (
-                "url_base",
-                "urlBase",
-                {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
-            ),
-            ("password", "password", {"is_field": True}),
-            (
-                "category",
-                "category",
-                {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
-            ),
-            ("client_priority", "priority", {"is_field": True}),
-            (
-                "category_mappings",
-                "categories",
-                {
-                    "decoder": lambda v: cls._category_mappings_decoder(category_ids, v),
-                    "encoder": lambda v: cls._category_mappings_encoder(category_ids, v),
-                },
-            ),
-        ]
+    _remote_map: List[RemoteMapEntry] = [
+        ("host", "host", {"is_field": True}),
+        ("port", "port", {"is_field": True}),
+        ("use_ssl", "useSsl", {"is_field": True}),
+        (
+            "url_base",
+            "urlBase",
+            {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
+        ),
+        ("password", "password", {"is_field": True}),
+        (
+            "category",
+            "category",
+            {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
+        ),
+        ("client_priority", "priority", {"is_field": True}),
+    ]
 
 
 class DownloadstationTorrentDownloadClient(TorrentDownloadClient):
@@ -356,10 +333,10 @@ class DownloadstationTorrentDownloadClient(TorrentDownloadClient):
 
     category: Optional[str] = None
     """
-    Associate media from Prowlarr with a category.
+    Associate media from Radarr with a category.
     Creates a `[category]` subdirectory in the output directory.
 
-    Adding a category specific to Prowlarr avoids conflicts with unrelated non-Prowlarr downloads.
+    Adding a category specific to Radarr avoids conflicts with unrelated non-Radarr downloads.
     Using a category is optional, but strongly recommended.
     """
 
@@ -435,7 +412,7 @@ class FloodDownloadClient(TorrentDownloadClient):
     Manually specified download destination.
     """
 
-    flood_tags: Set[NonEmptyStr] = {"prowlarr"}  # type: ignore[arg-type]
+    flood_tags: Set[NonEmptyStr] = {"radarr"}  # type: ignore[arg-type]
     """
     Initial tags of a download within Flood.
 
@@ -453,57 +430,35 @@ class FloodDownloadClient(TorrentDownloadClient):
     Add media to the download client in the Paused state.
     """
 
-    category_mappings: Dict[NonEmptyStr, Set[LowerCaseNonEmptyStr]] = {}
-    """
-    Category mappings for associating a category on the download client
-    with the selected Prowlarr categories.
-    """
-
     _implementation: str = "Flood"
-
-    @classmethod
-    def _get_base_remote_map(
-        cls,
-        category_ids: Mapping[str, int],
-        tag_ids: Mapping[str, int],
-    ) -> List[RemoteMapEntry]:
-        return [
-            *super()._get_base_remote_map(category_ids, tag_ids),
-            ("host", "host", {"is_field": True}),
-            ("port", "port", {"is_field": True}),
-            ("use_ssl", "useSsl", {"is_field": True}),
-            (
-                "url_base",
-                "urlBase",
-                {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
-            ),
-            ("username", "username", {"is_field": True}),
-            ("password", "password", {"is_field": True}),
-            (
-                "destination",
-                "destination",
-                {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
-            ),
-            ("flood_tags", "tags", {"is_field": True, "encoder": sorted}),
-            (
-                "additional_tags",
-                "additionalTags",
-                {
-                    "is_field": True,
-                    "decoder": lambda v: set(FloodMediaTag(t) for t in v),
-                    "encoder": lambda v: sorted(t.value for t in v),
-                },
-            ),
-            ("add_paused", "addPaused", {"is_field": True}),
-            (
-                "category_mappings",
-                "categories",
-                {
-                    "decoder": lambda v: cls._category_mappings_decoder(category_ids, v),
-                    "encoder": lambda v: cls._category_mappings_encoder(category_ids, v),
-                },
-            ),
-        ]
+    _remote_map: List[RemoteMapEntry] = [
+        ("host", "host", {"is_field": True}),
+        ("port", "port", {"is_field": True}),
+        ("use_ssl", "useSsl", {"is_field": True}),
+        (
+            "url_base",
+            "urlBase",
+            {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
+        ),
+        ("username", "username", {"is_field": True}),
+        ("password", "password", {"is_field": True}),
+        (
+            "destination",
+            "destination",
+            {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
+        ),
+        ("flood_tags", "tags", {"is_field": True, "encoder": sorted}),
+        (
+            "additional_tags",
+            "additionalTags",
+            {
+                "is_field": True,
+                "decoder": lambda v: set(FloodMediaTag(t) for t in v),
+                "encoder": lambda v: sorted(t.value for t in v),
+            },
+        ),
+        ("add_paused", "addPaused", {"is_field": True}),
+    ]
 
 
 class FreeboxDownloadClient(TorrentDownloadClient):
@@ -562,7 +517,7 @@ class FreeboxDownloadClient(TorrentDownloadClient):
     Default category to classify downloads under if no category mappings apply to it.
 
     This will create a `[category]` subdirectory in the output directory.
-    Adding a category specific to Prowlarr avoids conflicts with unrelated non-Prowlarr downloads.
+    Adding a category specific to Radarr avoids conflicts with unrelated non-Radarr downloads.
     """
 
     client_priority: FreeboxPriority = FreeboxPriority.last
@@ -575,49 +530,27 @@ class FreeboxDownloadClient(TorrentDownloadClient):
     Add media to the download client in the Paused state.
     """
 
-    category_mappings: Dict[NonEmptyStr, Set[LowerCaseNonEmptyStr]] = {}
-    """
-    Category mappings for associating a category on the download client
-    with the selected Prowlarr categories.
-    """
-
     _implementation: str = "TorrentFreeboxDownload"
-
-    @classmethod
-    def _get_base_remote_map(
-        cls,
-        category_ids: Mapping[str, int],
-        tag_ids: Mapping[str, int],
-    ) -> List[RemoteMapEntry]:
-        return [
-            *super()._get_base_remote_map(category_ids, tag_ids),
-            ("host", "host", {"is_field": True}),
-            ("port", "port", {"is_field": True}),
-            ("use_ssl", "useSsl", {"is_field": True}),
-            ("api_url", "apiUrl", {"is_field": True}),
-            ("app_id", "appId", {"is_field": True}),
-            ("app_token", "appToken", {"is_field": True}),
-            (
-                "destination_directory",
-                "destinationDirectory",
-                {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
-            ),
-            (
-                "category",
-                "category",
-                {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
-            ),
-            ("client_priority", "priority", {"is_field": True}),
-            ("add_paused", "addPaused", {"is_field": True}),
-            (
-                "category_mappings",
-                "categories",
-                {
-                    "decoder": lambda v: cls._category_mappings_decoder(category_ids, v),
-                    "encoder": lambda v: cls._category_mappings_encoder(category_ids, v),
-                },
-            ),
-        ]
+    _base_remote_map: List[RemoteMapEntry] = [
+        ("host", "host", {"is_field": True}),
+        ("port", "port", {"is_field": True}),
+        ("use_ssl", "useSsl", {"is_field": True}),
+        ("api_url", "apiUrl", {"is_field": True}),
+        ("app_id", "appId", {"is_field": True}),
+        ("app_token", "appToken", {"is_field": True}),
+        (
+            "destination_directory",
+            "destinationDirectory",
+            {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
+        ),
+        (
+            "category",
+            "category",
+            {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
+        ),
+        ("client_priority", "priority", {"is_field": True}),
+        ("add_paused", "addPaused", {"is_field": True}),
+    ]
 
 
 class HadoukenDownloadClient(TorrentDownloadClient):
@@ -660,50 +593,28 @@ class HadoukenDownloadClient(TorrentDownloadClient):
     Password to use to authenticate the download client user.
     """
 
-    category: NonEmptyStr = "prowlarr"  # type: ignore[assignment]
+    category: NonEmptyStr = "radarr"  # type: ignore[assignment]
     """
-    Associate media from Prowlarr with a category.
+    Associate media from Radarr with a category.
 
-    Adding a category specific to Prowlarr avoids conflicts with unrelated non-Prowlarr downloads.
+    Adding a category specific to Radarr avoids conflicts with unrelated non-Radarr downloads.
     Using a category is optional, but strongly recommended.
     """
 
-    category_mappings: Dict[NonEmptyStr, Set[LowerCaseNonEmptyStr]] = {}
-    """
-    Category mappings for associating a category on the download client
-    with the selected Prowlarr categories.
-    """
-
     _implementation: str = "Hadouken"
-
-    @classmethod
-    def _get_base_remote_map(
-        cls,
-        category_ids: Mapping[str, int],
-        tag_ids: Mapping[str, int],
-    ) -> List[RemoteMapEntry]:
-        return [
-            *super()._get_base_remote_map(category_ids, tag_ids),
-            ("host", "host", {"is_field": True}),
-            ("port", "port", {"is_field": True}),
-            ("use_ssl", "useSsl", {"is_field": True}),
-            (
-                "url_base",
-                "urlBase",
-                {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
-            ),
-            ("username", "username", {"is_field": True}),
-            ("password", "password", {"is_field": True}),
-            ("category", "category", {"is_field": True}),
-            (
-                "category_mappings",
-                "categories",
-                {
-                    "decoder": lambda v: cls._category_mappings_decoder(category_ids, v),
-                    "encoder": lambda v: cls._category_mappings_encoder(category_ids, v),
-                },
-            ),
-        ]
+    _base_remote_map: List[RemoteMapEntry] = [
+        ("host", "host", {"is_field": True}),
+        ("port", "port", {"is_field": True}),
+        ("use_ssl", "useSsl", {"is_field": True}),
+        (
+            "url_base",
+            "urlBase",
+            {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
+        ),
+        ("username", "username", {"is_field": True}),
+        ("password", "password", {"is_field": True}),
+        ("category", "category", {"is_field": True}),
+    ]
 
 
 class QbittorrentDownloadClient(TorrentDownloadClient):
@@ -746,11 +657,11 @@ class QbittorrentDownloadClient(TorrentDownloadClient):
     Password to use to authenticate the download client user.
     """
 
-    category: Optional[str] = "prowlarr"
+    category: Optional[str] = "radarr"
     """
-    Associate media from Prowlarr with a category.
+    Associate media from Radarr with a category.
 
-    Adding a category specific to Prowlarr avoids conflicts with unrelated non-Prowlarr downloads.
+    Adding a category specific to Radarr avoids conflicts with unrelated non-Radarr downloads.
     Using a category is optional, but strongly recommended.
     """
 
@@ -771,48 +682,26 @@ class QbittorrentDownloadClient(TorrentDownloadClient):
     Note that forced torrents do not abide by seed restrictions.
     """
 
-    category_mappings: Dict[NonEmptyStr, Set[LowerCaseNonEmptyStr]] = {}
-    """
-    Category mappings for associating a category on the download client
-    with the selected Prowlarr categories.
-    """
-
     _implementation: str = "QBittorrent"
-
-    @classmethod
-    def _get_base_remote_map(
-        cls,
-        category_ids: Mapping[str, int],
-        tag_ids: Mapping[str, int],
-    ) -> List[RemoteMapEntry]:
-        return [
-            *super()._get_base_remote_map(category_ids, tag_ids),
-            ("host", "host", {"is_field": True}),
-            ("port", "port", {"is_field": True}),
-            ("use_ssl", "useSsl", {"is_field": True}),
-            (
-                "url_base",
-                "urlBase",
-                {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
-            ),
-            ("username", "username", {"is_field": True}),
-            ("password", "password", {"is_field": True}),
-            (
-                "category",
-                "category",
-                {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
-            ),
-            ("client_priority", "priority", {"is_field": True}),
-            ("initial_state", "initialState", {"is_field": True}),
-            (
-                "category_mappings",
-                "categories",
-                {
-                    "decoder": lambda v: cls._category_mappings_decoder(category_ids, v),
-                    "encoder": lambda v: cls._category_mappings_encoder(category_ids, v),
-                },
-            ),
-        ]
+    _base_remote_map: List[RemoteMapEntry] = [
+        ("host", "host", {"is_field": True}),
+        ("port", "port", {"is_field": True}),
+        ("use_ssl", "useSsl", {"is_field": True}),
+        (
+            "url_base",
+            "urlBase",
+            {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
+        ),
+        ("username", "username", {"is_field": True}),
+        ("password", "password", {"is_field": True}),
+        (
+            "category",
+            "category",
+            {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
+        ),
+        ("client_priority", "priority", {"is_field": True}),
+        ("initial_state", "initialState", {"is_field": True}),
+    ]
 
 
 class RtorrentDownloadClient(TorrentDownloadClient):
@@ -857,11 +746,11 @@ class RtorrentDownloadClient(TorrentDownloadClient):
     Password to use to authenticate the download client user.
     """
 
-    category: Optional[str] = "prowlarr"
+    category: Optional[str] = "radarr"
     """
-    Associate media from Prowlarr with a category.
+    Associate media from Radarr with a category.
 
-    Adding a category specific to Prowlarr avoids conflicts with unrelated non-Prowlarr downloads.
+    Adding a category specific to Radarr avoids conflicts with unrelated non-Radarr downloads.
     Using a category is optional, but strongly recommended.
     """
 
@@ -891,49 +780,27 @@ class RtorrentDownloadClient(TorrentDownloadClient):
     This may break magnet files.
     """
 
-    category_mappings: Dict[NonEmptyStr, Set[LowerCaseNonEmptyStr]] = {}
-    """
-    Category mappings for associating a category on the download client
-    with the selected Prowlarr categories.
-    """
-
     _implementation: str = "RTorrent"
-
-    @classmethod
-    def _get_base_remote_map(
-        cls,
-        category_ids: Mapping[str, int],
-        tag_ids: Mapping[str, int],
-    ) -> List[RemoteMapEntry]:
-        return [
-            *super()._get_base_remote_map(category_ids, tag_ids),
-            ("host", "host", {"is_field": True}),
-            ("port", "port", {"is_field": True}),
-            ("use_ssl", "useSsl", {"is_field": True}),
-            ("url_base", "urlBase", {"is_field": True}),
-            ("username", "username", {"is_field": True}),
-            ("password", "password", {"is_field": True}),
-            (
-                "category",
-                "category",
-                {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
-            ),
-            (
-                "directory",
-                "directory",
-                {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
-            ),
-            ("client_priority", "recentTvPriority", {"is_field": True}),
-            ("add_stopped", "addStopped", {"is_field": True}),
-            (
-                "category_mappings",
-                "categories",
-                {
-                    "decoder": lambda v: cls._category_mappings_decoder(category_ids, v),
-                    "encoder": lambda v: cls._category_mappings_encoder(category_ids, v),
-                },
-            ),
-        ]
+    _base_remote_map: List[RemoteMapEntry] = [
+        ("host", "host", {"is_field": True}),
+        ("port", "port", {"is_field": True}),
+        ("use_ssl", "useSsl", {"is_field": True}),
+        ("url_base", "urlBase", {"is_field": True}),
+        ("username", "username", {"is_field": True}),
+        ("password", "password", {"is_field": True}),
+        (
+            "category",
+            "category",
+            {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
+        ),
+        (
+            "directory",
+            "directory",
+            {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
+        ),
+        ("client_priority", "recentTvPriority", {"is_field": True}),
+        ("add_stopped", "addStopped", {"is_field": True}),
+    ]
 
 
 class TorrentBlackholeDownloadClient(TorrentDownloadClient):
@@ -948,7 +815,7 @@ class TorrentBlackholeDownloadClient(TorrentDownloadClient):
 
     torrent_folder: NonEmptyStr
     """
-    Folder in which Prowlarr will store `.torrent` files.
+    Folder in which Radarr will store `.torrent` files.
     """
 
     save_magnet_files: bool = False
@@ -1010,10 +877,10 @@ class TransmissionDownloadClientBase(TorrentDownloadClient):
 
     category: Optional[str] = None
     """
-    Associate media from Prowlarr with a category.
+    Associate media from Radarr with a category.
     Creates a `[category]` subdirectory in the output directory.
 
-    Adding a category specific to Prowlarr avoids conflicts with unrelated non-Prowlarr downloads.
+    Adding a category specific to Radarr avoids conflicts with unrelated non-Radarr downloads.
     Using a category is optional, but strongly recommended.
     """
 
@@ -1146,11 +1013,11 @@ class UtorrentDownloadClient(TorrentDownloadClient):
     Password to use to authenticate the download client user.
     """
 
-    category: Optional[str] = "prowlarr"
+    category: Optional[str] = "radarr"
     """
-    Associate media from Prowlarr with a category.
+    Associate media from Radarr with a category.
 
-    Adding a category specific to Prowlarr avoids conflicts with unrelated non-Prowlarr downloads.
+    Adding a category specific to Radarr avoids conflicts with unrelated non-Radarr downloads.
     Using a category is optional, but strongly recommended.
     """
 
@@ -1169,45 +1036,23 @@ class UtorrentDownloadClient(TorrentDownloadClient):
     Initial state for torrents added to uTorrent.
     """
 
-    category_mappings: Dict[NonEmptyStr, Set[LowerCaseNonEmptyStr]] = {}
-    """
-    Category mappings for associating a category on the download client
-    with the selected Prowlarr categories.
-    """
-
     _implementation: str = "UTorrent"
-
-    @classmethod
-    def _get_base_remote_map(
-        cls,
-        category_ids: Mapping[str, int],
-        tag_ids: Mapping[str, int],
-    ) -> List[RemoteMapEntry]:
-        return [
-            *super()._get_base_remote_map(category_ids, tag_ids),
-            ("host", "host", {"is_field": True}),
-            ("port", "port", {"is_field": True}),
-            ("use_ssl", "useSsl", {"is_field": True}),
-            (
-                "url_base",
-                "urlBase",
-                {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
-            ),
-            ("username", "username", {"is_field": True}),
-            ("password", "password", {"is_field": True}),
-            (
-                "category",
-                "category",
-                {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
-            ),
-            ("client_priority", "priority", {"is_field": True}),
-            ("initial_state", "initialState", {"is_field": True}),
-            (
-                "category_mappings",
-                "categories",
-                {
-                    "decoder": lambda v: cls._category_mappings_decoder(category_ids, v),
-                    "encoder": lambda v: cls._category_mappings_encoder(category_ids, v),
-                },
-            ),
-        ]
+    _base_remote_map:  List[RemoteMapEntry] = [
+        ("host", "host", {"is_field": True}),
+        ("port", "port", {"is_field": True}),
+        ("use_ssl", "useSsl", {"is_field": True}),
+        (
+            "url_base",
+            "urlBase",
+            {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
+        ),
+        ("username", "username", {"is_field": True}),
+        ("password", "password", {"is_field": True}),
+        (
+            "category",
+            "category",
+            {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
+        ),
+        ("client_priority", "priority", {"is_field": True}),
+        ("initial_state", "initialState", {"is_field": True}),
+    ]

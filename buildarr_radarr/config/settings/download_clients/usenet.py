@@ -13,20 +13,19 @@
 
 
 """
-Prowlarr plugin Usenet download client definitions.
+Radarr plugin Usenet download client definitions.
 """
 
 
 from __future__ import annotations
 
 from logging import getLogger
-from typing import Dict, List, Literal, Mapping, Optional, Set
+from typing import List, Literal, Mapping, Optional
 
 from buildarr.config import RemoteMapEntry
 from buildarr.types import BaseEnum, NonEmptyStr, Password, Port
 from pydantic import SecretStr
 
-from ....types import LowerCaseNonEmptyStr
 from .base import DownloadClient
 
 logger = getLogger(__name__)
@@ -93,11 +92,16 @@ class SabnzbdPriority(BaseEnum):
 
 
 class UsenetDownloadClient(DownloadClient):
-    """
-    Usenet-based download client.
-    """
+    # removeFailedDownloads
+    remove_failed: bool = True
+    """ """
 
-    pass
+    @classmethod
+    def _get_base_remote_map(cls, tag_ids: Mapping[str, int]) -> List[RemoteMapEntry]:
+        return [
+            *cls._get_base_remote_map(tag_ids=tag_ids),
+            ("remove_failed", "removeFailedDownloads", {}),
+        ]
 
 
 class DownloadstationUsenetDownloadClient(UsenetDownloadClient):
@@ -137,10 +141,10 @@ class DownloadstationUsenetDownloadClient(UsenetDownloadClient):
 
     category: Optional[str] = None
     """
-    Associate media from Prowlarr with a category.
+    Associate media from Radarr with a category.
     Creates a `[category]` subdirectory in the output directory.
 
-    Adding a category specific to Prowlarr avoids conflicts with unrelated non-Prowlarr downloads.
+    Adding a category specific to Radarr avoids conflicts with unrelated non-Radarr downloads.
     Using a category is optional, but strongly recommended.
     """
 
@@ -213,9 +217,9 @@ class NzbgetDownloadClient(UsenetDownloadClient):
 
     category: Optional[str] = None
     """
-    Associate media from Prowlarr with a category.
+    Associate media from Radarr with a category.
 
-    Adding a category specific to Prowlarr avoids conflicts with unrelated non-Prowlarr downloads.
+    Adding a category specific to Radarr avoids conflicts with unrelated non-Radarr downloads.
     Using a category is optional, but strongly recommended.
     """
 
@@ -240,48 +244,26 @@ class NzbgetDownloadClient(UsenetDownloadClient):
     This option requires NZBGet version 16.0 or later.
     """
 
-    category_mappings: Dict[NonEmptyStr, Set[LowerCaseNonEmptyStr]] = {}
-    """
-    Category mappings for associating a category on the download client
-    with the selected Prowlarr categories.
-    """
-
     _implementation: str = "Nzbget"
-
-    @classmethod
-    def _get_base_remote_map(
-        cls,
-        category_ids: Mapping[str, int],
-        tag_ids: Mapping[str, int],
-    ) -> List[RemoteMapEntry]:
-        return [
-            *super()._get_base_remote_map(category_ids, tag_ids),
-            ("host", "host", {"is_field": True}),
-            ("port", "port", {"is_field": True}),
-            ("use_ssl", "useSsl", {"is_field": True}),
-            (
-                "url_base",
-                "urlBase",
-                {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
-            ),
-            ("username", "username", {"is_field": True}),
-            ("password", "password", {"is_field": True}),
-            (
-                "category",
-                "category",
-                {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
-            ),
-            ("client_priority", "priority", {"is_field": True}),
-            ("add_paused", "addPaused", {"is_field": True}),
-            (
-                "category_mappings",
-                "categories",
-                {
-                    "decoder": lambda v: cls._category_mappings_decoder(category_ids, v),
-                    "encoder": lambda v: cls._category_mappings_encoder(category_ids, v),
-                },
-            ),
-        ]
+    _base_remote_map: List[RemoteMapEntry] = [
+        ("host", "host", {"is_field": True}),
+        ("port", "port", {"is_field": True}),
+        ("use_ssl", "useSsl", {"is_field": True}),
+        (
+            "url_base",
+            "urlBase",
+            {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
+        ),
+        ("username", "username", {"is_field": True}),
+        ("password", "password", {"is_field": True}),
+        (
+            "category",
+            "category",
+            {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
+        ),
+        ("client_priority", "priority", {"is_field": True}),
+        ("add_paused", "addPaused", {"is_field": True}),
+    ]
 
 
 class NzbvortexDownloadClient(UsenetDownloadClient):
@@ -316,9 +298,9 @@ class NzbvortexDownloadClient(UsenetDownloadClient):
 
     category: Optional[str] = None
     """
-    Associate media from Prowlarr with a category.
+    Associate media from Radarr with a category.
 
-    Adding a category specific to Prowlarr avoids conflicts with unrelated non-Prowlarr downloads.
+    Adding a category specific to Radarr avoids conflicts with unrelated non-Radarr downloads.
     Using a category is optional, but strongly recommended.
     """
 
@@ -333,45 +315,23 @@ class NzbvortexDownloadClient(UsenetDownloadClient):
     * `high`
     """
 
-    category_mappings: Dict[NonEmptyStr, Set[LowerCaseNonEmptyStr]] = {}
-    """
-    Category mappings for associating a category on the download client
-    with the selected Prowlarr categories.
-    """
-
     _implementation: str = "NzbVortex"
-
-    @classmethod
-    def _get_base_remote_map(
-        cls,
-        category_ids: Mapping[str, int],
-        tag_ids: Mapping[str, int],
-    ) -> List[RemoteMapEntry]:
-        return [
-            *super()._get_base_remote_map(category_ids, tag_ids),
-            ("host", "host", {"is_field": True}),
-            ("port", "port", {"is_field": True}),
-            (
-                "url_base",
-                "urlBase",
-                {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
-            ),
-            ("api_key", "apiKey", {"is_field": True}),
-            (
-                "category",
-                "category",
-                {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
-            ),
-            ("client_priority", "priority", {"is_field": True}),
-            (
-                "category_mappings",
-                "categories",
-                {
-                    "decoder": lambda v: cls._category_mappings_decoder(category_ids, v),
-                    "encoder": lambda v: cls._category_mappings_encoder(category_ids, v),
-                },
-            ),
-        ]
+    _base_remote_map: List[RemoteMapEntry] = [
+        ("host", "host", {"is_field": True}),
+        ("port", "port", {"is_field": True}),
+        (
+            "url_base",
+            "urlBase",
+            {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
+        ),
+        ("api_key", "apiKey", {"is_field": True}),
+        (
+            "category",
+            "category",
+            {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
+        ),
+        ("client_priority", "priority", {"is_field": True}),
+    ]
 
 
 class PneumaticDownloadClient(UsenetDownloadClient):
@@ -386,7 +346,7 @@ class PneumaticDownloadClient(UsenetDownloadClient):
 
     nzb_folder: NonEmptyStr
     """
-    Folder in which Prowlarr will store `.nzb` files.
+    Folder in which Radarr will store `.nzb` files.
 
     This folder will need to be reachable from Kodi/XMBC.
     """
@@ -450,9 +410,9 @@ class SabnzbdDownloadClient(UsenetDownloadClient):
 
     category: Optional[str] = None
     """
-    Associate media from Prowlarr with a category.
+    Associate media from Radarr with a category.
 
-    Adding a category specific to Prowlarr avoids conflicts with unrelated non-Prowlarr downloads.
+    Adding a category specific to Radarr avoids conflicts with unrelated non-Radarr downloads.
     Using a category is optional, but strongly recommended.
     """
 
@@ -470,68 +430,46 @@ class SabnzbdDownloadClient(UsenetDownloadClient):
     * `force`
     """
 
-    category_mappings: Dict[NonEmptyStr, Set[LowerCaseNonEmptyStr]] = {}
-    """
-    Category mappings for associating a category on the download client
-    with the selected Prowlarr categories.
-    """
-
     _implementation: str = "Sabnzbd"
-
-    @classmethod
-    def _get_base_remote_map(
-        cls,
-        category_ids: Mapping[str, int],
-        tag_ids: Mapping[str, int],
-    ) -> List[RemoteMapEntry]:
-        return [
-            *super()._get_base_remote_map(category_ids, tag_ids),
-            ("host", "host", {"is_field": True}),
-            ("port", "port", {"is_field": True}),
-            ("use_ssl", "useSsl", {"is_field": True}),
-            (
-                "url_base",
-                "urlBase",
-                {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
-            ),
-            (
-                "api_key",
-                "apiKey",
-                {
-                    "is_field": True,
-                    "decoder": lambda v: v or None,
-                    "encoder": lambda v: v.get_secret_value() if v else "",
-                },
-            ),
-            (
-                "username",
-                "username",
-                {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
-            ),
-            (
-                "password",
-                "password",
-                {
-                    "is_field": True,
-                    "decoder": lambda v: v or None,
-                    "encoder": lambda v: v.get_secret_value() if v else "",
-                },
-            ),
-            (
-                "category",
-                "category",
-                {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
-            ),
-            ("client_priority", "priority", {"is_field": True}),
-            (
-                "category_mappings",
-                "categories",
-                {
-                    "decoder": lambda v: cls._category_mappings_decoder(category_ids, v),
-                    "encoder": lambda v: cls._category_mappings_encoder(category_ids, v),
-                },
-            ),
-        ]
+    _base_remote_map: List[RemoteMapEntry] = [
+        ("host", "host", {"is_field": True}),
+        ("port", "port", {"is_field": True}),
+        ("use_ssl", "useSsl", {"is_field": True}),
+        (
+            "url_base",
+            "urlBase",
+            {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
+        ),
+        (
+            "api_key",
+            "apiKey",
+            {
+                "is_field": True,
+                "decoder": lambda v: v or None,
+                "encoder": lambda v: v.get_secret_value() if v else "",
+            },
+        ),
+        (
+            "username",
+            "username",
+            {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
+        ),
+        (
+            "password",
+            "password",
+            {
+                "is_field": True,
+                "decoder": lambda v: v or None,
+                "encoder": lambda v: v.get_secret_value() if v else "",
+            },
+        ),
+        (
+            "category",
+            "category",
+            {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
+        ),
+        ("client_priority", "priority", {"is_field": True}),
+    ]
 
 
 class UsenetBlackholeDownloadClient(UsenetDownloadClient):
@@ -546,7 +484,7 @@ class UsenetBlackholeDownloadClient(UsenetDownloadClient):
 
     nzb_folder: NonEmptyStr
     """
-    Folder in which Prowlarr will store `.nzb` files.
+    Folder in which Radarr will store `.nzb` files.
     """
 
     _implementation: str = "UsenetBlackhole"

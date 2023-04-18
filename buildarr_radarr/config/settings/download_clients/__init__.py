@@ -13,25 +13,23 @@
 
 
 """
-Prowlarr plugin download client settings.
+Radarr plugin download client settings.
 """
 
 
 from __future__ import annotations
 
-import itertools
-
 from logging import getLogger
 from typing import Dict, Tuple, Type, Union
 
-import prowlarr
+import radarr
 
 from pydantic import Field
 from typing_extensions import Annotated, Self
 
-from ....api import prowlarr_api_client
-from ....secrets import ProwlarrSecrets
-from ...types import ProwlarrConfigBase
+from ....api import radarr_api_client
+from ....secrets import RadarrSecrets
+from ...types import RadarrConfigBase
 from .base import DownloadClient
 from .torrent import (
     Aria2DownloadClient,
@@ -103,12 +101,12 @@ DownloadClientType = Union[
 ]
 
 
-class ProwlarrDownloadClientsSettings(ProwlarrConfigBase):
+class RadarrDownloadClientsSettings(RadarrConfigBase):
     """
-    Download clients are entirely optional in Prowlarr, but are available
-    so you can manually perform grabs entirely within Prowlarr.
+    Download clients are entirely optional in Radarr, but are available
+    so you can manually perform grabs entirely within Radarr.
 
-    In Buildarr, download clients for Prowlarr are configured in
+    In Buildarr, download clients for Radarr are configured in
     [much the same way](https://buildarr.github.io/plugins/sonarr/configuration/download-clients)
     as they are for Sonarr, although some attributes are different.
 
@@ -121,7 +119,7 @@ class ProwlarrDownloadClientsSettings(ProwlarrConfigBase):
     Download clients that use Usenet or BitTorrent can be configured.
 
     ```yaml
-    prowlarr:
+    radarr:
       settings:
         download_clients:
           definitions:
@@ -130,26 +128,6 @@ class ProwlarrDownloadClientsSettings(ProwlarrConfigBase):
               host: "transmission"
               port: 9091
               ...
-    ```
-
-    Some download clients support mapping categories within a download client
-    to Prowlarr categories, to automatically classify downloads by content type.
-
-    This can be defined in Buildarr using the `category_mappings` attribute.
-
-    ```yaml
-    prowlarr:
-      settings:
-        download_clients:
-          definitions:
-            qBittorrent:
-              type: "qbittorrent"
-              ...
-              category_mappings:
-                "movies":
-                  - "Movies/HD"
-                  - "Movies/SD"
-                  ...
     ```
     """
 
@@ -164,20 +142,11 @@ class ProwlarrDownloadClientsSettings(ProwlarrConfigBase):
     """
 
     @classmethod
-    def from_remote(cls, secrets: ProwlarrSecrets) -> Self:
-        with prowlarr_api_client(secrets=secrets) as api_client:
-            api_downloadclients = prowlarr.DownloadClientApi(api_client).list_download_client()
-            category_ids: Dict[str, int] = {
-                api_category.name: api_category.id
-                for api_category in itertools.chain.from_iterable(
-                    api_category_group.sub_categories
-                    for api_category_group in prowlarr.IndexerDefaultCategoriesApi(
-                        api_client,
-                    ).list_indexer_categories()
-                )
-            }
+    def from_remote(cls, secrets: RadarrSecrets) -> Self:
+        with radarr_api_client(secrets=secrets) as api_client:
+            api_downloadclients = radarr.DownloadClientApi(api_client).list_download_client()
             tag_ids: Dict[str, int] = (
-                {tag.label: tag.id for tag in prowlarr.TagApi(api_client).list_tag()}
+                {tag.label: tag.id for tag in radarr.TagApi(api_client).list_tag()}
                 if any(api_downloadclient.tags for api_downloadclient in api_downloadclients)
                 else {}
             )
@@ -185,11 +154,7 @@ class ProwlarrDownloadClientsSettings(ProwlarrConfigBase):
             definitions={
                 api_downloadclient.name: DOWNLOADCLIENT_TYPE_MAP[
                     api_downloadclient.implementation.lower()
-                ]._from_remote(
-                    category_ids=category_ids,
-                    tag_ids=tag_ids,
-                    remote_attrs=api_downloadclient.to_dict(),
-                )
+                ]._from_remote(tag_ids=tag_ids, remote_attrs=api_downloadclient.to_dict())
                 for api_downloadclient in api_downloadclients
             },
         )
@@ -197,31 +162,22 @@ class ProwlarrDownloadClientsSettings(ProwlarrConfigBase):
     def update_remote(
         self,
         tree: str,
-        secrets: ProwlarrSecrets,
+        secrets: RadarrSecrets,
         remote: Self,
         check_unmanaged: bool = False,
     ) -> bool:
         # Track whether or not any changes have been made on the remote instance.
         changed = False
         # Pull API objects and metadata required during the update operation.
-        with prowlarr_api_client(secrets=secrets) as api_client:
-            downloadclient_api = prowlarr.DownloadClientApi(api_client)
+        with radarr_api_client(secrets=secrets) as api_client:
+            downloadclient_api = radarr.DownloadClientApi(api_client)
             api_downloadclient_schemas = downloadclient_api.list_download_client_schema()
             api_downloadclients = {
                 api_downloadclient.name: api_downloadclient
                 for api_downloadclient in downloadclient_api.list_download_client()
             }
-            category_ids: Dict[str, int] = {
-                api_category.name: api_category.id
-                for api_category in itertools.chain.from_iterable(
-                    api_category_group.sub_categories
-                    for api_category_group in prowlarr.IndexerDefaultCategoriesApi(
-                        api_client,
-                    ).list_indexer_categories()
-                )
-            }
             tag_ids: Dict[str, int] = (
-                {tag.label: tag.id for tag in prowlarr.TagApi(api_client).list_tag()}
+                {tag.label: tag.id for tag in radarr.TagApi(api_client).list_tag()}
                 if any(downloadclient.tags for downloadclient in self.definitions.values())
                 or any(downloadclient.tags for downloadclient in remote.definitions.values())
                 else {}
@@ -237,7 +193,6 @@ class ProwlarrDownloadClientsSettings(ProwlarrConfigBase):
                     tree=downloadclient_tree,
                     secrets=secrets,
                     api_downloadclient_schemas=api_downloadclient_schemas,
-                    category_ids=category_ids,
                     tag_ids=tag_ids,
                     downloadclient_name=downloadclient_name,
                 )
@@ -246,8 +201,6 @@ class ProwlarrDownloadClientsSettings(ProwlarrConfigBase):
                 tree=downloadclient_tree,
                 secrets=secrets,
                 remote=remote.definitions[downloadclient_name],  # type: ignore[arg-type]
-                api_downloadclient_schemas=api_downloadclient_schemas,
-                category_ids=category_ids,
                 tag_ids=tag_ids,
                 api_downloadclient=api_downloadclients[downloadclient_name],
             ):
@@ -255,14 +208,14 @@ class ProwlarrDownloadClientsSettings(ProwlarrConfigBase):
         # Return whether or not the remote instance was changed.
         return changed
 
-    def delete_remote(self, tree: str, secrets: ProwlarrSecrets, remote: Self) -> bool:
+    def delete_remote(self, tree: str, secrets: RadarrSecrets, remote: Self) -> bool:
         # Track whether or not any changes have been made on the remote instance.
         changed = False
         # Pull API objects and metadata required during the update operation.
-        with prowlarr_api_client(secrets=secrets) as api_client:
+        with radarr_api_client(secrets=secrets) as api_client:
             downloadclient_ids: Dict[str, int] = {
                 api_downloadclient.name: api_downloadclient.id
-                for api_downloadclient in prowlarr.DownloadClientApi(
+                for api_downloadclient in radarr.DownloadClientApi(
                     api_client,
                 ).list_download_client()
             }
