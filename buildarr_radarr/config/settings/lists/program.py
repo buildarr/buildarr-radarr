@@ -23,6 +23,7 @@ import re
 
 from datetime import datetime
 from logging import getLogger
+from urllib.parse import urlparse
 from typing import (
     Any,
     Dict,
@@ -42,529 +43,78 @@ import radarr
 
 from buildarr.config import RemoteMapEntry
 from buildarr.state import state
-from buildarr.types import BaseEnum, InstanceName, NonEmptyStr, Password
+from buildarr.types import BaseEnum, InstanceName, NonEmptyStr, Password, Port
 from pydantic import AnyHttpUrl, ConstrainedStr, Field, PositiveInt, validator
 from typing_extensions import Annotated, Self
 
 from ....api import radarr_api_client
 from ....secrets import RadarrSecrets
-from ....types import RadarrApiKey
+from ....types import ArrApiKey
 from ...types import RadarrConfigBase, TraktAuthUser
-from .util import trakt_expires_encoder
+from .base import ImportList
 
 logger = getLogger(__name__)
 
 
-class YearRange(ConstrainedStr):
-    """
-    Constrained string type for a singular year or range of years.
-    """
-
-    regex = re.compile(r"[0-9]+(?:-[0-9]+)?")
-
-    # TODO: validate that the end year is higher than the start year
-
-
-class Monitor(BaseEnum):
-    """
-    Enumeration for what kind of monitoring should be done in an import list.
-    """
-
-    all_episodes = "all"
-    future_episodes = "future"
-    missing_episodes = "missing"
-    existing_episodes = "existing"
-    pilot_episode = "pilot"
-    first_season = "firstSeason"
-    only_latest_season = "latestSeason"
-    none = "none"
-
-
-class SeriesType(BaseEnum):
-    """
-    Series type to classify media from an import list.
-    """
-
-    standard = "standard"
-    daily = "daily"
-    anime = "anime"
-
-
-class TraktPopularListType(BaseEnum):
-    """
-    Types of popularity list in Trakt.
-    """
-
-    trending = 0
-    popular = 1
-    anticipated = 2
-    top_watched_by_week = 3
-    top_watched_by_month = 4
-    top_watched_by_year = 5
-    top_watched_by_alltime = 6
-    recommended_by_week = 7
-    recommended_by_month = 8
-    recommended_by_year = 9
-    recommended_by_alltime = 10
-
-
-class TraktUserListType(BaseEnum):
-    """
-    Types of user list in Trakt.
-    """
-
-    user_watch_list = 0
-    user_watched_list = 1
-    user_collection_list = 2
-
-
-class ImportList(RadarrConfigBase):
-    """
-    For more information on how an import list should be setup,
-    refer to this guide on [WikiArr](https://wiki.servarr.com/radarr/settings#import-lists).
-
-    All import list types can have the following attributes configured.
-    """
-
-    enable_automatic_add: bool = True
-    """
-    Automatically add series to Radarr upon syncing.
-    """
-
-    monitor: Monitor = Monitor.all_episodes
-    """
-    Define how Radarr should monitor existing and new episodes of series.
-
-    Values:
-
-    * `all-episodes` - Monitor all episodes except specials
-    * `future-episodes` - Monitor episodes that have not aired yet
-    * `missing-episodes` - Monitor episodes that do not have files or have not aired yet
-    * `existing-episodes` - Monitor episodes that have files or have not aired yet
-    * `pilot-episode` - Monitor only the pilot episode of a series
-    * `first-season` - Monitor all episodes of the first season (all other seasons will be ignored)
-    * `only-latest-season` - Monitor all episodes of the latest season and future seasons
-    * `none` - No episodes will be monitored
-    """
-
-    root_folder: NonEmptyStr
-    """
-    The root folder to add list items to.
-
-    This attribute is required.
-    """
-
-    quality_profile: NonEmptyStr
-    """
-    The name of the quality profile list items will be added with.
-
-    This attribute is required.
-    """
-
-    language_profile: NonEmptyStr
-    """
-    The name of the language profile list items will be added with.
-
-    This attribute is required.
-    """
-
-    series_type: SeriesType = SeriesType.standard
-    """
-    The type of series that get imported from this import list.
-    This option affects how Radarr handles the media, such as renaming.
-
-    Values:
-
-    * `standard` - Episodes released with an `SxxEyy` pattern
-    * `daily` - Episodes released daily or less frequently that use year-month-day (2017-05-25)
-    * `anime` - Episodes released using an absolute episode number
-    """
-
-    season_folder: bool = True
-    """
-    Use a season folder for series imported from this import list.
-    """
-
-    tags: Set[NonEmptyStr] = set()
-    """
-    Tags to assign to items imported from this import list.
-    """
-
-    _implementation_name: str
-    _implementation: str
-    _config_contract: str
-    _remote_map: List[RemoteMapEntry]
-
-    @classmethod
-    def _get_base_remote_map(
-        cls,
-        quality_profile_ids: Mapping[str, int],
-        language_profile_ids: Mapping[str, int],
-        tag_ids: Mapping[str, int],
-    ) -> List[RemoteMapEntry]:
-        """
-        Return the remote map for the base import list attributes.
-
-        Args:
-            quality_profile_ids (Mapping[str, int]): Quality profile ID mapping on the remote.
-            language_profile_ids (Mapping[str, int]): Language profile ID mapping on the remote.
-            tag_ids (Mapping[str, int]): Tag ID mapping on the remote.
-
-        Returns:
-            Remote map (as a list of entries)
-        """
-        return [
-            ("enable_automatic_add", "enableAutomaticAdd", {}),
-            ("monitor", "shouldMonitor", {}),
-            (
-                "root_folder",
-                "rootFolderPath",
-                {"decoder": lambda v: v or None, "encoder": lambda v: v or ""},
-            ),
-            (
-                "quality_profile",
-                "qualityProfileId",
-                {
-                    "decoder": lambda v: next(
-                        (ind for ind, ind_id in quality_profile_ids.items() if ind_id == v),
-                    ),
-                    "encoder": lambda v: quality_profile_ids[v],
-                },
-            ),
-            (
-                "language_profile",
-                "languageProfileId",
-                {
-                    "decoder": lambda v: next(
-                        (ind for ind, ind_id in language_profile_ids.items() if ind_id == v),
-                    ),
-                    "encoder": lambda v: language_profile_ids[v],
-                },
-            ),
-            ("series_type", "seriesType", {}),
-            ("season_folder", "seasonFolder", {}),
-            (
-                "tags",
-                "tags",
-                {
-                    "decoder": lambda v: set(
-                        (tag for tag, tag_id in tag_ids.items() if tag_id in v),
-                    ),
-                    "encoder": lambda v: sorted(tag_ids[tag] for tag in v),
-                },
-            ),
-        ]
-
-    @classmethod
-    def _from_remote(
-        cls,
-        quality_profile_ids: Mapping[str, int],
-        language_profile_ids: Mapping[str, int],
-        tag_ids: Mapping[str, int],
-        remote_attrs: Mapping[str, Any],
-    ) -> Self:
-        """
-        Parse an import list object from the remote Radarr instance,
-        and return its internal representation.
-
-        Args:
-            quality_profile_ids (Mapping[str, int]): Quality profile ID mapping on the remote.
-            language_profile_ids (Mapping[str, int]): Language profile ID mapping on the remote.
-            tag_ids (Mapping[str, int]): Tag ID mapping on the remote.
-            remote_attrs (Mapping[str, Any]): Remote instance import list object.
-
-        Returns:
-            Internal import list object
-        """
-        return cls(
-            **cls.get_local_attrs(
-                (
-                    cls._get_base_remote_map(quality_profile_ids, language_profile_ids, tag_ids)
-                    + cls._remote_map
-                ),
-                remote_attrs,
-            ),
-        )
-
-    def _resolve(self, name: str, ignore_nonexistent_ids: bool = False) -> Self:
-        """
-        Resolve any instance references on this import list, and
-        return an object with fully qualified attribute values.
-
-        Args:
-            name (str): Name associated with this import list.
-            ignore_nonexistent_ids (bool, optional): Ignore invalid IDs on the target instance.
-
-        Returns:
-            Fully qualified import list object
-        """
-        return self._resolve_from_local(
-            name=name,
-            local=self,
-            ignore_nonexistent_ids=ignore_nonexistent_ids,
-        )
-
-    def _resolve_from_local(
-        self,
-        name: str,
-        local: Self,
-        ignore_nonexistent_ids: bool = False,
-    ) -> Self:
-        """
-        Resolve this import list using instance references from the given object,
-        and return an object with fully qualified attribute values.
-
-        Used to fully qualify import list objects read from a remote Radarr instance,
-        using its corresponding local configuration.
-
-        Args:
-            name (str): Name associated with this import list.
-            local (Self): Import list object to use for instance referencing.
-            ignore_nonexistent_ids (bool, optional): Ignore invalid IDs on the target instance.
-
-        Returns:
-            Fully qualified import list object
-        """
-        return self
-
-    def _create_remote(
-        self,
-        tree: str,
-        secrets: RadarrSecrets,
-        quality_profile_ids: Mapping[str, int],
-        language_profile_ids: Mapping[str, int],
-        tag_ids: Mapping[str, int],
-        importlist_name: str,
-    ) -> None:
-        """
-        Create this import list on the remote Radarr instance.
-
-        Args:
-            tree (str): Configuration tree. Used for logging.
-            secrets (RadarrSecrets): Secrets metadata for the remote instance.
-            quality_profile_ids (Mapping[str, int]): Quality profile ID mapping on the remote.
-            language_profile_ids (Mapping[str, int]): Language profile ID mapping on the remote.
-            tag_ids (Mapping[str, int]): Tag ID mapping on the remote.
-            importlist_name (str): Name associated with this import list.
-        """
-        api_post(
-            secrets,
-            "/api/v3/importlist",
-            {
-                "name": importlist_name,
-                "implementation": self._implementation,
-                "implementationName": self._implementation_name,
-                "configContract": self._config_contract,
-                **self.get_create_remote_attrs(
-                    tree,
-                    (
-                        self._get_base_remote_map(
-                            quality_profile_ids,
-                            language_profile_ids,
-                            tag_ids,
-                        )
-                        + self._remote_map
-                    ),
-                ),
-            },
-        )
-
-    def _update_remote(
-        self,
-        tree: str,
-        secrets: RadarrSecrets,
-        remote: Self,
-        quality_profile_ids: Mapping[str, int],
-        language_profile_ids: Mapping[str, int],
-        tag_ids: Mapping[str, int],
-        importlist_id: int,
-        importlist_name: str,
-    ) -> bool:
-        """
-        Compare this import list to the currently active one the remote Radarr instance,
-        and update it in-place if there are differences.
-
-        Args:
-            tree (str): Configuration tree. Used for logging.
-            secrets (RadarrSecrets): Secrets metadata for the remote instance.
-            remote (Self): Active import list confiuration on the remote instance.
-            quality_profile_ids (Mapping[str, int]): Quality profile ID mapping on the remote.
-            language_profile_ids (Mapping[str, int]): Language profile ID mapping on the remote.
-            tag_ids (Mapping[str, int]): Tag ID mapping on the remote.
-            importlist_id (int): ID associated with this import list on the remote instance.
-            importlist_name (str): Name associated with this import list.
-
-        Returns:
-            `True` if the import list was updated, otherwise `False`
-        """
-        updated, remote_attrs = self.get_update_remote_attrs(
-            tree,
-            remote,
-            self._get_base_remote_map(quality_profile_ids, language_profile_ids, tag_ids)
-            + self._remote_map,
-            check_unmanaged=True,
-            set_unchanged=True,
-        )
-        if updated:
-            api_put(
-                secrets,
-                f"/api/v3/importlist/{importlist_id}",
-                {
-                    "id": importlist_id,
-                    "name": importlist_name,
-                    "implementation": self._implementation,
-                    "implementationName": self._implementation_name,
-                    "configContract": self._config_contract,
-                    **remote_attrs,
-                },
-            )
-            return True
-        return False
-
-    def _delete_remote(self, secrets: RadarrSecrets, importlist_id: int) -> None:
-        """
-        Delete this import list from the remote Radarr instance.
-
-        Args:
-            tree (str): Configuration tree. Used for logging.
-            secrets (RadarrSecrets): Secrets metadata for the remote instance.
-            importlist_id (int): ID associated with this import list on the remote instance.
-        """
-        api_delete(secrets, f"/api/v3/importlist/{importlist_id}")
-
-
 class ProgramImportList(ImportList):
-    """
-    Base class for program-based import lists.
-    """
-
     pass
 
 
-class PlexImportList(ImportList):
+class CouchpotatoImportList(ProgramImportList):
+    """ """
+
+    type: Literal["couchpotato"] = "couchpotato"
     """
-    Base class for import lists based on Plex.
+    Type value associated with this kind of import list.
     """
 
-    pass
+    host: NonEmptyStr
+    """ """
 
+    port: Port = 5050  # type: ignore[assignment]
+    """ """
 
-class TraktImportList(ImportList):
+    use_ssl: bool = False
+    """ """
+
+    url_base: Optional[str] = None
+    """ """
+
+    api_key: Password
+    """ """
+
+    only_wanted: bool = True
     """
-    Import added media from a list on the Trakt media tracker.
-
-    !!! note
-
-        Radarr directly authenticates with Trakt to generate tokens for it to use.
-        At the moment, the easiest way to generate the tokens for Buildarr
-        is to do it using the GUI within Radarr, and use the following
-        shell command to retrieve the generated configuration.
-
-        ```bash
-        $ curl -X "GET" "<radarr-url>/api/v3/notification" -H "X-Api-Key: <api-key>"
-        ```
-
-    The following parameters are common to all Trakt import list types.
-    The authenticated-related parameters (`access_token`, `refresh_token`, `expires`, `auth_user`)
-    are required.
+    Only add wanted movies.
     """
 
-    # Base class for import lists based on Trakt.
-
-    # FIXME: Determine easier procedure for getting access tokens and test.
-
-    access_token: Password
-    """
-    Access token for Radarr from Trakt.
-    """
-
-    refresh_token: Password
-    """
-    Refresh token for Radarr from Trakt.
-    """
-
-    expires: datetime
-    """
-    Expiry date-time of the access token, preferably in ISO-8601 format and in UTC.
-
-    Example: `2023-05-10T15:34:08.117451Z`
-    """
-
-    auth_user: TraktAuthUser
-    """
-    The username being authenticated in Trakt.
-    """
-
-    # rating
-    # TODO: constraints
-    rating: NonEmptyStr = "0-100"  # type: ignore[assignment]
-    """
-    Filter series by rating range, with a maximum range of 0-100.
-    """
-
-    username: Optional[str] = None
-    """
-    Username for the list to import from.
-
-    Leave undefined, empty or set to `None` to use the auth user.
-    """
-
-    genres: Set[NonEmptyStr] = set()
-    """
-    Filter series by Trakt genre slug.
-    """
-
-    years: Optional[YearRange] = None
-    """
-    Filter series by year or year range. (e.g. `2009` or `2009-2015`)
-    """
-
-    limit: PositiveInt = 100
-    """
-    Limit the number of series to get.
-    """
-
-    trakt_additional_parameters: Optional[str] = None
-    """
-    Additional parameters to send to the Trakt API.
-    """
-
-    @classmethod
-    def _get_base_remote_map(
-        cls,
-        quality_profile_ids: Mapping[str, int],
-        language_profile_ids: Mapping[str, int],
-        tag_ids: Mapping[str, int],
-    ) -> List[RemoteMapEntry]:
-        return [
-            *super()._get_base_remote_map(quality_profile_ids, language_profile_ids, tag_ids),
-            ("access_token", "accessToken", {"is_field": True}),
-            ("refresh_token", "refreshToken", {"is_field": True}),
-            ("expires", "expires", {"is_field": True, "encoder": trakt_expires_encoder}),
-            ("auth_user", "authUser", {"is_field": True}),
-            ("rating", "rating", {"is_field": True}),
-            (
-                "username",
-                "username",
-                {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
-            ),
-            (
-                "genres",
-                "genres",
-                {
-                    "is_field": True,
-                    "decoder": lambda v: set(v.split(",")) if v else set(),
-                    "encoder": lambda v: ",".join(sorted(v)) if v else "",
-                },
-            ),
-            (
-                "years",
-                "years",
-                {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
-            ),
-            ("limit", "limit", {"is_field": True}),
-            ("trakt_additional_parameters", "traktAdditionalParameters", {"is_field": True}),
-        ]
+    _remote_map: List[RemoteMapEntry] = [
+        (
+            "host",
+            "link",
+            {
+                "is_field": True,
+                "decoder": lambda v: urlparse(v).netloc,
+                "root_encoder": lambda vs: f"{'https' if vs.use_ssl else 'http'}://{vs.host}",
+            },
+        ),
+        ("port", "port", {"is_field": True}),
+        (
+            "use_ssl",
+            "link",
+            {
+                "is_field": True,
+                "decoder": lambda v: urlparse(v).scheme == "https",
+                "root_encoder": lambda vs: f"{'https' if vs.use_ssl else 'http'}://{vs.host}",
+            },
+        ),
+        (
+            "url_base",
+            "urlBase",
+            {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
+        ),
+        ("only_wanted", "onlyActive", {"is_field": True}),
+    ]
 
 
 class RadarrImportList(ProgramImportList):
@@ -656,7 +206,7 @@ class RadarrImportList(ProgramImportList):
     The URL that this Radarr instance will use to connect to the source Radarr instance.
     """
 
-    api_key: Optional[RadarrApiKey] = None
+    api_key: Optional[ArrApiKey] = None
     """
     API key used to access the source Radarr instance.
 
@@ -664,10 +214,7 @@ class RadarrImportList(ProgramImportList):
     this attribute is required.
     """
 
-    source_quality_profiles: Set[Union[PositiveInt, NonEmptyStr]] = Field(
-        set(),
-        alias="source_quality_profile_ids",
-    )
+    source_quality_profiles: Set[Union[PositiveInt, NonEmptyStr]] = set()
     """
     List of IDs (or names) of the quality profiles on the source instance to import from.
 
@@ -679,22 +226,7 @@ class RadarrImportList(ProgramImportList):
     (which is still valid as an alias), and added support for quality profile names.
     """
 
-    source_language_profiles: Set[Union[PositiveInt, NonEmptyStr]] = Field(
-        set(),
-        alias="source_language_profile_ids",
-    )
-    """
-    List of IDs (or names) of the language profiles on the source instance to import from.
-
-    Language profile names can only be used if `instance_name` is used to
-    link to a Buildarr-defined Radarr instance.
-    If linking to a Radarr instance outside Buildarr, IDs must be used.
-
-    *Changed in version 0.3.0*: Renamed from `source_language_profile_ids`
-    (which is still valid as an alias), and added support for language profile names.
-    """
-
-    source_tags: Set[Union[PositiveInt, NonEmptyStr]] = Field(set(), alias="source_tag_ids")
+    source_tags: Set[Union[PositiveInt, NonEmptyStr]] = set()
     """
     List of IDs (or names) of the tags on the source instance to import from.
 
@@ -709,15 +241,27 @@ class RadarrImportList(ProgramImportList):
     _implementation: str = "RadarrImport"
     _remote_map: List[RemoteMapEntry] = []
 
+    @validator("api_key")
+    def required_if_instance_name_undefined(
+        cls,
+        value: Optional[ArrApiKey],
+        values: Mapping[str, Any],
+    ) -> Optional[ArrApiKey]:
+        if not values.get("instance_name", None) and not value:
+            raise ValueError("required if 'instance_name' is undefined")
+        return value
+
     @classmethod
-    def _get_base_remote_map(
+    def _get_remote_map(
         cls,
         quality_profile_ids: Mapping[str, int],
-        language_profile_ids: Mapping[str, int],
         tag_ids: Mapping[str, int],
+        source_quality_profile_ids: Mapping[str, int],
+        source_tag_ids: Mapping[str, int],
+        source_resources_required: bool = True,
     ) -> List[RemoteMapEntry]:
         return [
-            *super()._get_base_remote_map(quality_profile_ids, language_profile_ids, tag_ids),
+            *super()._get_base_remote_map(quality_profile_ids, tag_ids),
             ("full_url", "baseUrl", {"is_field": True}),
             ("api_key", "apiKey", {"is_field": True}),
             (
@@ -729,18 +273,6 @@ class RadarrImportList(ProgramImportList):
                         instance_name=vs.instance_name,
                         resources=vs.source_quality_profiles,
                         resource_type="qualityprofile",
-                    ),
-                },
-            ),
-            (
-                "source_language_profiles",
-                "languageProfileIds",
-                {
-                    "is_field": True,
-                    "root_encoder": lambda vs: cls._encode_source_resources(
-                        instance_name=vs.instance_name,
-                        resources=vs.source_language_profiles,
-                        resource_type="languageprofile",
                     ),
                 },
             ),
@@ -785,59 +317,6 @@ class RadarrImportList(ProgramImportList):
             List of resource API objects
         """
         return api_get(cls._get_secrets(instance_name), f"/api/v3/{resource_type}")
-
-    @validator("api_key", always=True)
-    def validate_api_key(
-        cls,
-        value: Optional[RadarrApiKey],
-        values: Mapping[str, Any],
-    ) -> Optional[RadarrApiKey]:
-        """
-        Validate the `api_key` attribute after parsing.
-
-        Args:
-            value (Optional[str]): `api_key` value.
-            values (Mapping[str, Any]): Currently parsed attributes. `instance_name` is checked.
-
-        Raises:
-            ValueError: If `api_key` is undefined when `instance_name` is also undefined.
-
-        Returns:
-            Validated `api_key` value
-        """
-        if not values.get("instance_name", None) and not value:
-            raise ValueError("required if 'instance_name' is undefined")
-        return value
-
-    @validator(
-        "source_quality_profiles",
-        "source_language_profiles",
-        "source_tags",
-        each_item=True,
-    )
-    def validate_source_resource_ids(
-        cls,
-        value: Union[int, str],
-        values: Dict[str, Any],
-    ) -> Union[int, str]:
-        """
-        Validate that all resource references are IDs (integers) if `instance_name` is undefined.
-
-        Args:
-            value (Union[int, str]): Resource reference (ID or name).
-            values (Mapping[str, Any]): Currently parsed attributes. `instance_name` is checked.
-
-        Raises:
-            ValueError: If the resource reference is a name and `instance_name` is undefined.
-
-        Returns:
-            Validated resource reference
-        """
-        if not values.get("instance_name", None) and not isinstance(value, int):
-            raise ValueError(
-                "values must be IDs (not names) if 'instance_name' is undefined",
-            )
-        return value
 
     @classmethod
     def _encode_source_resources(
@@ -1018,300 +497,95 @@ class RadarrImportList(ProgramImportList):
                 raise ValueError(error_message)
         return resolved_source_resources
 
-
-class PlexWatchlistImportList(PlexImportList):
-    """
-    Import items from a Plex watchlist.
-    """
-
-    type: Literal["plex-watchlist"] = "plex-watchlist"
-    """
-    Type value associated with this kind of import list.
-    """
-
-    access_token: Password
-    """
-    Plex authentication token.
-
-    If unsure on where to find this token,
-    [follow this guide from Plex.tv][PATH].
-    [PATH]: https://support.plex.tv/articles/204059436-finding-an-authentication-token-x-plex-token
-    """
-
-    _implementation_name: str = "Plex Watchlist"
-    _implementation: str = "PlexImport"
-    _config_contract: str = "PlexListSettings"
-    _remote_map: List[RemoteMapEntry] = [("access_token", "accessToken", {"is_field": True})]
-
-
-class TraktListImportList(TraktImportList):
-    """
-    Import an arbitrary list from Trakt into Radarr.
-    """
-
-    type: Literal["trakt-list"] = "trakt-list"
-    """
-    Type value associated with this kind of import list.
-    """
-
-    list_name: NonEmptyStr
-    """
-    Name of the list to import.
-
-    The list must be public, or you must have access to the list.
-    """
-
-    _implementation_name: str = "Trakt List"
-    _implementation: str = "TraktListImport"
-    _config_contract: str = "TraktListSettings"
-    _remote_map: List[RemoteMapEntry] = [("list_name", "listName", {"is_field": True})]
-
-
-class TraktPopularlistImportList(TraktImportList):
-    """
-    Import media according to popularity-based lists on Trakt.
-    """
-
-    type: Literal["trakt-popularlist"] = "trakt-popularlist"
-    """
-    Type value associated with this kind of import list.
-    """
-
-    list_type: TraktPopularListType = TraktPopularListType.popular
-    """
-    Popularity-based list to import.
-
-    Values:
-
-    * `trending`
-    * `popular`
-    * `anticipated`
-    * `top_watched_by_week`
-    * `top_watched_by_month`
-    * `top_watched_by_year`
-    * `top_watched_by_alltime`
-    * `recommended_by_week`
-    * `recommended_by_month`
-    * `recommended_by_year`
-    * `recommended_by_alltime`
-    """
-
-    _implementation_name: str = "Trakt Popular List"
-    _implementation: str = "TraktPopularImport"
-    _config_contract: str = "TraktPopularSettings"
-    _remote_map: List[RemoteMapEntry] = [("list_type", "traktListType", {"is_field": True})]
-
-
-class TraktUserImportList(TraktImportList):
-    """
-    Import a user-level list from Trakt.
-    """
-
-    type: Literal["trakt-user"] = "trakt-user"
-    """
-    Type value associated with this kind of import list.
-    """
-
-    list_type: TraktUserListType = TraktUserListType.user_watch_list
-    """
-    User list type to import.
-
-    Values:
-
-    * `user_watch_list`
-    * `user_watched_list`
-    * `user_collection_list`
-    """
-
-    _implementation_name: str = "Trakt User"
-    _implementation: str = "TraktUserImport"
-    _config_contract: str = "TraktUserSettings"
-    _remote_map: List[RemoteMapEntry] = [("list_type", "traktListType", {"is_field": True})]
-
-
-IMPORTLIST_TYPES: Tuple[Type[ImportList], ...] = (
-    RadarrImportList,
-    PlexWatchlistImportList,
-    TraktListImportList,
-    TraktPopularlistImportList,
-    TraktUserImportList,
-)
-
-IMPORTLIST_TYPE_MAP: Dict[str, Type[ImportList]] = {
-    importlist_type._implementation: importlist_type for importlist_type in IMPORTLIST_TYPES
-}
-
-ImportListType = Union[
-    RadarrImportList,
-    PlexWatchlistImportList,
-    TraktListImportList,
-    TraktPopularlistImportList,
-    TraktUserImportList,
-]
-
-
-class RadarrImportListsSettings(RadarrConfigBase):
-    """
-    Using import lists, Radarr can monitor and import episodes from external sources.
-
-    ```yaml
-    radarr:
-      settings:
-        import_lists:
-          delete_unmanaged: False # Default is `false`
-          delete_unmanaged_exclusions: true # Default is `false`
-          definitions:
-            Plex: # Name of import list definition
-              type: "plex-watchlist" # Type of import list to use
-              # Attributes common to all watch list types
-              enable_automatic_add: true
-              monitor: "all-episodes"
-              series_type: "standard"
-              season_folder: true
-              tags:
-                - "example"
-              # Plex-specific attributes
-              access_token: "..."
-            # Add more import lists here.
-          exclusions:
-            72662: "Teletubbies" # TVDB ID is key, set an artibrary title as value
-    ```
-
-    Media can be queued on the source, and Radarr will automatically import them,
-    look for suitable releases, and download them.
-
-    Media that you don't want to import can be ignored using the `exclusions`
-    attribute.
-    """
-
-    delete_unmanaged: bool = False
-    """
-    Automatically delete import lists not defined in Buildarr.
-    """
-
-    delete_unmanaged_exclusions: bool = False
-    """
-    Automatically delete import list excusions not defined in Buildarr.
-    """
-
-    definitions: Dict[str, Annotated[ImportListType, Field(discriminator="type")]] = {}
-    """
-    Import list definitions go here.
-    """
-
-    exclusions: Dict[PositiveInt, NonEmptyStr] = {}
-    """
-    Dictionary of TV series that should be excluded from being imported.
-
-    The key is the TVDB ID of the series to exclude, the value is
-    a title to give the series in the Radarr UI.
-    """
-
     @classmethod
-    def from_remote(cls, secrets: RadarrSecrets) -> Self:
-        importlists = api_get(secrets, "/api/v3/importlist")
-        quality_profile_ids: Dict[str, int] = (
-            {pro["name"]: pro["id"] for pro in api_get(secrets, "/api/v3/qualityprofile")}
-            if any(importlist["qualityProfileId"] for importlist in importlists)
-            else {}
-        )
-        language_profile_ids: Dict[str, int] = (
-            {pro["name"]: pro["id"] for pro in api_get(secrets, "/api/v3/languageprofile")}
-            if any(importlist["languageProfileId"] for importlist in importlists)
-            else {}
-        )
-        tag_ids: Dict[str, int] = (
-            {tag["label"]: tag["id"] for tag in api_get(secrets, "/api/v3/tag")}
-            if any(importlist["tags"] for importlist in importlists)
-            else {}
-        )
+    def _from_remote(
+        cls,
+        quality_profile_ids: Mapping[str, int],
+        tag_ids: Mapping[str, int],
+        remote_attrs: Mapping[str, Any],
+    ) -> Self:
         return cls(
-            definitions={
-                importlist["name"]: IMPORTLIST_TYPE_MAP[importlist["implementation"]]._from_remote(
-                    quality_profile_ids=quality_profile_ids,
-                    language_profile_ids=language_profile_ids,
-                    tag_ids=tag_ids,
-                    remote_attrs=importlist,
-                )
-                for importlist in importlists
-            },
+            **cls.get_local_attrs(
+                (
+                    cls._get_base_remote_map(quality_profile_ids, tag_ids)
+                    + cls._remote_map
+                ),
+                remote_attrs,
+            ),
         )
 
-    def update_remote(
+    def _get_api_schema(self, schemas: Iterable[radarr.ImportListResource]) -> Dict[str, Any]:
+        return {
+            k: v
+            for k, v in next(
+                s for s in schemas if s.implementation.lower() == self._implementation.lower()
+            )
+            .to_dict()
+            .items()
+            if k not in ["id", "name"]
+        }
+
+    def _create_remote(
+        self,
+        tree: str,
+        secrets: RadarrSecrets,
+        api_importlist_schemas: Iterable[radarr.ImportListResource],
+        quality_profile_ids: Mapping[str, int],
+        tag_ids: Mapping[str, int],
+        importlist_name: str,
+    ) -> None:
+        api_schema = self._get_api_schema(api_importlist_schemas)
+        set_attrs = self.get_create_remote_attrs(
+            tree=tree,
+            remote_map=self._get_base_remote_map(quality_profile_ids, tag_ids) + self._remote_map,
+        )
+        field_values: Dict[str, Any] = {
+            field["name"]: field["value"] for field in set_attrs["fields"]
+        }
+        set_attrs["fields"] = [
+            ({**f, "value": field_values[f["name"]]} if f["name"] in field_values else f)
+            for f in api_schema["fields"]
+        ]
+        remote_attrs = {"name": importlist_name, **api_schema, **set_attrs}
+        with radarr_api_client(secrets=secrets) as api_client:
+            radarr.ImportListApi(api_client).create_import_list(
+                import_list_resource=radarr.ImportListResource.from_dict(remote_attrs),
+            )
+
+    def _update_remote(
         self,
         tree: str,
         secrets: RadarrSecrets,
         remote: Self,
-        check_unmanaged: bool = False,
+        quality_profile_ids: Mapping[str, int],
+        tag_ids: Mapping[str, int],
+        api_importlist: radarr.ImportListResource,
     ) -> bool:
-        # Flag for whether or not the import list configuration was updated or not.
-        changed = False
-        # Get required resource ID references from the remote Radarr instance.
-        importlist_ids: Dict[str, int] = {
-            importlist_json["name"]: importlist_json["id"]
-            for importlist_json in api_get(secrets, "/api/v3/importlist")
-        }
-        quality_profile_ids: Dict[str, int] = {
-            pro["name"]: pro["id"] for pro in api_get(secrets, "/api/v3/qualityprofile")
-        }
-        language_profile_ids: Dict[str, int] = {
-            pro["name"]: pro["id"] for pro in api_get(secrets, "/api/v3/languageprofile")
-        }
-        tag_ids: Dict[str, int] = {
-            tag["label"]: tag["id"] for tag in api_get(secrets, "/api/v3/tag")
-        }
-        # Evaluate locally defined import lists against the currently active ones
-        # on the remote instance.
-        for importlist_name, importlist in self.definitions.items():
-            importlist = importlist._resolve(importlist_name)  # noqa: PLW2901
-            importlist_tree = f"{tree}.definitions[{repr(importlist_name)}]"
-            # If a locally defined import list does not exist on the remote, create it.
-            if importlist_name not in remote.definitions:
-                importlist._create_remote(
-                    tree=importlist_tree,
-                    secrets=secrets,
-                    quality_profile_ids=quality_profile_ids,
-                    language_profile_ids=language_profile_ids,
-                    tag_ids=tag_ids,
-                    importlist_name=importlist_name,
-                )
-                changed = True
-            # Since there is an import list with the same name on the remote,
-            # update it in-place.
-            elif importlist._update_remote(
-                tree=importlist_tree,
-                secrets=secrets,
-                remote=remote.definitions[importlist_name]._resolve_from_local(
-                    name=importlist_name,
-                    local=importlist,  # type: ignore[arg-type]
-                    ignore_nonexistent_ids=True,
-                ),
-                quality_profile_ids=quality_profile_ids,
-                language_profile_ids=language_profile_ids,
-                tag_ids=tag_ids,
-                importlist_id=importlist_ids[importlist_name],
-                importlist_name=importlist_name,
-            ):
-                changed = True
-        # We're done!
-        return changed
-
-    def delete_remote(self, tree: str, secrets: RadarrSecrets, remote: Self) -> bool:
-        changed = False
-        importlist_ids: Dict[str, int] = {
-            importlist_json["name"]: importlist_json["id"]
-            for importlist_json in api_get(secrets, "/api/v3/importlist")
-        }
-        for importlist_name, importlist in remote.definitions.items():
-            if importlist_name not in self.definitions:
-                importlist_tree = f"{tree}.definitions[{repr(importlist_name)}]"
-                if self.delete_unmanaged:
-                    logger.info("%s: (...) -> (deleted)", importlist_tree)
-                    importlist._delete_remote(
-                        secrets=secrets,
-                        importlist_id=importlist_ids[importlist_name],
+        updated, updated_attrs = self.get_update_remote_attrs(
+            tree,
+            remote,
+            self._get_base_remote_map(quality_profile_ids, tag_ids) + self._remote_map,
+            check_unmanaged=True,
+            set_unchanged=True,
+        )
+        if updated:
+            if "fields" in updated_attrs:
+                updated_fields: Dict[str, Any] = {
+                    field["name"]: field["value"] for field in updated_attrs["fields"]
+                }
+                updated_attrs["fields"] = [
+                    (
+                        {**f, "value": updated_fields[f["name"]]}
+                        if f["name"] in updated_fields
+                        else f
                     )
-                    changed = True
-                else:
-                    logger.debug("%s: (...) (unmanaged)", importlist_tree)
-        return changed
+                    for f in api_importlist.to_dict()["fields"]
+                ]
+            remote_attrs = {**api_importlist.to_dict(), **updated_attrs}
+            with radarr_api_client(secrets=secrets) as api_client:
+                radarr.ImportListApi(api_client).update_import_list(
+                    id=str(api_importlist.id),
+                    import_list_resource=radarr.ImportListResource.from_dict(remote_attrs),
+                )
+            return True
+        return False

@@ -188,40 +188,93 @@ class RadarrListsSettings(RadarrConfigBase):
         remote: Self,
         check_unmanaged: bool = False,
     ) -> bool:
-        # Flag for whether or not the import list configuration was updated or not.
-        changed = False
-        # Get required resource ID references from the remote Radarr instance.
-        importlist_ids: Dict[str, int] = {
-            importlist_json["name"]: importlist_json["id"]
-            for importlist_json in api_get(secrets, "/api/v3/importlist")
-        }
-        quality_profile_ids: Dict[str, int] = {
-            pro["name"]: pro["id"] for pro in api_get(secrets, "/api/v3/qualityprofile")
-        }
-        language_profile_ids: Dict[str, int] = {
-            pro["name"]: pro["id"] for pro in api_get(secrets, "/api/v3/languageprofile")
-        }
-        tag_ids: Dict[str, int] = {
-            tag["label"]: tag["id"] for tag in api_get(secrets, "/api/v3/tag")
-        }
-        # Evaluate locally defined import lists against the currently active ones
-        # on the remote instance.
+        return any(
+            [
+                self._update_remote_config(
+                    tree=tree,
+                    secrets=secrets,
+                    remote=remote,
+                    check_unmanaged=check_unmanaged,
+                ),
+                self.exclusions.update_remote(
+                    tree=f"{tree}.exclusions",
+                    secrets=secrets,
+                    remote=remote.exclusions,
+                    check_unmanaged=check_unmanaged,
+                ),
+                self._update_remote_definitions(
+                    tree=tree,
+                    secrets=secrets,
+                    remote=remote,
+                    check_unmanaged=check_unmanaged,
+                ),
+            ],
+        )
+
+    def _update_remote_config(
+        self,
+        tree: str,
+        secrets: RadarrSecrets,
+        remote: Self,
+        check_unmanaged: bool = False,
+    ) -> bool:
+        updated, remote_attrs = self.get_update_remote_attrs(
+            tree=tree,
+            remote=remote,
+            remote_map=self._remote_map,
+            check_unmanaged=check_unmanaged,
+            set_unchanged=True,
+        )
+        if updated:
+            with radarr_api_client(secrets=secrets) as api_client:
+                importlist_config_api = radarr.ImportListConfigApi(api_client)
+                api_importlist_config = importlist_config_api.get_import_list_config()
+                importlist_config_api.update_import_list_config(
+                    id=str(api_importlist_config.id),
+                    import_list_config_resource=radarr.ImportListConfigResource.from_dict(
+                        {**api_importlist_config.to_dict(), **remote_attrs},
+                    ),
+                )
+            return True
+        return False
+
+    def _update_remote_definitions(
+        self,
+        tree: str,
+        secrets: RadarrSecrets,
+        remote: Self,
+        check_unmanaged: bool = False,
+    ) -> bool:
+        updated = False
+        with radarr_api_client(secrets=secrets) as api_client:
+            importlist_api = radarr.ImportListApi(api_client)
+            api_importlist_schemas = importlist_api.list_import_list_schema()
+            api_importlists: Dict[str, radarr.ImportListResource] = {
+                api_importlist.name: api_importlist
+                for api_importlist in importlist_api.list_import_list()
+            }
+            quality_profile_ids: Dict[str, int] = {
+                profile.name: profile.id
+                for profile in radarr.QualityProfileApi(api_client).list_quality_profile()
+            }
+            tag_ids: Dict[str, int] = (
+                {tag.label: tag.id for tag in radarr.TagApi(api_client).list_tag()}
+                if any(importlist.tags for importlist in self.definitions.values())
+                or any(importlist.tags for importlist in remote.definitions.values())
+                else {}
+            )
         for importlist_name, importlist in self.definitions.items():
-            importlist = importlist._resolve(importlist_name)  # noqa: PLW2901
             importlist_tree = f"{tree}.definitions[{repr(importlist_name)}]"
-            # If a locally defined import list does not exist on the remote, create it.
             if importlist_name not in remote.definitions:
                 importlist._create_remote(
                     tree=importlist_tree,
                     secrets=secrets,
+                    api_importlist_schemas=api_importlist_schemas,
                     quality_profile_ids=quality_profile_ids,
-                    language_profile_ids=language_profile_ids,
                     tag_ids=tag_ids,
                     importlist_name=importlist_name,
                 )
                 changed = True
-            # Since there is an import list with the same name on the remote,
-            # update it in-place.
             elif importlist._update_remote(
                 tree=importlist_tree,
                 secrets=secrets,
@@ -231,21 +284,19 @@ class RadarrListsSettings(RadarrConfigBase):
                     ignore_nonexistent_ids=True,
                 ),
                 quality_profile_ids=quality_profile_ids,
-                language_profile_ids=language_profile_ids,
                 tag_ids=tag_ids,
-                importlist_id=importlist_ids[importlist_name],
-                importlist_name=importlist_name,
+                api_importlist=api_importlists[importlist_name],
             ):
                 changed = True
-        # We're done!
         return changed
 
     def delete_remote(self, tree: str, secrets: RadarrSecrets, remote: Self) -> bool:
-        changed = False
-        importlist_ids: Dict[str, int] = {
-            importlist_json["name"]: importlist_json["id"]
-            for importlist_json in api_get(secrets, "/api/v3/importlist")
-        }
+        updated = False
+        with radarr_api_client(secrets=secrets) as api_client:
+            importlist_ids: Dict[str, int] = {
+                api_importlist.name: api_importlist.id
+                for api_importlist in radarr.ImportListApi(api_client).list_import_list()
+            }
         for importlist_name, importlist in remote.definitions.items():
             if importlist_name not in self.definitions:
                 importlist_tree = f"{tree}.definitions[{repr(importlist_name)}]"
@@ -255,7 +306,13 @@ class RadarrListsSettings(RadarrConfigBase):
                         secrets=secrets,
                         importlist_id=importlist_ids[importlist_name],
                     )
-                    changed = True
+                    updated = True
                 else:
                     logger.debug("%s: (...) (unmanaged)", importlist_tree)
-        return changed
+        if self.exclusions.delete_remote(
+            tree=f"{tree}.exclusions",
+            secrets=secrets,
+            remote=remote.exclusions,
+        ):
+            updated = True
+        return updated
