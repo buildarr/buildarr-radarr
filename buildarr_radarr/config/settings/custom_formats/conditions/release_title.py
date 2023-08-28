@@ -29,3 +29,6 @@ class ReleaseTitleCondition(Condition):
 
     preset: Optional[str] = None
     """Template preset from the Radarr API."""
+
+    _implementation: Literal["ReleaseTitleSpecification"] = "ReleaseTitleSpecification"
+    """ """

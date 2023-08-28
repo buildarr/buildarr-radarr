@@ -12,11 +12,18 @@
 # If not, see <https://www.gnu.org/licenses/>.
 
 
-from typing import Dict, Union
+from __future__ import annotations
 
+from typing import List, Dict, Union
+
+import radarr
+
+from buildarr.config import RemoteMapEntry
 from pydantic import Field
-from typing_extensions import Annotated
+from typing_extensions import Annotated, Self
 
+from ....api import radarr_api_client
+from ....secrets import RadarrSecrets
 from ...types import RadarrConfigBase
 from .conditions.edition import EditionCondition
 from .conditions.indexer_flag import IndexerFlagCondition
@@ -41,6 +48,21 @@ ConditionType = Union[
     SourceCondition,
 ]
 
+CONDITION_TYPE_MAP = {
+    condition_type._implementation: condition_type
+    for condition_type in (
+        EditionCondition,
+        IndexerFlagCondition,
+        LanguageCondition,
+        QualityModifierCondition,
+        ReleaseGroupCondition,
+        ReleaseTitleCondition,
+        ResolutionCondition,
+        SizeCondition,
+        SourceCondition,
+    )
+}
+
 
 class CustomFormat(RadarrConfigBase):
     """ """
@@ -52,3 +74,51 @@ class CustomFormat(RadarrConfigBase):
 
     conditions: Dict[str, Annotated[ConditionType, Field(discriminator="type")]] = {}
     """ """
+
+    _remote_map: List[RemoteMapEntry] = [
+        ("include_when_renaming", "")
+    ]
+
+    @classmethod
+    def _from_remote(
+        cls,
+        secrets: RadarrSecrets,
+        api_customformat: radarr.CustomFormatResource,
+    ) -> CustomFormat:
+        with radarr_api_client(secrets=secrets) as api_client:
+            condition_schema = radarr.CustomFormatApi(api_client).get_custom_format_schema()
+        return cls(
+            conditions={
+                api_condition.name: CONDITION_TYPE_MAP[
+                    api_condition.implementation.lower()
+                ]._from_remote(schema=condition_schema, api_condition=api_condition)
+                for api_condition in api_customformat.specifications
+            }
+        )
+
+
+class CustomFormatsSettings(RadarrConfigBase):
+    """ """
+
+    delete_unmanaged: bool = False
+    """
+    Automatically delete custom formats not defined in Buildarr.
+    """
+
+    definitions: Dict[str, CustomFormat] = {}
+    """
+    Define download clients under this attribute.
+    """
+
+    @classmethod
+    def from_remote(cls, secrets: RadarrSecrets) -> Self:
+        with radarr_api_client(secrets=secrets) as api_client:
+            return cls(
+                definitions={
+                    api_customformat.name: CustomFormat._from_remote(
+                        secrets=secrets,
+                        api_customformat=api_customformat,
+                    )
+                    for api_customformat in radarr.CustomFormatApi(api_client).list_custom_format()
+                },
+            )

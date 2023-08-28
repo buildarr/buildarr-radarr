@@ -12,6 +12,10 @@
 # If not, see <https://www.gnu.org/licenses/>.
 
 
+from typing import List
+
+from buildarr.config import RemoteMapEntry
+
 from ....types import RadarrConfigBase
 
 
@@ -23,3 +27,6 @@ class Condition(RadarrConfigBase):
 
     required: bool = False
     """ """
+
+    _implementation: str
+    _remote_map: List[RemoteMapEntry]
