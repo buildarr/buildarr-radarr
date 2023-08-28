@@ -27,8 +27,9 @@ from ..types import RadarrConfigBase
 from .download_clients import RadarrDownloadClientsSettings
 from .general import RadarrGeneralSettings
 from .indexers import RadarrIndexersSettings
-from .lists import RadarrSSListsSettings
+from .lists import RadarrListsSettings
 from .media_management import RadarrMediaManagementSettings
+from .quality import RadarrQualitySettings
 from .profiles import RadarrProfilesSettings
 from .tags import RadarrTagsSettings
 from .ui import RadarrUISettings

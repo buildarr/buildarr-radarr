@@ -1037,7 +1037,7 @@ class UtorrentDownloadClient(TorrentDownloadClient):
     """
 
     _implementation: str = "UTorrent"
-    _base_remote_map:  List[RemoteMapEntry] = [
+    _base_remote_map: List[RemoteMapEntry] = [
         ("host", "host", {"is_field": True}),
         ("port", "port", {"is_field": True}),
         ("use_ssl", "useSsl", {"is_field": True}),

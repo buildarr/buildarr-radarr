@@ -61,7 +61,10 @@ def radarr_api_client(
         Radarr API client object
     """
 
-    configuration = Configuration(host=secrets.host_url if secrets else host_url)
+    configuration = Configuration(
+        host=secrets.host_url if secrets else host_url,
+        request_timeout=state.request_timeout,
+    )
 
     root_logger = logging.getLogger()
     configuration.logger_format = cast(
