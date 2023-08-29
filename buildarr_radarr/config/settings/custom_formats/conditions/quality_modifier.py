@@ -14,7 +14,7 @@
 
 from typing import Literal
 
-from buildarr.types import NonEmptyStr
+from .....types import UpperCaseNonEmptyStr
 
 from .base import Condition
 
@@ -25,5 +25,7 @@ class QualityModifierCondition(Condition):
     type: Literal["quality-modifier", "quality_modifier"] = "quality-modifier"
     """ """
 
-    modifier: NonEmptyStr
+    modifier: UpperCaseNonEmptyStr
     """Evaluate against available modifiers in Radarr API."""
+
+    _implementation: Literal["QualityModifierSpecification"] = "QualityModifierSpecification"

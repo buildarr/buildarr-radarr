@@ -49,7 +49,7 @@ ConditionType = Union[
 ]
 
 CONDITION_TYPE_MAP = {
-    condition_type._implementation: condition_type
+    condition_type._implementation: condition_type  # type: ignore[attr-defined]
     for condition_type in (
         EditionCondition,
         IndexerFlagCondition,
@@ -76,7 +76,7 @@ class CustomFormat(RadarrConfigBase):
     """ """
 
     _remote_map: List[RemoteMapEntry] = [
-        ("include_when_renaming", "")
+        ("include_when_renaming", "includeCustomFormatWhenRenaming", {}),
     ]
 
     @classmethod
@@ -86,12 +86,22 @@ class CustomFormat(RadarrConfigBase):
         api_customformat: radarr.CustomFormatResource,
     ) -> CustomFormat:
         with radarr_api_client(secrets=secrets) as api_client:
-            condition_schema = radarr.CustomFormatApi(api_client).get_custom_format_schema()
+            api_condition_schemas: Dict[str, radarr.CustomFormatSpecificationSchema] = {
+                schema.implementation: schema
+                for schema in radarr.CustomFormatApi(api_client).get_custom_format_schema()
+            }
         return cls(
+            **cls.get_local_attrs(
+                remote_map=cls._remote_map,
+                remote_attrs=api_customformat.to_dict(),
+            ),
             conditions={
-                api_condition.name: CONDITION_TYPE_MAP[
-                    api_condition.implementation.lower()
-                ]._from_remote(schema=condition_schema, api_condition=api_condition)
+                api_condition.name: CONDITION_TYPE_MAP[  # type: ignore[attr-defined]
+                    api_condition.implementation
+                ]._from_remote(
+                    api_schema=api_condition_schemas[api_condition.implementation],
+                    api_condition=api_condition,
+                )
                 for api_condition in api_customformat.specifications
             }
         )

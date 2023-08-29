@@ -12,7 +12,6 @@
 # If not, see <https://www.gnu.org/licenses/>.
 
 
-from re import Pattern
 from typing import Literal, Optional
 
 from .base import Condition
@@ -24,7 +23,7 @@ class ReleaseTitleCondition(Condition):
     type: Literal["release-title", "release_title"] = "release-title"
     """ """
 
-    regex: Optional[Pattern] = None
+    regex: Optional[str] = None
     """Case insensitive."""
 
     preset: Optional[str] = None

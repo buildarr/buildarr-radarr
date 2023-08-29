@@ -27,3 +27,5 @@ class SourceCondition(Condition):
 
     source: NonEmptyStr
     """Evaluate against available sources in Radarr API."""
+
+    _implementation: Literal["SourceSpecification"] = "SourceSpecification"

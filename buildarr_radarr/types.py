@@ -35,6 +35,15 @@ class LowerCaseNonEmptyStr(LowerCaseStr):
     strip_whitespace = True
 
 
+class UpperCaseStr(ConstrainedStr):
+    to_upper = True
+
+
+class UpperCaseNonEmptyStr(UpperCaseStr):
+    min_length = 1
+    strip_whitespace = True
+
+
 class ArrApiKey(SecretStr):
     """
     Constrained secret string type for an Arr stack application API key.

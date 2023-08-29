@@ -12,8 +12,10 @@
 # If not, see <https://www.gnu.org/licenses/>.
 
 
-from re import Pattern
-from typing import Literal
+from typing import List, Literal
+
+from buildarr.config import RemoteMapEntry
+from buildarr.types import NonEmptyStr
 
 from .base import Condition
 
@@ -24,5 +26,14 @@ class ReleaseGroupCondition(Condition):
     type: Literal["release-group", "release_group"] = "release-group"
     """ """
 
-    regex: Pattern
+    regex: NonEmptyStr
     """Case insensitive."""
+
+    _implementation: Literal["ReleaseGroupSpecification"] = "ReleaseGroupSpecification"
+    _remote_map: List[RemoteMapEntry] = [
+        (
+            "regex",
+            "value",
+            {"equals": lambda a, b: a.casefold() == b.casefold(), "is_field": True},
+        ),
+    ]

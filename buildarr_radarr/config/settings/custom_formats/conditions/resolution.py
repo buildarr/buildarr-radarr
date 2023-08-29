@@ -14,8 +14,7 @@
 
 from typing import Literal
 
-from buildarr.types import NonEmptyStr
-
+from .....types import LowerCaseNonEmptyStr
 from .base import Condition
 
 
@@ -25,5 +24,7 @@ class ResolutionCondition(Condition):
     type: Literal["resolution"] = "resolution"
     """ """
 
-    resolution: NonEmptyStr
+    resolution: LowerCaseNonEmptyStr
     """Evaluate against available resolutions in Radarr API."""
+
+    _implementation: Literal["ResolutionSpecification"] = "ResolutionSpecification"

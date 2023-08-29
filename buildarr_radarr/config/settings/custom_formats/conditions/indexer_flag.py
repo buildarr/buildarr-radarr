@@ -27,3 +27,5 @@ class IndexerFlagCondition(Condition):
 
     flag: Union[NonEmptyStr, int]
     """If str, check against API. Otherwise, use integer value directly."""
+
+    _implementation: Literal["IndexerFlagSpecification"] = "IndexerFlagSpecification"

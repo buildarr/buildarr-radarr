@@ -32,3 +32,5 @@ class SizeCondition(Condition):
     """Minimum size in GB. If defined, must be less than or equal to this size."""
 
     # TODO: Constraint for max always being greater than min.
+
+    _implementation: Literal["SizeSpecification"] = "SizeSpecification"

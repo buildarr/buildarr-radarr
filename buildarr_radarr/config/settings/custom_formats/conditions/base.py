@@ -14,7 +14,10 @@
 
 from typing import List
 
+import radarr
+
 from buildarr.config import RemoteMapEntry
+from typing_extensions import Self
 
 from ....types import RadarrConfigBase
 
@@ -29,4 +32,32 @@ class Condition(RadarrConfigBase):
     """ """
 
     _implementation: str
-    _remote_map: List[RemoteMapEntry]
+    _base_remote_map: List[RemoteMapEntry] = [
+        ("negate", "negate", {}),
+        ("required", "required", {}),
+    ]
+    _remote_map: List[RemoteMapEntry] = []
+
+    @classmethod
+    def _get_remote_map(
+        cls,
+        api_schema: radarr.CustomFormatSpecificationSchema,
+    ) -> List[RemoteMapEntry]:
+        return []
+
+    @classmethod
+    def _from_remote(
+        cls,
+        api_schema: radarr.CustomFormatSpecificationSchema,
+        api_condition: radarr.CustomFormatSpecificationSchema,
+    ) -> Self:
+        return cls(
+            **cls.get_local_attrs(
+                remote_map=(
+                    cls._base_remote_map
+                    + cls._get_remote_map(api_schema)
+                    + cls._remote_map
+                ),
+                remote_attrs=api_condition.to_dict(),
+            ),
+        )

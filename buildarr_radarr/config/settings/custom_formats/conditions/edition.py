@@ -12,8 +12,10 @@
 # If not, see <https://www.gnu.org/licenses/>.
 
 
-from re import Pattern
-from typing import Literal
+from typing import Literal, List
+
+from buildarr.config import RemoteMapEntry
+from buildarr.types import NonEmptyStr
 
 from .base import Condition
 
@@ -24,5 +26,14 @@ class EditionCondition(Condition):
     type: Literal["edition"] = "edition"
     """ """
 
-    regex: Pattern
+    regex: NonEmptyStr
     """Case insensitive."""
+
+    _implementation: Literal["EditionSpecification"] = "EditionSpecification"
+    _remote_map: List[RemoteMapEntry] = [
+        (
+            "regex",
+            "value",
+            {"equals": lambda a, b: a.casefold() == b.casefold(), "is_field": True},
+        ),
+    ]
