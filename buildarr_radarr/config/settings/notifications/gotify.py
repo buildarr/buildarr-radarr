@@ -1,0 +1,85 @@
+# Copyright (C) 2023 Callum Dickinson
+#
+# Buildarr is free software: you can redistribute it and/or modify it under the terms of the
+# GNU General Public License as published by the Free Software Foundation,
+# either version 3 of the License, or (at your option) any later version.
+#
+# Buildarr is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+# without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+# See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along with Buildarr.
+# If not, see <https://www.gnu.org/licenses/>.
+
+
+"""
+Prowlarr plugin notification connection configuration.
+"""
+
+
+from __future__ import annotations
+
+from logging import getLogger
+from typing import Any, Dict, List, Literal, Mapping, Optional, Set, Tuple, Type, Union
+
+import prowlarr
+
+from buildarr.config import RemoteMapEntry
+from buildarr.types import BaseEnum, NonEmptyStr, Password, Port
+from pydantic import AnyHttpUrl, ConstrainedInt, Field, NameEmail, SecretStr
+from typing_extensions import Annotated, Self
+
+from ...api import prowlarr_api_client
+from ...secrets import ProwlarrSecrets
+from ..types import ProwlarrConfigBase
+
+
+class GotifyPriority(BaseEnum):
+    """
+    Gotify notification priority.
+    """
+
+    min = 0
+    low = 2
+    normal = 5
+    high = 8
+
+
+class GotifyNotification(Notification):
+    """
+    Send media update and health alert push notifications via a Gotify server.
+    """
+
+    type: Literal["gotify"] = "gotify"
+    """
+    Type value associated with this kind of connection.
+    """
+
+    server: AnyHttpUrl
+    """
+    Gotify server URL. (e.g. `http://gotify.example.com:1234`)
+    """
+
+    app_token: Password
+    """
+    App token to use to authenticate with Gotify.
+    """
+
+    priority: GotifyPriority = GotifyPriority.normal
+    """
+    Gotify notification priority.
+
+    Values:
+
+    * `min`
+    * `low`
+    * `normal`
+    * `high`
+    """
+
+    _implementation: str = "Gotify"
+    _remote_map: List[RemoteMapEntry] = [
+        ("server", "server", {"is_field": True}),
+        ("app_token", "appToken", {"is_field": True}),
+        ("priority", "priority", {"is_field": True}),
+    ]

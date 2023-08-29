@@ -30,6 +30,7 @@ from .general import RadarrGeneralSettings
 from .indexers import RadarrIndexersSettings
 from .lists import RadarrListsSettings
 from .media_management import RadarrMediaManagementSettings
+from .notifications import RadarrNotificationsSettings
 from .quality import RadarrQualitySettings
 from .profiles import RadarrProfilesSettings
 from .tags import RadarrTagsSettings
@@ -51,7 +52,7 @@ class RadarrSettings(RadarrConfigBase):
     indexers: RadarrIndexersSettings = RadarrIndexersSettings()
     download_clients: RadarrDownloadClientsSettings = RadarrDownloadClientsSettings()
     lists: RadarrListsSettings = RadarrListsSettings()
-    # connect: RadarrConnectSettings = RadarrConnectSettings()
+    notifications: RadarrNotificationsSettings = RadarrNotificationsSettings()
     # metadata: RadarrMetadataSettings = RadarrMetadataSettings()
     tags: RadarrTagsSettings = RadarrTagsSettings()
     general: RadarrGeneralSettings = RadarrGeneralSettings()
@@ -112,10 +113,10 @@ class RadarrSettings(RadarrConfigBase):
                     remote.lists,
                     check_unmanaged=check_unmanaged,
                 ),
-                self.connect.update_remote(
-                    f"{tree}.connect",
+                self.notifications.update_remote(
+                    f"{tree}.notifications",
                     secrets,
-                    remote.connect,
+                    remote.notifications,
                     check_unmanaged=check_unmanaged,
                 ),
                 self.metadata.update_remote(
@@ -157,7 +158,11 @@ class RadarrSettings(RadarrConfigBase):
                     remote.media_management,
                 ),
                 self.lists.delete_remote(f"{tree}.lists", secrets, remote.lists),
-                self.connect.delete_remote(f"{tree}.connect", secrets, remote.connect),
+                self.notifications.delete_remote(
+                    f"{tree}.notifications",
+                    secrets,
+                    remote.notifications,
+                ),
                 self.tags.delete_remote(f"{tree}.tags", secrets, remote.tags),
                 self.quality.delete_remote(f"{tree}.quality", secrets, remote.quality),
                 self.metadata.delete_remote(f"{tree}.metadata", secrets, remote.metadata),
