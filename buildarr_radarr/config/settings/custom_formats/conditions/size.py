@@ -12,9 +12,10 @@
 # If not, see <https://www.gnu.org/licenses/>.
 
 
-from typing import Literal
+from typing import Any, List, Literal, Mapping
 
-from pydantic import Field
+from buildarr.config import RemoteMapEntry
+from pydantic import Field, validator
 
 from .base import Condition
 
@@ -31,6 +32,22 @@ class SizeCondition(Condition):
     max: int = Field(1, ge=1)
     """Minimum size in GB. If defined, must be less than or equal to this size."""
 
-    # TODO: Constraint for max always being greater than min.
-
     _implementation: Literal["SizeSpecification"] = "SizeSpecification"
+    _remote_map: List[RemoteMapEntry] = [
+        ("min", "min", {"is_field": True}),
+        ("max", "max", {"is_field": True}),
+    ]
+
+    @validator("max")
+    def validate_min_max(cls, value: int, values: Mapping[str, Any]) -> int:
+        try:
+            size_min: int = values["min"]
+            if value < size_min:
+                raise ValueError(
+                    f"'max' ({value}) is not greater than 'min' ({size_min})",
+                )
+        except KeyError:
+            # `min` only doesn't exist when it failed type validation.
+            # If it doesn't exist, skip this validation.
+            pass
+        return value

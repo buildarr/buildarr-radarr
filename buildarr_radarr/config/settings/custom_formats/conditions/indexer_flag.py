@@ -12,8 +12,11 @@
 # If not, see <https://www.gnu.org/licenses/>.
 
 
-from typing import Literal, Union
+from typing import List, Literal, cast
 
+import radarr
+
+from buildarr.config import RemoteMapEntry
 from buildarr.types import NonEmptyStr
 
 from .base import Condition
@@ -25,7 +28,69 @@ class IndexerFlagCondition(Condition):
     type: Literal["indexer-flag", "indexer_flag"] = "indexer-flag"
     """ """
 
-    flag: Union[NonEmptyStr, int]
+    flag: NonEmptyStr
     """If str, check against API. Otherwise, use integer value directly."""
 
     _implementation: Literal["IndexerFlagSpecification"] = "IndexerFlagSpecification"
+
+    @classmethod
+    def _get_remote_map(
+        cls,
+        api_schema: radarr.CustomFormatSpecificationSchema,
+    ) -> List[RemoteMapEntry]:
+        return [
+            (
+                "flag",
+                "value",
+                {
+                    "decoder": lambda v: cls._flag_decode(api_schema, v),
+                    "encoder": lambda v: cls._flag_encode(api_schema, v),
+                    "is_field": True,
+                },
+            )
+        ]
+
+    @classmethod
+    def _flag_parse(cls, value: str) -> str:
+        # Results:
+        #   1. G Freeleech -> g-freeleech
+        #   2. G_FREELEECH -> g-freeleech
+        return value.lower().replace("_", "-").replace(" ", "-")
+
+    @classmethod
+    def _flag_decode(
+        cls,
+        api_schema: radarr.CustomFormatSpecificationSchema,
+        value: int,
+    ) -> str:
+        field: radarr.Field = next(f for f in api_schema.fields if f.name == "value")
+        for option in field.select_options:
+            option = cast(radarr.SelectOption, option)
+            if option.value == value:
+                return cls._flag_parse(option.name)
+        else:
+            supported_flags = ", ".join(f"{o.name} ({o.value})" for o in field.select_options)
+            raise ValueError(
+                f"Invalid custom format flag value {value} during decoding"
+                f", supported flags are: {supported_flags}"
+            )
+
+    @classmethod
+    def _flag_encode(
+        cls,
+        api_schema: radarr.CustomFormatSpecificationSchema,
+        value: str,
+    ) -> str:
+        field: radarr.Field = next(f for f in api_schema.fields if f.name == "value")
+        for option in field.select_options:
+            option = cast(radarr.SelectOption, option)
+            if cls._flag_parse(option.name) == value:
+                return option.value
+        else:
+            supported_flags = ", ".join(
+                (f"{o.name} ({cls._flag_parse(o.name)})" for o in field.select_options),
+            )
+            raise ValueError(
+                f"Invalid or unsupported custom format flag name '{value}'"
+                f", supported flags are: {supported_flags}"
+            )

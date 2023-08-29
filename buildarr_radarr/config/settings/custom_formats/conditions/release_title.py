@@ -12,7 +12,9 @@
 # If not, see <https://www.gnu.org/licenses/>.
 
 
-from typing import Literal, Optional
+from typing import List, Literal, Optional
+
+from buildarr.config import RemoteMapEntry
 
 from .base import Condition
 
@@ -30,4 +32,10 @@ class ReleaseTitleCondition(Condition):
     """Template preset from the Radarr API."""
 
     _implementation: Literal["ReleaseTitleSpecification"] = "ReleaseTitleSpecification"
-    """ """
+    _remote_map: List[RemoteMapEntry] = [
+        (
+            "regex",
+            "value",
+            {"equals": lambda a, b: a.casefold() == b.casefold(), "is_field": True},
+        ),
+    ]

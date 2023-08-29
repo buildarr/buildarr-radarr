@@ -24,6 +24,7 @@ from typing import TYPE_CHECKING
 from typing_extensions import Self
 
 from ..types import RadarrConfigBase
+from .custom_formats import RadarrCustomFormatsSettings
 from .download_clients import RadarrDownloadClientsSettings
 from .general import RadarrGeneralSettings
 from .indexers import RadarrIndexersSettings

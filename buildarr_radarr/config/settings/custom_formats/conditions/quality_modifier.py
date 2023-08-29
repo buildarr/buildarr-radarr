@@ -12,7 +12,11 @@
 # If not, see <https://www.gnu.org/licenses/>.
 
 
-from typing import Literal
+from typing import List, Literal, cast
+
+import radarr
+
+from buildarr.config import RemoteMapEntry
 
 from .....types import UpperCaseNonEmptyStr
 
@@ -29,3 +33,58 @@ class QualityModifierCondition(Condition):
     """Evaluate against available modifiers in Radarr API."""
 
     _implementation: Literal["QualityModifierSpecification"] = "QualityModifierSpecification"
+
+    @classmethod
+    def _get_remote_map(
+        cls,
+        api_schema: radarr.CustomFormatSpecificationSchema,
+    ) -> List[RemoteMapEntry]:
+        return [
+            (
+                "modifier",
+                "value",
+                {
+                    "decoder": lambda v: cls._modifier_decode(api_schema, v),
+                    "encoder": lambda v: cls._modifier_encode(api_schema, v),
+                    "is_field": True,
+                },
+            )
+        ]
+
+    @classmethod
+    def _modifier_decode(
+        cls,
+        api_schema: radarr.CustomFormatSpecificationSchema,
+        value: int,
+    ) -> str:
+        field: radarr.Field = next(f for f in api_schema.fields if f.name == "value")
+        for option in field.select_options:
+            option = cast(radarr.SelectOption, option)
+            if option.value == value:
+                return option.name.upper()
+        else:
+            supported_modifiers = ", ".join(
+                (f"{o.name.upper()} ({o.value})" for o in field.select_options),
+            )
+            raise ValueError(
+                f"Invalid custom format quality modifier value {value} during decoding"
+                f", supported quality modifiers are: {supported_modifiers}"
+            )
+
+    @classmethod
+    def _modifier_encode(
+        cls,
+        api_schema: radarr.CustomFormatSpecificationSchema,
+        value: str,
+    ) -> str:
+        field: radarr.Field = next(f for f in api_schema.fields if f.name == "value")
+        for option in field.select_options:
+            option = cast(radarr.SelectOption, option)
+            if option.name.upper() == value:
+                return option.value
+        else:
+            supported_modifiers = ", ".join(o.name.upper() for o in field.select_options)
+            raise ValueError(
+                f"Invalid or unsupported custom format modifier name '{value}'"
+                f", supported modifiers are: {supported_modifiers}"
+            )

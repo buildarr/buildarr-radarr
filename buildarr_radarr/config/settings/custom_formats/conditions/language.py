@@ -45,7 +45,7 @@ class LanguageCondition(Condition):
                     "decoder": lambda v: cls._language_decode(api_schema, v),
                     "encoder": lambda v: cls._language_encode(api_schema, v),
                     "is_field": True,
-                }
+                },
             )
         ]
 
@@ -68,7 +68,7 @@ class LanguageCondition(Condition):
         api_schema: radarr.CustomFormatSpecificationSchema,
         value: int,
     ) -> str:
-        field: radarr.Field = next((f for f in api_schema.fields if f.name == "value"))
+        field: radarr.Field = next(f for f in api_schema.fields if f.name == "value")
         for option in field.select_options:
             option = cast(radarr.SelectOption, option)
             if option.value == value:
@@ -86,7 +86,7 @@ class LanguageCondition(Condition):
         api_schema: radarr.CustomFormatSpecificationSchema,
         value: str,
     ) -> str:
-        field: radarr.Field = next((f for f in api_schema.fields if f.name == "value"))
+        field: radarr.Field = next(f for f in api_schema.fields if f.name == "value")
         for option in field.select_options:
             option = cast(radarr.SelectOption, option)
             if cls._language_parse(option.name) == value:

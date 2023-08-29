@@ -12,7 +12,11 @@
 # If not, see <https://www.gnu.org/licenses/>.
 
 
-from typing import Literal
+from typing import List, Literal, cast
+
+import radarr
+
+from buildarr.config import RemoteMapEntry
 
 from .....types import LowerCaseNonEmptyStr
 from .base import Condition
@@ -28,3 +32,58 @@ class ResolutionCondition(Condition):
     """Evaluate against available resolutions in Radarr API."""
 
     _implementation: Literal["ResolutionSpecification"] = "ResolutionSpecification"
+
+    @classmethod
+    def _get_remote_map(
+        cls,
+        api_schema: radarr.CustomFormatSpecificationSchema,
+    ) -> List[RemoteMapEntry]:
+        return [
+            (
+                "resolution",
+                "value",
+                {
+                    "decoder": lambda v: cls._resolution_decode(api_schema, v),
+                    "encoder": lambda v: cls._resolution_encode(api_schema, v),
+                    "is_field": True,
+                },
+            )
+        ]
+
+    @classmethod
+    def _resolution_decode(
+        cls,
+        api_schema: radarr.CustomFormatSpecificationSchema,
+        value: int,
+    ) -> str:
+        field: radarr.Field = next(f for f in api_schema.fields if f.name == "value")
+        for option in field.select_options:
+            option = cast(radarr.SelectOption, option)
+            if option.value == value:
+                return option.name.lower()
+        else:
+            supported_resolutions = ", ".join(
+                (f"{o.name.lower()} ({o.value})" for o in field.select_options),
+            )
+            raise ValueError(
+                f"Invalid custom format quality resolution value {value} during decoding"
+                f", supported quality resolutions are: {supported_resolutions}"
+            )
+
+    @classmethod
+    def _resolution_encode(
+        cls,
+        api_schema: radarr.CustomFormatSpecificationSchema,
+        value: str,
+    ) -> str:
+        field: radarr.Field = next((f for f in api_schema.fields if f.name.lower == "value"))
+        for option in field.select_options:
+            option = cast(radarr.SelectOption, option)
+            if option.name.lower() == value:
+                return option.value
+        else:
+            supported_resolutions = ", ".join(o.name.lower() for o in field.select_options)
+            raise ValueError(
+                f"Invalid or unsupported custom format resolution name '{value}'"
+                f", supported resolutions are: {supported_resolutions}"
+            )
