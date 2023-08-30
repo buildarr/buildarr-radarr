@@ -10,7 +10,7 @@
 #
 # You should have received a copy of the GNU General Public License along with Buildarr.
 # If not, see <https://www.gnu.org/licenses/>.
-
+from __future__ import annotations
 
 from typing import List, Literal, cast
 
@@ -47,7 +47,7 @@ class SourceCondition(Condition):
                     "encoder": lambda v: cls._source_encode(api_schema, v),
                     "is_field": True,
                 },
-            )
+            ),
         ]
 
     @classmethod
@@ -57,18 +57,17 @@ class SourceCondition(Condition):
         value: int,
     ) -> str:
         field: radarr.Field = next(f for f in api_schema.fields if f.name == "value")
-        for option in field.select_options:
-            option = cast(radarr.SelectOption, option)
+        for o in field.select_options:
+            option = cast(radarr.SelectOption, o)
             if option.value == value:
                 return option.name.upper()
-        else:
-            supported_sources = ", ".join(
-                (f"{o.name.upper()} ({o.value})" for o in field.select_options),
-            )
-            raise ValueError(
-                f"Invalid custom format quality source value {value} during decoding"
-                f", supported quality sources are: {supported_sources}"
-            )
+        supported_sources = ", ".join(
+            (f"{o.name.upper()} ({o.value})" for o in field.select_options),
+        )
+        raise ValueError(
+            f"Invalid custom format quality source value {value} during decoding"
+            f", supported quality sources are: {supported_sources}",
+        )
 
     @classmethod
     def _source_encode(
@@ -77,13 +76,12 @@ class SourceCondition(Condition):
         value: str,
     ) -> str:
         field: radarr.Field = next(f for f in api_schema.fields if f.name == "value")
-        for option in field.select_options:
-            option = cast(radarr.SelectOption, option)
+        for o in field.select_options:
+            option = cast(radarr.SelectOption, o)
             if option.name.upper() == value:
                 return option.value
-        else:
-            supported_sources = ", ".join(o.name.upper() for o in field.select_options)
-            raise ValueError(
-                f"Invalid or unsupported custom format source name '{value}'"
-                f", supported sources are: {supported_sources}"
-            )
+        supported_sources = ", ".join(o.name.upper() for o in field.select_options)
+        raise ValueError(
+            f"Invalid or unsupported custom format source name '{value}'"
+            f", supported sources are: {supported_sources}",
+        )

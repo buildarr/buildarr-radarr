@@ -15,7 +15,7 @@
 from __future__ import annotations
 
 from logging import getLogger
-from typing import Any, List, Dict, Union
+from typing import Any, Dict, List, Union
 
 import radarr
 
@@ -35,7 +35,6 @@ from .conditions.release_title import ReleaseTitleCondition
 from .conditions.resolution import ResolutionCondition
 from .conditions.size import SizeCondition
 from .conditions.source import SourceCondition
-
 
 logger = getLogger(__name__)
 
@@ -105,7 +104,7 @@ class CustomFormat(RadarrConfigBase):
                     api_condition=api_condition,
                 )
                 for api_condition in api_customformat.specifications
-            }
+            },
         )
 
     def _create_remote(
@@ -145,8 +144,7 @@ class CustomFormat(RadarrConfigBase):
         api_customformat: radarr.CustomFormatResource,
     ) -> bool:
         api_conditions: Dict[str, radarr.CustomFormatSpecificationSchema] = {
-            api_condition.name: api_condition
-            for api_condition in api_customformat.specifications
+            api_condition.name: api_condition for api_condition in api_customformat.specifications
         }
         changed, config_attrs = self.get_update_remote_attrs(
             tree=tree,
@@ -176,7 +174,7 @@ class CustomFormat(RadarrConfigBase):
                 api_condition_dicts.append(api_condition_dict)
                 if condition_changed:
                     changed = True
-        for condition_name, condition in remote.conditions.items():
+        for condition_name in remote.conditions.keys():
             if condition_name not in self.conditions:
                 condition_tree = f"{tree}.conditions[{repr(condition_name)}]"
                 if self.delete_unmanaged_conditions:

@@ -20,14 +20,13 @@ Radarr plugin notification connection configuration.
 from __future__ import annotations
 
 from logging import getLogger
-from typing import Any, Dict, List, Literal, Mapping, Optional, Set, Tuple, Type, Union
+from typing import Any, Dict, List, Mapping
 
 import radarr
 
 from buildarr.config import RemoteMapEntry
-from buildarr.types import BaseEnum, NonEmptyStr, Password, Port
-from pydantic import AnyHttpUrl, ConstrainedInt, Field, NameEmail, SecretStr
-from typing_extensions import Annotated, Self
+from buildarr.types import NonEmptyStr
+from typing_extensions import Self
 
 from ....api import radarr_api_client
 from ....secrets import RadarrSecrets

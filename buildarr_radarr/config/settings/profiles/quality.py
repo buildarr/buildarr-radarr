@@ -51,9 +51,7 @@ class QualityGroup(RadarrConfigBase):
             "id": group_id,
             "name": self.name,
             "allowed": True,
-            "items": [
-                _quality_str_encoder(api_qualities, member, True) for member in self.members
-            ],
+            "items": [_quality_str_encoder(api_qualities, member, True) for member in self.members],
         }
 
 

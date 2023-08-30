@@ -131,16 +131,15 @@ class KodiEmbyMetadata(Metadata):
         value: int,
     ) -> str:
         field: radarr.Field = next(f for f in api_schema.fields if f.name == "value")
-        for option in field.select_options:
-            option = cast(radarr.SelectOption, option)
+        for o in field.select_options:
+            option = cast(radarr.SelectOption, o)
             if option.value == value:
                 return cls._movie_metadata_language_parse(option.name)
-        else:
-            supported_languages = ", ".join(f"{o.name} ({o.value})" for o in field.select_options)
-            raise ValueError(
-                f"Invalid movie metadata language value {value} during decoding"
-                f", supported languages are: {supported_languages}"
-            )
+        supported_languages = ", ".join(f"{o.name} ({o.value})" for o in field.select_options)
+        raise ValueError(
+            f"Invalid movie metadata language value {value} during decoding"
+            f", supported languages are: {supported_languages}",
+        )
 
     @classmethod
     def _movie_metadata_language_encode(
@@ -149,18 +148,17 @@ class KodiEmbyMetadata(Metadata):
         value: str,
     ) -> str:
         field: radarr.Field = next(f for f in api_schema.fields if f.name == "value")
-        for option in field.select_options:
-            option = cast(radarr.SelectOption, option)
+        for o in field.select_options:
+            option = cast(radarr.SelectOption, o)
             if cls._movie_metadata_language_parse(option.name) == value:
                 return option.value
-        else:
-            supported_languages = ", ".join(
-                (
-                    f"{o.name} ({cls._movie_metadata_language_parse(o.name)})"
-                    for o in field.select_options
-                ),
-            )
-            raise ValueError(
-                f"Invalid or unsupported movie metadata language name '{value}'"
-                f", supported languages are: {supported_languages}"
-            )
+        supported_languages = ", ".join(
+            (
+                f"{o.name} ({cls._movie_metadata_language_parse(o.name)})"
+                for o in field.select_options
+            ),
+        )
+        raise ValueError(
+            f"Invalid or unsupported movie metadata language name '{value}'"
+            f", supported languages are: {supported_languages}",
+        )

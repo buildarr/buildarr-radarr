@@ -19,19 +19,14 @@ Prowlarr plugin notification connection configuration.
 
 from __future__ import annotations
 
-from logging import getLogger
-from typing import Any, Dict, List, Literal, Mapping, Optional, Set, Tuple, Type, Union
-
-import prowlarr
+from typing import List, Literal
 
 from buildarr.config import RemoteMapEntry
-from buildarr.types import BaseEnum, NonEmptyStr, Password, Port
-from pydantic import AnyHttpUrl, ConstrainedInt, Field, NameEmail, SecretStr
-from typing_extensions import Annotated, Self
+from buildarr.types import NonEmptyStr, Password, Port
+from pydantic import Field, NameEmail
+from typing_extensions import Annotated
 
-from ...api import prowlarr_api_client
-from ...secrets import ProwlarrSecrets
-from ..types import ProwlarrConfigBase
+from .base import Notification
 
 
 class EmailNotification(Notification):

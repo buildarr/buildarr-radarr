@@ -10,7 +10,7 @@
 #
 # You should have received a copy of the GNU General Public License along with Buildarr.
 # If not, see <https://www.gnu.org/licenses/>.
-
+from __future__ import annotations
 
 from typing import List, Literal, cast
 
@@ -47,7 +47,7 @@ class IndexerFlagCondition(Condition):
                     "encoder": lambda v: cls._flag_encode(api_schema, v),
                     "is_field": True,
                 },
-            )
+            ),
         ]
 
     @classmethod
@@ -64,16 +64,15 @@ class IndexerFlagCondition(Condition):
         value: int,
     ) -> str:
         field: radarr.Field = next(f for f in api_schema.fields if f.name == "value")
-        for option in field.select_options:
-            option = cast(radarr.SelectOption, option)
+        for o in field.select_options:
+            option = cast(radarr.SelectOption, o)
             if option.value == value:
                 return cls._flag_parse(option.name)
-        else:
-            supported_flags = ", ".join(f"{o.name} ({o.value})" for o in field.select_options)
-            raise ValueError(
-                f"Invalid custom format flag value {value} during decoding"
-                f", supported flags are: {supported_flags}"
-            )
+        supported_flags = ", ".join(f"{o.name} ({o.value})" for o in field.select_options)
+        raise ValueError(
+            f"Invalid custom format flag value {value} during decoding"
+            f", supported flags are: {supported_flags}",
+        )
 
     @classmethod
     def _flag_encode(
@@ -82,15 +81,14 @@ class IndexerFlagCondition(Condition):
         value: str,
     ) -> str:
         field: radarr.Field = next(f for f in api_schema.fields if f.name == "value")
-        for option in field.select_options:
-            option = cast(radarr.SelectOption, option)
+        for o in field.select_options:
+            option = cast(radarr.SelectOption, o)
             if cls._flag_parse(option.name) == value:
                 return option.value
-        else:
-            supported_flags = ", ".join(
-                (f"{o.name} ({cls._flag_parse(o.name)})" for o in field.select_options),
-            )
-            raise ValueError(
-                f"Invalid or unsupported custom format flag name '{value}'"
-                f", supported flags are: {supported_flags}"
-            )
+        supported_flags = ", ".join(
+            (f"{o.name} ({cls._flag_parse(o.name)})" for o in field.select_options),
+        )
+        raise ValueError(
+            f"Invalid or unsupported custom format flag name '{value}'"
+            f", supported flags are: {supported_flags}",
+        )

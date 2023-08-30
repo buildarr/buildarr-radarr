@@ -13,7 +13,7 @@
 
 
 """
-Prowlarr plugin notification connection configuration.
+Trakt user import list configuration.
 """
 
 
@@ -22,25 +22,41 @@ from __future__ import annotations
 from typing import List, Literal
 
 from buildarr.config import RemoteMapEntry
-from buildarr.types import Password
+from buildarr.types import BaseEnum
 
-from .base import Notification
+from .base import TraktImportList
 
 
-class NotifiarrNotification(Notification):
+class TraktUserListType(BaseEnum):
     """
-    Send media update and health alert emails via the Notifiarr notification service.
-    """
-
-    type: Literal["notifiarr"] = "notifiarr"
-    """
-    Type value associated with this kind of connection.
+    Types of user list in Trakt.
     """
 
-    api_key: Password
+    user_watch_list = 0
+    user_watched_list = 1
+    user_collection_list = 2
+
+
+class TraktUserImportList(TraktImportList):
     """
-    API key to use to authenticate with Notifiarr.
+    Import a user-level list from Trakt.
     """
 
-    _implementation: str = "Notifiarr"
-    _remote_map: List[RemoteMapEntry] = [("api_key", "apiKey", {"is_field": True})]
+    type: Literal["trakt-user"] = "trakt-user"
+    """
+    Type value associated with this kind of import list.
+    """
+
+    list_type: TraktUserListType = TraktUserListType.user_watch_list
+    """
+    User list type to import.
+
+    Values:
+
+    * `user_watch_list`
+    * `user_watched_list`
+    * `user_collection_list`
+    """
+
+    _implementation: str = "TraktUserImport"
+    _remote_map: List[RemoteMapEntry] = [("list_type", "traktListType", {"is_field": True})]

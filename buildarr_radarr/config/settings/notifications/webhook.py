@@ -24,6 +24,7 @@ from typing import List, Literal
 from buildarr.config import RemoteMapEntry
 from buildarr.types import BaseEnum, NonEmptyStr, Password
 from pydantic import AnyHttpUrl
+
 from .base import Notification
 
 

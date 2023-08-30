@@ -10,7 +10,7 @@
 #
 # You should have received a copy of the GNU General Public License along with Buildarr.
 # If not, see <https://www.gnu.org/licenses/>.
-
+from __future__ import annotations
 
 from typing import List, Literal, cast
 
@@ -19,7 +19,6 @@ import radarr
 from buildarr.config import RemoteMapEntry
 
 from .....types import UpperCaseNonEmptyStr
-
 from .base import Condition
 
 
@@ -48,7 +47,7 @@ class QualityModifierCondition(Condition):
                     "encoder": lambda v: cls._modifier_encode(api_schema, v),
                     "is_field": True,
                 },
-            )
+            ),
         ]
 
     @classmethod
@@ -58,18 +57,17 @@ class QualityModifierCondition(Condition):
         value: int,
     ) -> str:
         field: radarr.Field = next(f for f in api_schema.fields if f.name == "value")
-        for option in field.select_options:
-            option = cast(radarr.SelectOption, option)
+        for o in field.select_options:
+            option = cast(radarr.SelectOption, o)
             if option.value == value:
                 return option.name.upper()
-        else:
-            supported_modifiers = ", ".join(
-                (f"{o.name.upper()} ({o.value})" for o in field.select_options),
-            )
-            raise ValueError(
-                f"Invalid custom format quality modifier value {value} during decoding"
-                f", supported quality modifiers are: {supported_modifiers}"
-            )
+        supported_modifiers = ", ".join(
+            (f"{o.name.upper()} ({o.value})" for o in field.select_options),
+        )
+        raise ValueError(
+            f"Invalid custom format quality modifier value {value} during decoding"
+            f", supported quality modifiers are: {supported_modifiers}",
+        )
 
     @classmethod
     def _modifier_encode(
@@ -78,13 +76,12 @@ class QualityModifierCondition(Condition):
         value: str,
     ) -> str:
         field: radarr.Field = next(f for f in api_schema.fields if f.name == "value")
-        for option in field.select_options:
-            option = cast(radarr.SelectOption, option)
+        for o in field.select_options:
+            option = cast(radarr.SelectOption, o)
             if option.name.upper() == value:
                 return option.value
-        else:
-            supported_modifiers = ", ".join(o.name.upper() for o in field.select_options)
-            raise ValueError(
-                f"Invalid or unsupported custom format modifier name '{value}'"
-                f", supported modifiers are: {supported_modifiers}"
-            )
+        supported_modifiers = ", ".join(o.name.upper() for o in field.select_options)
+        raise ValueError(
+            f"Invalid or unsupported custom format modifier name '{value}'"
+            f", supported modifiers are: {supported_modifiers}",
+        )

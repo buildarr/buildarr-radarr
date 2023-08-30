@@ -32,8 +32,8 @@ from .lists import RadarrListsSettings
 from .media_management import RadarrMediaManagementSettings
 from .metadata import RadarrMetadataSettings
 from .notifications import RadarrNotificationsSettings
-from .quality import RadarrQualitySettings
 from .profiles import RadarrProfilesSettings
+from .quality import RadarrQualitySettings
 from .tags import RadarrTagsSettings
 from .ui import RadarrUISettings
 

@@ -20,7 +20,7 @@ Radarr plugin import list settings configuration.
 from __future__ import annotations
 
 from logging import getLogger
-from typing import Dict, List, Tuple, Type, Union
+from typing import Dict, List, Union
 
 import radarr
 
@@ -31,67 +31,57 @@ from typing_extensions import Annotated, Self
 from ....api import radarr_api_client
 from ....secrets import RadarrSecrets
 from ...types import RadarrConfigBase
-from .advanced import CustomlistImportist, RssImportList, StevenluCustomImportList
-from .base import ImportList
+from .couchpotato import CouchpotatoImportList
 from .exclusions import ListExclusionsSettings
-from .other import ImdbListImportList, StevenluListImportList
-from .plex import PlexWatchlistImportList
-from .program import CouchpotatoImportList, RadarrImportList
-from .tmdb import (
-    TmdbCompanyImportList,
-    TmdbKeywordImportList,
-    TmdbListImportList,
-    TmdbPersonImportList,
-    TmdbPopularImportList,
-    TmdbUserImportList,
-)
-from .trakt import TraktListImportList, TraktPopularlistImportList, TraktUserImportList
+from .plex.watchlist import PlexWatchlistImportList
+from .radarr_import import RadarrImportList
+from .trakt.list import TraktListImportList
+from .trakt.popular_list import TraktPopularListImportList
+from .trakt.user import TraktUserImportList
 
 logger = getLogger(__name__)
 
-
-IMPORTLIST_TYPES: Tuple[Type[ImportList], ...] = (
-    CouchpotatoImportList,
-    RadarrImportList,
-    TmdbCompanyImportList,
-    TmdbKeywordImportList,
-    TmdbListImportList,
-    TmdbPersonImportList,
-    TmdbPopularImportList,
-    TmdbUserImportList,
-    TraktListImportList,
-    TraktPopularlistImportList,
-    TraktUserImportList,
-    PlexWatchlistImportList,
-    ImdbListImportList,
-    StevenluListImportList,
-    CustomlistImportist,
-    RssImportList,
-    StevenluCustomImportList,
-)
-
-IMPORTLIST_TYPE_MAP: Dict[str, Type[ImportList]] = {
-    importlist_type._implementation.lower(): importlist_type for importlist_type in IMPORTLIST_TYPES
+IMPORTLIST_TYPE_MAP = {
+    importlist_type._implementation: importlist_type  # type: ignore[attr-defined]
+    for importlist_type in (
+        CouchpotatoImportList,
+        RadarrImportList,
+        # TmdbCompanyImportList,
+        # TmdbKeywordImportList,
+        # TmdbListImportList,
+        # TmdbPersonImportList,
+        # TmdbPopularImportList,
+        # TmdbUserImportList,
+        TraktListImportList,
+        TraktPopularListImportList,
+        TraktUserImportList,
+        PlexWatchlistImportList,
+        # ImdbListImportList,
+        # StevenluListImportList,
+        # CustomlistImportist,
+        # RssImportList,
+        # StevenluCustomImportList,
+    )
 }
 
 ImportListType = Union[
     CouchpotatoImportList,
     RadarrImportList,
-    TmdbCompanyImportList,
-    TmdbKeywordImportList,
-    TmdbListImportList,
-    TmdbPersonImportList,
-    TmdbPopularImportList,
-    TmdbUserImportList,
+    # TmdbCompanyImportList,
+    # TmdbKeywordImportList,
+    # TmdbListImportList,
+    # TmdbPersonImportList,
+    # TmdbPopularImportList,
+    # TmdbUserImportList,
     TraktListImportList,
-    TraktPopularlistImportList,
+    TraktPopularListImportList,
     TraktUserImportList,
     PlexWatchlistImportList,
-    ImdbListImportList,
-    StevenluListImportList,
-    CustomlistImportist,
-    RssImportList,
-    StevenluCustomImportList,
+    # ImdbListImportList,
+    # StevenluListImportList,
+    # CustomlistImportist,
+    # RssImportList,
+    # StevenluCustomImportList,
 ]
 
 
@@ -170,8 +160,8 @@ class RadarrListsSettings(RadarrConfigBase):
             **cls.get_local_attrs(cls._remote_map, api_importlist_config_dict),
             exclusions=ListExclusionsSettings.from_remote(secrets),
             definitions={
-                api_importlist.name: IMPORTLIST_TYPE_MAP[
-                    api_importlist.implementation.lower()
+                api_importlist.name: IMPORTLIST_TYPE_MAP[  # type: ignore[attr-defined]
+                    api_importlist.implementation
                 ]._from_remote(
                     quality_profile_ids=quality_profile_ids,
                     tag_ids=tag_ids,
@@ -245,7 +235,6 @@ class RadarrListsSettings(RadarrConfigBase):
         remote: Self,
         check_unmanaged: bool = False,
     ) -> bool:
-        updated = False
         with radarr_api_client(secrets=secrets) as api_client:
             importlist_api = radarr.ImportListApi(api_client)
             api_importlist_schemas = importlist_api.list_import_list_schema()
@@ -278,11 +267,12 @@ class RadarrListsSettings(RadarrConfigBase):
             elif importlist._update_remote(
                 tree=importlist_tree,
                 secrets=secrets,
-                remote=remote.definitions[importlist_name]._resolve_from_local(
-                    name=importlist_name,
-                    local=importlist,  # type: ignore[arg-type]
-                    ignore_nonexistent_ids=True,
-                ),
+                remote=remote.definitions[importlist_name],  # type: ignore[arg-type]
+                # remote=remote.definitions[importlist_name]._resolve_from_local(
+                #     name=importlist_name,
+                #     local=importlist,  # type: ignore[arg-type]
+                #     ignore_nonexistent_ids=True,
+                # ),
                 quality_profile_ids=quality_profile_ids,
                 tag_ids=tag_ids,
                 api_importlist=api_importlists[importlist_name],

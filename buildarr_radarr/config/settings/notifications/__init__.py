@@ -20,18 +20,34 @@ Radarr plugin notification connection configuration.
 from __future__ import annotations
 
 from logging import getLogger
-from typing import Any, Dict, List, Literal, Mapping, Optional, Set, Tuple, Type, Union
+from typing import Dict, Union
 
-import prowlarr
+import radarr
 
-from buildarr.config import RemoteMapEntry
-from buildarr.types import BaseEnum, NonEmptyStr, Password, Port
-from pydantic import AnyHttpUrl, ConstrainedInt, Field, NameEmail, SecretStr
+from pydantic import Field
 from typing_extensions import Annotated, Self
 
-from ...api import prowlarr_api_client
-from ...secrets import RadarrSecrets
-from ..types import RadarrConfigBase
+from ....api import radarr_api_client
+from ....secrets import RadarrSecrets
+from ...types import RadarrConfigBase
+from .apprise import AppriseNotification
+from .boxcar import BoxcarNotification
+from .custom_script import CustomScriptNotification
+from .discord import DiscordNotification
+from .email import EmailNotification
+from .gotify import GotifyNotification
+from .join import JoinNotification
+from .mailgun import MailgunNotification
+from .notifiarr import NotifiarrNotification
+from .ntfy import NtfyNotification
+from .prowl import ProwlNotification
+from .pushbullet import PushbulletNotification
+from .pushover import PushoverNotification
+from .sendgrid import SendgridNotification
+from .slack import SlackNotification
+from .telegram import TelegramNotification
+from .twitter import TwitterNotification
+from .webhook import WebhookNotification
 
 logger = getLogger(__name__)
 
@@ -39,7 +55,7 @@ logger = getLogger(__name__)
 NotificationType = Union[
     AppriseNotification,
     BoxcarNotification,
-    CustomscriptNotification,
+    CustomScriptNotification,
     DiscordNotification,
     EmailNotification,
     GotifyNotification,
@@ -57,12 +73,12 @@ NotificationType = Union[
     WebhookNotification,
 ]
 
-NOTIFICATION_TYPE_MAP: Dict[str, Type[Notification]] = {
-    notification_type._implementation.lower(): notification_type
+NOTIFICATION_TYPE_MAP = {
+    notification_type._implementation: notification_type  # type: ignore[attr-defined]
     for notification_type in (
         AppriseNotification,
         BoxcarNotification,
-        CustomscriptNotification,
+        CustomScriptNotification,
         DiscordNotification,
         EmailNotification,
         GotifyNotification,
@@ -102,17 +118,17 @@ class RadarrNotificationsSettings(RadarrConfigBase):
 
     @classmethod
     def from_remote(cls, secrets: RadarrSecrets) -> Self:
-        with prowlarr_api_client(secrets=secrets) as api_client:
-            api_notifications = prowlarr.NotificationApi(api_client).list_notification()
+        with radarr_api_client(secrets=secrets) as api_client:
+            api_notifications = radarr.NotificationApi(api_client).list_notification()
             tag_ids: Dict[str, int] = (
-                {tag.label: tag.id for tag in prowlarr.TagApi(api_client).list_tag()}
+                {tag.label: tag.id for tag in radarr.TagApi(api_client).list_tag()}
                 if any(api_notification.tags for api_notification in api_notifications)
                 else {}
             )
         return cls(
             definitions={
-                api_notification.name: NOTIFICATION_TYPE_MAP[
-                    api_notification.implementation.lower()
+                api_notification.name: NOTIFICATION_TYPE_MAP[  # type: ignore[attr-defined]
+                    api_notification.implementation
                 ]._from_remote(
                     tag_ids=tag_ids,
                     remote_attrs=api_notification.to_dict(),
@@ -131,15 +147,15 @@ class RadarrNotificationsSettings(RadarrConfigBase):
         # Track whether or not any changes have been made on the remote instance.
         changed = False
         # Pull API objects and metadata required during the update operation.
-        with prowlarr_api_client(secrets=secrets) as api_client:
-            notification_api = prowlarr.NotificationApi(api_client)
+        with radarr_api_client(secrets=secrets) as api_client:
+            notification_api = radarr.NotificationApi(api_client)
             api_notification_schemas = notification_api.list_notification_schema()
-            api_notifications: Dict[str, prowlarr.NotificationResource] = {
+            api_notifications: Dict[str, radarr.NotificationResource] = {
                 api_notification.name: api_notification
                 for api_notification in notification_api.list_notification()
             }
             tag_ids: Dict[str, int] = (
-                {tag.label: tag.id for tag in prowlarr.TagApi(api_client).list_tag()}
+                {tag.label: tag.id for tag in radarr.TagApi(api_client).list_tag()}
                 if any(api_notification.tags for api_notification in self.definitions.values())
                 or any(api_notification.tags for api_notification in remote.definitions.values())
                 else {}
@@ -175,10 +191,10 @@ class RadarrNotificationsSettings(RadarrConfigBase):
         # Track whether or not any changes have been made on the remote instance.
         changed = False
         # Pull API objects and metadata required during the update operation.
-        with prowlarr_api_client(secrets=secrets) as api_client:
+        with radarr_api_client(secrets=secrets) as api_client:
             notification_ids: Dict[str, int] = {
                 api_notification.name: api_notification.id
-                for api_notification in prowlarr.NotificationApi(api_client).list_notification()
+                for api_notification in radarr.NotificationApi(api_client).list_notification()
             }
         # Traverse the remote definitions, and see if there are any remote definitions
         # that do not exist in the local configuration.

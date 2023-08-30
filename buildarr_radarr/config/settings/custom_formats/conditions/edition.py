@@ -10,9 +10,9 @@
 #
 # You should have received a copy of the GNU General Public License along with Buildarr.
 # If not, see <https://www.gnu.org/licenses/>.
+from __future__ import annotations
 
-
-from typing import Literal, List
+from typing import List, Literal
 
 from buildarr.config import RemoteMapEntry
 from buildarr.types import NonEmptyStr

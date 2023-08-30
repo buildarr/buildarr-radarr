@@ -13,111 +13,30 @@
 
 
 """
-Radarr plugin import list settings configuration.
+Radarr import list configuration.
 """
 
 
 from __future__ import annotations
 
-import re
-
-from datetime import datetime
 from logging import getLogger
-from urllib.parse import urlparse
-from typing import (
-    Any,
-    Dict,
-    Iterable,
-    List,
-    Literal,
-    Mapping,
-    Optional,
-    Set,
-    Tuple,
-    Type,
-    Union,
-    cast,
-)
-
-import radarr
+from typing import Any, Dict, Iterable, List, Literal, Mapping, Optional, Set, Union, cast
 
 from buildarr.config import RemoteMapEntry
 from buildarr.state import state
-from buildarr.types import BaseEnum, InstanceName, NonEmptyStr, Password, Port
-from pydantic import AnyHttpUrl, ConstrainedStr, Field, PositiveInt, validator
-from typing_extensions import Annotated, Self
+from buildarr.types import InstanceName, NonEmptyStr
+from pydantic import AnyHttpUrl, Field, PositiveInt, validator
+from typing_extensions import Self
 
 from ....api import radarr_api_client
 from ....secrets import RadarrSecrets
 from ....types import ArrApiKey
-from ...types import RadarrConfigBase, TraktAuthUser
 from .base import ImportList
 
 logger = getLogger(__name__)
 
 
-class ProgramImportList(ImportList):
-    pass
-
-
-class CouchpotatoImportList(ProgramImportList):
-    """ """
-
-    type: Literal["couchpotato"] = "couchpotato"
-    """
-    Type value associated with this kind of import list.
-    """
-
-    host: NonEmptyStr
-    """ """
-
-    port: Port = 5050  # type: ignore[assignment]
-    """ """
-
-    use_ssl: bool = False
-    """ """
-
-    url_base: Optional[str] = None
-    """ """
-
-    api_key: Password
-    """ """
-
-    only_wanted: bool = True
-    """
-    Only add wanted movies.
-    """
-
-    _remote_map: List[RemoteMapEntry] = [
-        (
-            "host",
-            "link",
-            {
-                "is_field": True,
-                "decoder": lambda v: urlparse(v).netloc,
-                "root_encoder": lambda vs: f"{'https' if vs.use_ssl else 'http'}://{vs.host}",
-            },
-        ),
-        ("port", "port", {"is_field": True}),
-        (
-            "use_ssl",
-            "link",
-            {
-                "is_field": True,
-                "decoder": lambda v: urlparse(v).scheme == "https",
-                "root_encoder": lambda vs: f"{'https' if vs.use_ssl else 'http'}://{vs.host}",
-            },
-        ),
-        (
-            "url_base",
-            "urlBase",
-            {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
-        ),
-        ("only_wanted", "onlyActive", {"is_field": True}),
-    ]
-
-
-class RadarrImportList(ProgramImportList):
+class RadarrImportList(ImportList):
     """
     Import items from another Radarr instance.
 
@@ -130,15 +49,11 @@ class RadarrImportList(ProgramImportList):
             # Global import list options.
             root_folder: "/path/to/videos"
             quality_profile: "HD/SD"
-            language_profile: "English"
             # Radarr import list-specific options.
             full_url: "http://radarr:7878"
             api_key: "1a2b3c4d5e1a2b3c4d5e1a2b3c4d5e1a"
             source_quality_profiles:
               - 11
-              ...
-            source_language_profiles:
-              - 22
               ...
             source_tags:
               - 33
@@ -149,7 +64,7 @@ class RadarrImportList(ProgramImportList):
     using `instance_name`.
 
     In this mode, you can specify `instance_name` in place of `api_key`,
-    and use actual names for the source language profiles, quality profiles and tags,
+    and use actual names for the source quality profiles and tags,
     instead of IDs which are subject to change.
 
     Here is an example of one Radarr instance (`radarr-4k`) referencing
@@ -172,7 +87,6 @@ class RadarrImportList(ProgramImportList):
                   # Global import list options.
                   root_folder: "/path/to/videos"
                   quality_profile: "4K"
-                  language_profile: "English"
                   # Radarr import list-specific options.
                   full_url: "http://radarr:7878"
                   instance_name: "radarr-hd"
@@ -214,7 +128,10 @@ class RadarrImportList(ProgramImportList):
     this attribute is required.
     """
 
-    source_quality_profiles: Set[Union[PositiveInt, NonEmptyStr]] = set()
+    source_quality_profiles: Set[Union[PositiveInt, NonEmptyStr]] = Field(
+        set(),
+        alias="source_quality_profile_ids",
+    )
     """
     List of IDs (or names) of the quality profiles on the source instance to import from.
 
@@ -226,7 +143,7 @@ class RadarrImportList(ProgramImportList):
     (which is still valid as an alias), and added support for quality profile names.
     """
 
-    source_tags: Set[Union[PositiveInt, NonEmptyStr]] = set()
+    source_tags: Set[Union[PositiveInt, NonEmptyStr]] = Field(set(), alias="source_tag_ids")
     """
     List of IDs (or names) of the tags on the source instance to import from.
 
@@ -241,27 +158,17 @@ class RadarrImportList(ProgramImportList):
     _implementation: str = "RadarrImport"
     _remote_map: List[RemoteMapEntry] = []
 
-    @validator("api_key")
-    def required_if_instance_name_undefined(
-        cls,
-        value: Optional[ArrApiKey],
-        values: Mapping[str, Any],
-    ) -> Optional[ArrApiKey]:
-        if not values.get("instance_name", None) and not value:
-            raise ValueError("required if 'instance_name' is undefined")
-        return value
-
     @classmethod
-    def _get_remote_map(
+    def _get_base_remote_map(
         cls,
         quality_profile_ids: Mapping[str, int],
         tag_ids: Mapping[str, int],
-        source_quality_profile_ids: Mapping[str, int],
-        source_tag_ids: Mapping[str, int],
-        source_resources_required: bool = True,
     ) -> List[RemoteMapEntry]:
         return [
-            *super()._get_base_remote_map(quality_profile_ids, tag_ids),
+            *super()._get_base_remote_map(
+                quality_profile_ids=quality_profile_ids,
+                tag_ids=tag_ids,
+            ),
             ("full_url", "baseUrl", {"is_field": True}),
             ("api_key", "apiKey", {"is_field": True}),
             (
@@ -317,6 +224,54 @@ class RadarrImportList(ProgramImportList):
             List of resource API objects
         """
         return api_get(cls._get_secrets(instance_name), f"/api/v3/{resource_type}")
+
+    @validator("api_key", always=True)
+    def validate_api_key(
+        cls,
+        value: Optional[ArrApiKey],
+        values: Mapping[str, Any],
+    ) -> Optional[ArrApiKey]:
+        """
+        Validate the `api_key` attribute after parsing.
+
+        Args:
+            value (Optional[str]): `api_key` value.
+            values (Mapping[str, Any]): Currently parsed attributes. `instance_name` is checked.
+
+        Raises:
+            ValueError: If `api_key` is undefined when `instance_name` is also undefined.
+
+        Returns:
+            Validated `api_key` value
+        """
+        if not values.get("instance_name", None) and not value:
+            raise ValueError("required if 'instance_name' is undefined")
+        return value
+
+    @validator("source_quality_profiles", "source_tags", each_item=True)
+    def validate_source_resource_ids(
+        cls,
+        value: Union[int, str],
+        values: Dict[str, Any],
+    ) -> Union[int, str]:
+        """
+        Validate that all resource references are IDs (integers) if `instance_name` is undefined.
+
+        Args:
+            value (Union[int, str]): Resource reference (ID or name).
+            values (Mapping[str, Any]): Currently parsed attributes. `instance_name` is checked.
+
+        Raises:
+            ValueError: If the resource reference is a name and `instance_name` is undefined.
+
+        Returns:
+            Validated resource reference
+        """
+        if not values.get("instance_name", None) and not isinstance(value, int):
+            raise ValueError(
+                "values must be IDs (not names) if 'instance_name' is undefined",
+            )
+        return value
 
     @classmethod
     def _encode_source_resources(
@@ -388,15 +343,6 @@ class RadarrImportList(ProgramImportList):
             resource_description="quality profile",
             ignore_nonexistent_ids=ignore_nonexistent_ids,
         )
-        source_language_profiles = self._resolve_resources(
-            name=name,
-            instance_name=instance_name,
-            source_resources=self.source_language_profiles,
-            resource_type_int="language_profile",
-            resource_type_ext="languageprofile",
-            resource_description="language profile",
-            ignore_nonexistent_ids=ignore_nonexistent_ids,
-        )
         source_tags = self._resolve_resources(
             name=name,
             instance_name=instance_name,
@@ -412,7 +358,6 @@ class RadarrImportList(ProgramImportList):
                 "instance_name": instance_name,
                 "api_key": api_key,
                 "source_quality_profiles": source_quality_profiles,
-                "source_language_profiles": source_language_profiles,
                 "source_tags": source_tags,
             },
         )
@@ -496,96 +441,3 @@ class RadarrImportList(ProgramImportList):
                 )
                 raise ValueError(error_message)
         return resolved_source_resources
-
-    @classmethod
-    def _from_remote(
-        cls,
-        quality_profile_ids: Mapping[str, int],
-        tag_ids: Mapping[str, int],
-        remote_attrs: Mapping[str, Any],
-    ) -> Self:
-        return cls(
-            **cls.get_local_attrs(
-                (
-                    cls._get_base_remote_map(quality_profile_ids, tag_ids)
-                    + cls._remote_map
-                ),
-                remote_attrs,
-            ),
-        )
-
-    def _get_api_schema(self, schemas: Iterable[radarr.ImportListResource]) -> Dict[str, Any]:
-        return {
-            k: v
-            for k, v in next(
-                s for s in schemas if s.implementation.lower() == self._implementation.lower()
-            )
-            .to_dict()
-            .items()
-            if k not in ["id", "name"]
-        }
-
-    def _create_remote(
-        self,
-        tree: str,
-        secrets: RadarrSecrets,
-        api_importlist_schemas: Iterable[radarr.ImportListResource],
-        quality_profile_ids: Mapping[str, int],
-        tag_ids: Mapping[str, int],
-        importlist_name: str,
-    ) -> None:
-        api_schema = self._get_api_schema(api_importlist_schemas)
-        set_attrs = self.get_create_remote_attrs(
-            tree=tree,
-            remote_map=self._get_base_remote_map(quality_profile_ids, tag_ids) + self._remote_map,
-        )
-        field_values: Dict[str, Any] = {
-            field["name"]: field["value"] for field in set_attrs["fields"]
-        }
-        set_attrs["fields"] = [
-            ({**f, "value": field_values[f["name"]]} if f["name"] in field_values else f)
-            for f in api_schema["fields"]
-        ]
-        remote_attrs = {"name": importlist_name, **api_schema, **set_attrs}
-        with radarr_api_client(secrets=secrets) as api_client:
-            radarr.ImportListApi(api_client).create_import_list(
-                import_list_resource=radarr.ImportListResource.from_dict(remote_attrs),
-            )
-
-    def _update_remote(
-        self,
-        tree: str,
-        secrets: RadarrSecrets,
-        remote: Self,
-        quality_profile_ids: Mapping[str, int],
-        tag_ids: Mapping[str, int],
-        api_importlist: radarr.ImportListResource,
-    ) -> bool:
-        updated, updated_attrs = self.get_update_remote_attrs(
-            tree,
-            remote,
-            self._get_base_remote_map(quality_profile_ids, tag_ids) + self._remote_map,
-            check_unmanaged=True,
-            set_unchanged=True,
-        )
-        if updated:
-            if "fields" in updated_attrs:
-                updated_fields: Dict[str, Any] = {
-                    field["name"]: field["value"] for field in updated_attrs["fields"]
-                }
-                updated_attrs["fields"] = [
-                    (
-                        {**f, "value": updated_fields[f["name"]]}
-                        if f["name"] in updated_fields
-                        else f
-                    )
-                    for f in api_importlist.to_dict()["fields"]
-                ]
-            remote_attrs = {**api_importlist.to_dict(), **updated_attrs}
-            with radarr_api_client(secrets=secrets) as api_client:
-                radarr.ImportListApi(api_client).update_import_list(
-                    id=str(api_importlist.id),
-                    import_list_resource=radarr.ImportListResource.from_dict(remote_attrs),
-                )
-            return True
-        return False

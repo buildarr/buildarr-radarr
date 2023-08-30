@@ -13,7 +13,7 @@
 
 
 """
-Prowlarr plugin notification connection configuration.
+Plex import list base configuration.
 """
 
 
@@ -24,23 +24,29 @@ from typing import List, Literal
 from buildarr.config import RemoteMapEntry
 from buildarr.types import Password
 
-from .base import Notification
+from .base import PlexImportList
 
 
-class NotifiarrNotification(Notification):
+class PlexWatchlistImportList(PlexImportList):
     """
-    Send media update and health alert emails via the Notifiarr notification service.
-    """
-
-    type: Literal["notifiarr"] = "notifiarr"
-    """
-    Type value associated with this kind of connection.
+    Import items from a Plex watchlist.
     """
 
-    api_key: Password
+    type: Literal["plex-watchlist"] = "plex-watchlist"
     """
-    API key to use to authenticate with Notifiarr.
+    Type value associated with this kind of import list.
     """
 
-    _implementation: str = "Notifiarr"
-    _remote_map: List[RemoteMapEntry] = [("api_key", "apiKey", {"is_field": True})]
+    access_token: Password
+    """
+    Plex authentication token.
+
+    If unsure on where to find this token,
+    [follow this guide from Plex.tv][PATH].
+    [PATH]: https://support.plex.tv/articles/204059436-finding-an-authentication-token-x-plex-token
+    """
+
+    _implementation_name: str = "Plex Watchlist"
+    _implementation: str = "PlexImport"
+    _config_contract: str = "PlexListSettings"
+    _remote_map: List[RemoteMapEntry] = [("access_token", "accessToken", {"is_field": True})]

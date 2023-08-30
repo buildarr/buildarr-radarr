@@ -10,14 +10,15 @@
 #
 # You should have received a copy of the GNU General Public License along with Buildarr.
 # If not, see <https://www.gnu.org/licenses/>.
-
+from __future__ import annotations
 
 from typing import List, Literal, cast
-from buildarr.config import RemoteMapEntry
-from pydantic import validator
 
-from buildarr.types import NonEmptyStr
 import radarr
+
+from buildarr.config import RemoteMapEntry
+from buildarr.types import NonEmptyStr
+from pydantic import validator
 
 from .base import Condition
 
@@ -64,7 +65,7 @@ class LanguageCondition(Condition):
                     "encoder": lambda v: cls._language_encode(api_schema, v),
                     "is_field": True,
                 },
-            )
+            ),
         ]
 
     @classmethod
@@ -74,16 +75,15 @@ class LanguageCondition(Condition):
         value: int,
     ) -> str:
         field: radarr.Field = next(f for f in api_schema.fields if f.name == "value")
-        for option in field.select_options:
-            option = cast(radarr.SelectOption, option)
+        for o in field.select_options:
+            option = cast(radarr.SelectOption, o)
             if option.value == value:
                 return cls._language_parse(option.name)
-        else:
-            supported_languages = ", ".join(f"{o.name} ({o.value})" for o in field.select_options)
-            raise ValueError(
-                f"Invalid custom format language value {value} during decoding"
-                f", supported languages are: {supported_languages}"
-            )
+        supported_languages = ", ".join(f"{o.name} ({o.value})" for o in field.select_options)
+        raise ValueError(
+            f"Invalid custom format language value {value} during decoding"
+            f", supported languages are: {supported_languages}",
+        )
 
     @classmethod
     def _language_encode(
@@ -92,15 +92,14 @@ class LanguageCondition(Condition):
         value: str,
     ) -> str:
         field: radarr.Field = next(f for f in api_schema.fields if f.name == "value")
-        for option in field.select_options:
-            option = cast(radarr.SelectOption, option)
+        for o in field.select_options:
+            option = cast(radarr.SelectOption, o)
             if cls._language_parse(option.name) == value:
                 return option.value
-        else:
-            supported_languages = ", ".join(
-                (f"{o.name} ({cls._language_parse(o.name)})" for o in field.select_options),
-            )
-            raise ValueError(
-                f"Invalid or unsupported custom format language name '{value}'"
-                f", supported languages are: {supported_languages}"
-            )
+        supported_languages = ", ".join(
+            (f"{o.name} ({cls._language_parse(o.name)})" for o in field.select_options),
+        )
+        raise ValueError(
+            f"Invalid or unsupported custom format language name '{value}'"
+            f", supported languages are: {supported_languages}",
+        )

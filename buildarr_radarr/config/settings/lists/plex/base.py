@@ -13,34 +13,18 @@
 
 
 """
-Prowlarr plugin notification connection configuration.
+Plex import list base configuration.
 """
 
 
 from __future__ import annotations
 
-from typing import List, Literal
-
-from buildarr.config import RemoteMapEntry
-from buildarr.types import Password
-
-from .base import Notification
+from ..base import ImportList
 
 
-class NotifiarrNotification(Notification):
+class PlexImportList(ImportList):
     """
-    Send media update and health alert emails via the Notifiarr notification service.
+    Base class for import lists based on Plex.
     """
 
-    type: Literal["notifiarr"] = "notifiarr"
-    """
-    Type value associated with this kind of connection.
-    """
-
-    api_key: Password
-    """
-    API key to use to authenticate with Notifiarr.
-    """
-
-    _implementation: str = "Notifiarr"
-    _remote_map: List[RemoteMapEntry] = [("api_key", "apiKey", {"is_field": True})]
+    pass

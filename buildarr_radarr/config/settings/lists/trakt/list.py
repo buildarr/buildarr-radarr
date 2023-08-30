@@ -13,7 +13,7 @@
 
 
 """
-Prowlarr plugin notification connection configuration.
+Trakt list import list configuration.
 """
 
 
@@ -22,25 +22,27 @@ from __future__ import annotations
 from typing import List, Literal
 
 from buildarr.config import RemoteMapEntry
-from buildarr.types import Password
+from buildarr.types import NonEmptyStr
 
-from .base import Notification
+from .base import TraktImportList
 
 
-class NotifiarrNotification(Notification):
+class TraktListImportList(TraktImportList):
     """
-    Send media update and health alert emails via the Notifiarr notification service.
-    """
-
-    type: Literal["notifiarr"] = "notifiarr"
-    """
-    Type value associated with this kind of connection.
+    Import an arbitrary list from Trakt into Radarr.
     """
 
-    api_key: Password
+    type: Literal["trakt-list"] = "trakt-list"
     """
-    API key to use to authenticate with Notifiarr.
+    Type value associated with this kind of import list.
     """
 
-    _implementation: str = "Notifiarr"
-    _remote_map: List[RemoteMapEntry] = [("api_key", "apiKey", {"is_field": True})]
+    list_name: NonEmptyStr
+    """
+    Name of the list to import.
+
+    The list must be public, or you must have access to the list.
+    """
+
+    _implementation: str = "TraktListImport"
+    _remote_map: List[RemoteMapEntry] = [("list_name", "listName", {"is_field": True})]

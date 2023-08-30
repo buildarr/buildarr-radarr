@@ -19,11 +19,11 @@ Radarr plugin metadata settings configuration.
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Mapping, Optional, Tuple, Type
+from typing import Dict, List
 
 import radarr
 
-from buildarr.config import ConfigBase, RemoteMapEntry
+from buildarr.config import RemoteMapEntry
 from typing_extensions import Self
 
 from ....api import radarr_api_client
@@ -34,7 +34,6 @@ from .emby_legacy import EmbyLegacyMetadata
 from .kodi_emby import KodiEmbyMetadata
 from .roksbox import RoksboxMetadata
 from .wdtv import WdtvMetadata
-
 
 METADATA_TYPE_MAP = {
     metadata_type._implementation: metadata_type  # type: ignore[attr-defined]

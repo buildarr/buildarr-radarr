@@ -19,11 +19,11 @@ Radarr plugin metadata settings configuration.
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Mapping, Optional, Tuple, Type
+from typing import Any, Dict, List
 
 import radarr
 
-from buildarr.config import ConfigBase, RemoteMapEntry
+from buildarr.config import RemoteMapEntry
 from typing_extensions import Self
 
 from ....api import radarr_api_client
