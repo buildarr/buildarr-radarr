@@ -14,6 +14,7 @@
 
 from typing import List, Literal, cast
 from buildarr.config import RemoteMapEntry
+from pydantic import validator
 
 from buildarr.types import NonEmptyStr
 import radarr
@@ -33,6 +34,23 @@ class LanguageCondition(Condition):
     _implementation: Literal["LanguageSpecification"] = "LanguageSpecification"
 
     @classmethod
+    def _language_parse(cls, value: str) -> str:
+        # Results:
+        #   1. English -> english
+        #   2. english -> english
+        #   3. ENGLISH -> english
+        #   4. Portuguese (Brazil) -> portuguese-brazil
+        #   5. portuguese_brazil -> portuguese-brazil
+        #   6. PORTUGUESE-BRAZIL -> portuguese-brazil
+        return "-".join(
+            value.lower().replace("_", "-").replace("()", "").split(" ", maxsplit=2),
+        )
+
+    @validator("language")
+    def validate_language(cls, value: str) -> str:
+        return cls._language_parse(value)
+
+    @classmethod
     def _get_remote_map(
         cls,
         api_schema: radarr.CustomFormatSpecificationSchema,
@@ -48,19 +66,6 @@ class LanguageCondition(Condition):
                 },
             )
         ]
-
-    @classmethod
-    def _language_parse(cls, value: str) -> str:
-        # Results:
-        #   1. English -> english
-        #   2. english -> english
-        #   3. ENGLISH -> english
-        #   4. Portuguese (Brazil) -> portuguese-brazil
-        #   5. portuguese_brazil -> portuguese-brazil
-        #   6. PORTUGUESE-BRAZIL -> portuguese-brazil
-        return "-".join(
-            value.lower().replace("_", "-").replace("()", "").split(" ", maxsplit=2),
-        )
 
     @classmethod
     def _language_decode(

@@ -30,6 +30,7 @@ from .general import RadarrGeneralSettings
 from .indexers import RadarrIndexersSettings
 from .lists import RadarrListsSettings
 from .media_management import RadarrMediaManagementSettings
+from .metadata import RadarrMetadataSettings
 from .notifications import RadarrNotificationsSettings
 from .quality import RadarrQualitySettings
 from .profiles import RadarrProfilesSettings
@@ -53,7 +54,7 @@ class RadarrSettings(RadarrConfigBase):
     download_clients: RadarrDownloadClientsSettings = RadarrDownloadClientsSettings()
     lists: RadarrListsSettings = RadarrListsSettings()
     notifications: RadarrNotificationsSettings = RadarrNotificationsSettings()
-    # metadata: RadarrMetadataSettings = RadarrMetadataSettings()
+    metadata: RadarrMetadataSettings = RadarrMetadataSettings()
     tags: RadarrTagsSettings = RadarrTagsSettings()
     general: RadarrGeneralSettings = RadarrGeneralSettings()
     ui: RadarrUISettings = RadarrUISettings()
@@ -72,69 +73,75 @@ class RadarrSettings(RadarrConfigBase):
         return any(
             [
                 self.tags.update_remote(
-                    f"{tree}.tags",
-                    secrets,
-                    remote.tags,
+                    tree=f"{tree}.tags",
+                    secrets=secrets,
+                    remote=remote.tags,
                     check_unmanaged=check_unmanaged,
                 ),
                 self.quality.update_remote(
-                    f"{tree}.quality",
-                    secrets,
-                    remote.quality,
+                    tree=f"{tree}.quality",
+                    secrets=secrets,
+                    remote=remote.quality,
+                    check_unmanaged=check_unmanaged,
+                ),
+                self.custom_formats.update_remote(
+                    tree=f"{tree}.custom_formats",
+                    secrets=secrets,
+                    remote=remote.custom_formats,
                     check_unmanaged=check_unmanaged,
                 ),
                 self.download_clients.update_remote(
-                    f"{tree}.download_clients",
-                    secrets,
-                    remote.download_clients,
+                    tree=f"{tree}.download_clients",
+                    secrets=secrets,
+                    remote=remote.download_clients,
                     check_unmanaged=check_unmanaged,
                 ),
                 self.indexers.update_remote(
-                    f"{tree}.indexers",
-                    secrets,
-                    remote.indexers,
+                    tree=f"{tree}.indexers",
+                    secrets=secrets,
+                    remote=remote.indexers,
                     check_unmanaged=check_unmanaged,
                 ),
                 self.media_management.update_remote(
-                    f"{tree}.media_management",
-                    secrets,
-                    remote.media_management,
+                    tree=f"{tree}.media_management",
+                    secrets=secrets,
+                    remote=remote.media_management,
                     check_unmanaged=check_unmanaged,
                 ),
                 self.profiles.update_remote(
-                    f"{tree}.profiles",
-                    secrets,
-                    remote.profiles,
+                    tree=f"{tree}.profiles",
+                    secrets=secrets,
+                    remote=remote.profiles,
                     check_unmanaged=check_unmanaged,
                 ),
                 self.lists.update_remote(
-                    f"{tree}.lists",
-                    secrets,
-                    remote.lists,
+                    tree=f"{tree}.lists",
+                    secrets=secrets,
+                    remote=remote.lists,
                     check_unmanaged=check_unmanaged,
                 ),
                 self.notifications.update_remote(
-                    f"{tree}.notifications",
-                    secrets,
-                    remote.notifications,
+                    tree=f"{tree}.notifications",
+                    secrets=secrets,
+                    remote=remote.notifications,
                     check_unmanaged=check_unmanaged,
                 ),
                 self.metadata.update_remote(
-                    f"{tree}.metadata",
-                    secrets,
-                    remote.metadata,
+                    tree=f"{tree}.metadata",
+                    secrets=secrets,
+                    remote=remote.metadata,
                     check_unmanaged=check_unmanaged,
                 ),
                 self.general.update_remote(
-                    f"{tree}.general",
-                    secrets,
-                    remote.general,
+                    tree=f"{tree}.general",
+                    secrets=secrets,
+                    remote=remote.general,
                     check_unmanaged=check_unmanaged,
                 ),
                 self.ui.update_remote(
-                    f"{tree}.ui",
-                    secrets,
-                    remote.ui,
+                    tree=f"{tree}.ui",
+                    secrets=secrets,
+                    remote=remote.ui,
                     check_unmanaged=check_unmanaged,
                 ),
             ],
@@ -148,22 +155,27 @@ class RadarrSettings(RadarrConfigBase):
                 self.profiles.delete_remote(f"{tree}.profiles", secrets, remote.profiles),
                 self.indexers.delete_remote(f"{tree}.indexers", secrets, remote.indexers),
                 self.download_clients.delete_remote(
-                    f"{tree}.download_clients",
-                    secrets,
-                    remote.download_clients,
+                    tree=f"{tree}.download_clients",
+                    secrets=secrets,
+                    remote=remote.download_clients,
                 ),
                 self.media_management.delete_remote(
-                    f"{tree}.media_management",
-                    secrets,
-                    remote.media_management,
+                    tree=f"{tree}.media_management",
+                    secrets=secrets,
+                    remote=remote.media_management,
                 ),
                 self.lists.delete_remote(f"{tree}.lists", secrets, remote.lists),
                 self.notifications.delete_remote(
-                    f"{tree}.notifications",
-                    secrets,
-                    remote.notifications,
+                    tree=f"{tree}.notifications",
+                    secrets=secrets,
+                    remote=remote.notifications,
                 ),
                 self.tags.delete_remote(f"{tree}.tags", secrets, remote.tags),
+                self.custom_formats.delete_remote(
+                    tree=f"{tree}.custom_formats",
+                    secrets=secrets,
+                    remote=remote.custom_formats,
+                ),
                 self.quality.delete_remote(f"{tree}.quality", secrets, remote.quality),
                 self.metadata.delete_remote(f"{tree}.metadata", secrets, remote.metadata),
                 self.general.delete_remote(f"{tree}.general", secrets, remote.general),
