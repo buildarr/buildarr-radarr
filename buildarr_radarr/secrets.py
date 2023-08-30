@@ -29,7 +29,7 @@ from buildarr.secrets import SecretsPlugin
 from buildarr.types import NonEmptyStr, Port
 from radarr.exceptions import UnauthorizedException
 
-from .api import get_initialize_js, radarr_api_client
+from .api import api_get, radarr_api_client
 from .exceptions import RadarrAPIError, RadarrSecretsUnauthorizedError
 from .types import ArrApiKey, RadarrProtocol
 
@@ -80,7 +80,7 @@ class RadarrSecrets(_RadarrSecrets):
             api_key = config.api_key
         else:
             try:
-                api_key = get_initialize_js(host_url=config.host_url)["apiKey"]
+                api_key = api_get(config.host_url, "/initialize.json")["apiKey"]
             except RadarrAPIError as err:
                 if err.status_code == HTTPStatus.UNAUTHORIZED:
                     raise RadarrSecretsUnauthorizedError(

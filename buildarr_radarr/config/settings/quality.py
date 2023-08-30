@@ -35,10 +35,9 @@ from ...api import radarr_api_client
 from ...secrets import RadarrSecrets
 from ..types import RadarrConfigBase
 
+QUALITYDEFINITION_MIN_MAX = 399
+QUALITYDEFINITION_PREFERRED_MAX = 399
 QUALITYDEFINITION_MAX = 400
-"""
-The upper bound for the maximum quality allowed in a quality definition.
-"""
 
 
 class QualityDefinition(RadarrConfigBase):
@@ -55,7 +54,7 @@ class QualityDefinition(RadarrConfigBase):
     will also be `Bluray-480p`)
     """
 
-    min: float = Field(..., ge=0, le=QUALITYDEFINITION_MAX - 1)
+    min: float = Field(..., ge=0, le=QUALITYDEFINITION_MIN_MAX)
     """
     The minimum Megabytes per Minute (MB/min) a quality can have.
     Must be set at least 1MB/min lower than `max`.
@@ -63,7 +62,7 @@ class QualityDefinition(RadarrConfigBase):
     The minimum value is `0`, and the maximum value is `399`.
     """
 
-    preferred: Optional[float] = Field(..., ge=0, le=QUALITYDEFINITION_MAX - 1)
+    preferred: Optional[float] = Field(..., ge=0, le=QUALITYDEFINITION_PREFERRED_MAX)
     """ """
 
     max: Optional[float] = Field(..., ge=1, le=QUALITYDEFINITION_MAX)
@@ -76,32 +75,32 @@ class QualityDefinition(RadarrConfigBase):
     If not set to `None`, the minimum value is `1`, and the maximum value is `400`.
     """
 
+    @validator("preferred")
+    def validate_preferred(cls, value: Optional[float]) -> Optional[float]:
+        if value is None or value >= QUALITYDEFINITION_PREFERRED_MAX:
+            return None
+        return value
+
     @validator("max")
     def validate_min_max(
         cls,
         value: Optional[float],
         values: Mapping[str, Any],
     ) -> Optional[float]:
-        quality_max = value
-        quality_max_val = (
-            min(quality_max, QUALITYDEFINITION_MAX)
-            if quality_max is not None
-            else QUALITYDEFINITION_MAX
-        )
+        if value is None or value >= QUALITYDEFINITION_MAX:
+            return None
         try:
             quality_min: float = values["min"]
-            if quality_max_val - quality_min < 1:
+            if (value - quality_min) < 1:
                 raise ValueError(
-                    f"'max' ({quality_max_val}) is not "
+                    f"'max' ({value}) is not "
                     f"at least 1 greater than 'min' ({quality_min})",
                 )
         except KeyError:
             # `min` only doesn't exist when it failed type validation.
             # If it doesn't exist, skip validation that uses it.
             pass
-        if quality_max_val >= QUALITYDEFINITION_MAX:
-            return None
-        return quality_max
+        return value
 
     @validator("max")
     def validate_preferred_max(
@@ -109,26 +108,23 @@ class QualityDefinition(RadarrConfigBase):
         value: Optional[float],
         values: Mapping[str, Any],
     ) -> Optional[float]:
-        quality_max = value
-        quality_max_val = (
-            min(quality_max, QUALITYDEFINITION_MAX)
-            if quality_max is not None
-            else QUALITYDEFINITION_MAX
-        )
+        if value is None or value >= QUALITYDEFINITION_MAX:
+            return None
         try:
-            quality_preferred: float = values["preferred"]
-            if quality_max_val - quality_preferred < 1:
+            try:
+                quality_preferred = float(values["preferred"])
+            except TypeError:
+                quality_preferred = QUALITYDEFINITION_PREFERRED_MAX
+            if (value - quality_preferred) < 1:
                 raise ValueError(
-                    f"'max' ({quality_max_val}) is not "
+                    f"'max' ({value}) is not "
                     f"at least 1 greater than 'preferred' ({quality_preferred})",
                 )
         except KeyError:
             # `preferred` only doesn't exist when it failed type validation.
             # If it doesn't exist, skip validation that uses it.
             pass
-        if quality_max_val >= QUALITYDEFINITION_MAX:
-            return None
-        return quality_max
+        return value
 
 
 class RadarrQualitySettings(ConfigBase):

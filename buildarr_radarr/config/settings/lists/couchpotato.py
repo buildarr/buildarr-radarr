@@ -56,6 +56,7 @@ class CouchpotatoImportList(ImportList):
     Only add wanted movies.
     """
 
+    _implementation: Literal["CouchPotatoImport"] = "CouchPotatoImport"
     _remote_map: List[RemoteMapEntry] = [
         (
             "host",

@@ -26,7 +26,6 @@ from contextlib import contextmanager
 from http import HTTPStatus
 from typing import TYPE_CHECKING, cast
 
-import json5
 import requests
 
 from buildarr.state import state
@@ -35,13 +34,11 @@ from radarr import ApiClient, Configuration
 from .exceptions import RadarrAPIError
 
 if TYPE_CHECKING:
-    from typing import Any, Dict, Generator, Optional
+    from typing import Any, Dict, Generator, Optional, Union
 
     from .secrets import RadarrSecrets
 
 logger = logging.getLogger(__name__)
-
-INITIALIZE_JS_RES_PATTERN = re.compile(r"(?s)^window\.Radarr = ({.*});$")
 
 
 @contextmanager
@@ -80,47 +77,111 @@ def radarr_api_client(
         yield api_client
 
 
-def get_initialize_js(host_url: str, api_key: Optional[str] = None) -> Dict[str, Any]:
+def api_get(
+    secrets: Union[RadarrSecrets, str],
+    api_url: str,
+    session: Optional[requests.Session] = None,
+    use_api_key: bool = True,
+    expected_status_code: HTTPStatus = HTTPStatus.OK,
+) -> Any:
     """
-    Get the Radarr session initialisation metadata, including the API key.
+    Send a `GET` request to a Radarr instance.
 
     Args:
-        host_url (str): Radarr instance URL.
-        api_key (str): Radarr instance API key, if required. Defaults to `None`.
+        secrets (Union[RadarrSecrets, str]): Radarr secrets metadata, or host URL.
+        api_url (str): Radarr API command.
+        expected_status_code (HTTPStatus): Expected response status. Defaults to `200 OK`.
 
     Returns:
-        Session initialisation metadata
+        Response object
     """
 
-    url = f"{host_url}/initialize.js"
+    if isinstance(secrets, str):
+        host_url = secrets
+        api_key = None
+    else:
+        host_url = secrets.host_url
+        api_key = secrets.api_key.get_secret_value() if use_api_key else None
+    url = f"{host_url}/{api_url.lstrip('/')}"
 
     logger.debug("GET %s", url)
 
-    res = requests.get(
+    if not session:
+        session = requests.Session()
+    res = session.get(
         url,
         headers={"X-Api-Key": api_key} if api_key else None,
         timeout=state.request_timeout,
-        allow_redirects=False,
     )
-
-    if res.status_code != HTTPStatus.OK:
-        logger.debug("GET %s -> status_code=%i res=%s", url, res.status_code, res.text)
-        if res.status_code in (HTTPStatus.UNAUTHORIZED, HTTPStatus.FOUND):
-            status_code: int = HTTPStatus.UNAUTHORIZED
-            error_message = "Unauthorized"
-        else:
-            status_code = res.status_code
-            error_message = f"Unexpected response with error code {res.status_code}: {res.text}"
-        raise RadarrAPIError(
-            f"Unable to retrieve 'initialize.js': {error_message}",
-            status_code=status_code,
-        )
-
-    res_match = re.match(INITIALIZE_JS_RES_PATTERN, res.text)
-    if not res_match:
-        raise RuntimeError(f"No matches for 'initialize.js' parsing: {res.text}")
-    res_json = json5.loads(res_match.group(1))
+    res_json = res.json()
 
     logger.debug("GET %s -> status_code=%i res=%s", url, res.status_code, repr(res_json))
 
+    if res.status_code != expected_status_code:
+        api_error(method="GET", url=url, response=res)
+
     return res_json
+
+
+def api_error(
+    method: str,
+    url: str,
+    response: requests.Response,
+    parse_response: bool = True,
+) -> None:
+    """
+    Process an error response from the Radarr API.
+
+    Args:
+        method (str): HTTP method.
+        url (str): API command URL.
+        response (requests.Response): Response metadata.
+        parse_response (bool, optional): Parse response error JSON. Defaults to True.
+
+    Raises:
+        Radarr API exception
+    """
+
+    error_message = (
+        f"Unexpected response with status code {response.status_code} from from '{method} {url}':"
+    )
+    if parse_response:
+        res_json = response.json()
+        try:
+            error_message += f" {_api_error(res_json)}"
+        except TypeError:
+            for error in res_json:
+                error_message += f"\n{_api_error(error)}"
+        except KeyError:
+            error_message += f" {res_json}"
+    raise RadarrAPIError(error_message, status_code=response.status_code)
+
+
+def _api_error(res_json: Any) -> str:
+    """
+    Generate an error message from a response object.
+
+    Args:
+        res_json (Any): Response object
+
+    Returns:
+        String containing one or more error messages
+    """
+
+    try:
+        try:
+            error_message = f"{res_json['propertyName']}: {res_json['errorMessage']}"
+            try:
+                error_message += f" (attempted value: {res_json['attemptedValue']})"
+            except KeyError:
+                pass
+            return error_message
+        except KeyError:
+            pass
+        try:
+            return f"{res_json['message']}\n{res_json['description']}"
+        except KeyError:
+            pass
+        return res_json["message"]
+    except KeyError:
+        return f"(Unsupported error JSON format) {res_json}"

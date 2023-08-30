@@ -39,22 +39,19 @@ class Condition(RadarrConfigBase):
     _remote_map: List[RemoteMapEntry] = []
 
     @classmethod
-    def _get_remote_map(
-        cls,
-        api_schema: radarr.CustomFormatSpecificationSchema,
-    ) -> List[RemoteMapEntry]:
+    def _get_remote_map(cls, api_schema_dict: Dict[str, Any]) -> List[RemoteMapEntry]:
         return []
 
     @classmethod
     def _from_remote(
         cls,
-        api_schema: radarr.CustomFormatSpecificationSchema,
+        api_schema_dict: Dict[str, Any],
         api_condition: radarr.CustomFormatSpecificationSchema,
     ) -> Self:
         return cls(
             **cls.get_local_attrs(
                 remote_map=(
-                    cls._base_remote_map + cls._get_remote_map(api_schema) + cls._remote_map
+                    cls._base_remote_map + cls._get_remote_map(api_schema_dict) + cls._remote_map
                 ),
                 remote_attrs=api_condition.to_dict(),
             ),
@@ -63,13 +60,13 @@ class Condition(RadarrConfigBase):
     def _create_remote(
         self,
         tree: str,
-        api_schema: radarr.CustomFormatSpecificationSchema,
+        api_schema_dict: Dict[str, Any],
         condition_name: str,
     ) -> Dict[str, Any]:
         set_attrs = self.get_create_remote_attrs(
             tree=tree,
             remote_map=(
-                self._base_remote_map + self._get_remote_map(api_schema) + self._remote_map
+                self._base_remote_map + self._get_remote_map(api_schema_dict) + self._remote_map
             ),
         )
         field_values: Dict[str, Any] = {
@@ -77,14 +74,14 @@ class Condition(RadarrConfigBase):
         }
         set_attrs["fields"] = [
             ({**f.to_dict(), "value": field_values[f.name]} if f.name in field_values else f)
-            for f in api_schema.fields
+            for f in api_schema_dict["fields"]
         ]
-        return {"name": condition_name, **api_schema, **set_attrs}
+        return {"name": condition_name, **api_schema_dict, **set_attrs}
 
     def _update_remote(
         self,
         tree: str,
-        api_schema: radarr.CustomFormatSpecificationSchema,
+        api_schema_dict: Dict[str, Any],
         remote: Self,
         api_condition: radarr.CustomFormatSpecificationSchema,
     ) -> Tuple[bool, Dict[str, Any]]:
@@ -92,7 +89,7 @@ class Condition(RadarrConfigBase):
             tree=tree,
             remote=remote,
             remote_map=(
-                self._base_remote_map + self._get_remote_map(api_schema) + self._remote_map
+                self._base_remote_map + self._get_remote_map(api_schema_dict) + self._remote_map
             ),
         )
         if updated:

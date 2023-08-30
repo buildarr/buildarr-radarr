@@ -15,7 +15,7 @@
 from __future__ import annotations
 
 from logging import getLogger
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Union, cast
 
 import radarr
 
@@ -23,7 +23,7 @@ from buildarr.config import RemoteMapEntry
 from pydantic import Field
 from typing_extensions import Annotated, Self
 
-from ....api import radarr_api_client
+from ....api import api_get, radarr_api_client
 from ....secrets import RadarrSecrets
 from ...types import RadarrConfigBase
 from .conditions.edition import EditionCondition
@@ -88,7 +88,7 @@ class CustomFormat(RadarrConfigBase):
     def _from_remote(
         cls,
         secrets: RadarrSecrets,
-        api_condition_schemas: Dict[str, radarr.CustomFormatSpecificationSchema],
+        api_condition_schema_dicts: Dict[str, Dict[str, Any]],
         api_customformat: radarr.CustomFormatResource,
     ) -> CustomFormat:
         return cls(
@@ -100,10 +100,13 @@ class CustomFormat(RadarrConfigBase):
                 api_condition.name: CONDITION_TYPE_MAP[  # type: ignore[attr-defined]
                     api_condition.implementation
                 ]._from_remote(
-                    api_schema=api_condition_schemas[api_condition.implementation],
+                    api_schema_dict=api_condition_schema_dicts[api_condition.implementation],
                     api_condition=api_condition,
                 )
-                for api_condition in api_customformat.specifications
+                for api_condition in cast(
+                    List[radarr.CustomFormatSpecificationSchema],
+                    api_customformat.specifications,
+                )
             },
         )
 
@@ -111,7 +114,7 @@ class CustomFormat(RadarrConfigBase):
         self,
         tree: str,
         secrets: RadarrSecrets,
-        api_condition_schemas: Dict[str, radarr.CustomFormatSpecificationSchema],
+        api_condition_schema_dicts: Dict[str, Dict[str, Any]],
         customformat_name: str,
     ) -> None:
         with radarr_api_client(secrets=secrets) as api_client:
@@ -123,7 +126,9 @@ class CustomFormat(RadarrConfigBase):
                         "specifications": [
                             condition._create_remote(
                                 tree=f"{tree}.conditions[{repr(condition_name)}]",
-                                api_schema=api_condition_schemas[condition._implementation],
+                                api_schema_dict=api_condition_schema_dicts[
+                                    condition._implementation
+                                ],
                                 condition_name=condition_name,
                             )
                             for condition_name, condition in sorted(
@@ -140,7 +145,7 @@ class CustomFormat(RadarrConfigBase):
         tree: str,
         secrets: RadarrSecrets,
         remote: Self,
-        api_condition_schemas: Dict[str, radarr.CustomFormatSpecificationSchema],
+        api_condition_schema_dicts: Dict[str, Dict[str, Any]],
         api_customformat: radarr.CustomFormatResource,
     ) -> bool:
         api_conditions: Dict[str, radarr.CustomFormatSpecificationSchema] = {
@@ -159,7 +164,7 @@ class CustomFormat(RadarrConfigBase):
                 api_condition_dicts.append(
                     condition._create_remote(
                         tree=condition_tree,
-                        api_schema=api_condition_schemas[condition._implementation],
+                        api_schema_dict=api_condition_schema_dicts[condition._implementation],
                         condition_name=condition_name,
                     ),
                 )
@@ -167,7 +172,7 @@ class CustomFormat(RadarrConfigBase):
             else:
                 condition_changed, api_condition_dict = condition._update_remote(
                     tree=condition_tree,
-                    api_schema=api_condition_schemas[condition._implementation],
+                    api_schema_dict=api_condition_schema_dicts[condition._implementation],
                     remote=remote.conditions[condition_name],  # type: ignore[arg-type]
                     api_condition=api_conditions[condition_name],
                 )
@@ -226,15 +231,17 @@ class RadarrCustomFormatsSettings(RadarrConfigBase):
     def from_remote(cls, secrets: RadarrSecrets) -> Self:
         with radarr_api_client(secrets=secrets) as api_client:
             customformat_api = radarr.CustomFormatApi(api_client)
-            api_condition_schemas: Dict[str, radarr.CustomFormatSpecificationSchema] = {
-                schema.implementation: schema
-                for schema in radarr.CustomFormatApi(api_client).get_custom_format_schema()
+            # TODO: Replace with CustomFormatApi.get_custom_format_schama when fixed.
+            # https://github.com/devopsarr/radarr-py/issues/36
+            api_condition_schema_dicts: Dict[str, Dict[str, Any]] = {
+                api_schema_dict["implementation"]: api_schema_dict
+                for api_schema_dict in api_get(secrets, "/api/v3/customformat/schema")
             }
             return cls(
                 definitions={
                     api_customformat.name: CustomFormat._from_remote(
                         secrets=secrets,
-                        api_condition_schemas=api_condition_schemas,
+                        api_condition_schema_dicts=api_condition_schema_dicts,
                         api_customformat=api_customformat,
                     )
                     for api_customformat in customformat_api.list_custom_format()
@@ -253,9 +260,11 @@ class RadarrCustomFormatsSettings(RadarrConfigBase):
         # Pull API objects and metadata required during the update operation.
         with radarr_api_client(secrets=secrets) as api_client:
             customformat_api = radarr.CustomFormatApi(api_client)
-            api_condition_schemas: Dict[str, radarr.CustomFormatSpecificationSchema] = {
-                schema.implementation: schema
-                for schema in radarr.CustomFormatApi(api_client).get_custom_format_schema()
+            # TODO: Replace with CustomFormatApi.get_custom_format_schama when fixed.
+            # https://github.com/devopsarr/radarr-py/issues/36
+            api_condition_schema_dicts: Dict[str, Dict[str, Any]] = {
+                api_schema_dict["implementation"]: api_schema_dict
+                for api_schema_dict in api_get(secrets, "/api/v3/customformat/schema")
             }
             api_customformats: Dict[str, radarr.CustomFormatResource] = {
                 api_customformat.name: api_customformat
@@ -271,7 +280,7 @@ class RadarrCustomFormatsSettings(RadarrConfigBase):
                 customformat._create_remote(
                     tree=customformat_tree,
                     secrets=secrets,
-                    api_condition_schemas=api_condition_schemas,
+                    api_condition_schema_dicts=api_condition_schema_dicts,
                     customformat_name=customformat_name,
                 )
                 changed = True
@@ -279,7 +288,7 @@ class RadarrCustomFormatsSettings(RadarrConfigBase):
                 tree=customformat_tree,
                 secrets=secrets,
                 remote=remote.definitions[customformat_name],  # type: ignore[arg-type]
-                api_condition_schemas=api_condition_schemas,
+                api_condition_schema_dicts=api_condition_schema_dicts,
                 api_customformat=api_customformats[customformat_name],
             ):
                 changed = True

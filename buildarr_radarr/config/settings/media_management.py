@@ -209,14 +209,14 @@ class RadarrMediaManagementSettings(RadarrConfigBase):
     """
 
     # Folders
-    create_empty_movie_folders: bool = False
+    create_missing_movie_folders: bool = False
     """
     Create missing movie folders during disk scan.
     """
 
     delete_empty_folders: bool = False
     """
-    Delete empty movie folders during disk scan and when episode files are deleted.
+    Delete empty media folders during disk scan and when episode files are deleted.
     """
 
     # Importing
@@ -361,7 +361,7 @@ class RadarrMediaManagementSettings(RadarrConfigBase):
     ]
     _mediamanagement_remote_map: List[RemoteMapEntry] = [
         # Folders
-        ("create_empty_movie_folders", "createEmptyMovieFolders", {}),
+        ("create_missing_movie_folders", "createEmptyMovieFolders", {}),
         ("delete_empty_folders", "deleteEmptyFolders", {}),
         # Importing
         ("skip_free_space_check", "skipFreeSpaceCheckWhenImporting", {}),
@@ -372,7 +372,7 @@ class RadarrMediaManagementSettings(RadarrConfigBase):
         ("unmonitor_deleted_movies", "autoUnmonitorPreviouslyDownloadedMovies", {}),
         ("propers_and_repacks", "downloadPropersAndRepacks", {}),
         ("analyze_video_files", "enableMediaInfo", {}),
-        ("rescan_series_folder_after_refresh", "rescanAfterRefresh", {}),
+        ("rescan_folder_after_refresh", "rescanAfterRefresh", {}),
         ("change_file_date", "fileDate", {}),
         (
             "recycling_bin",
@@ -393,15 +393,21 @@ class RadarrMediaManagementSettings(RadarrConfigBase):
     @classmethod
     def from_remote(cls, secrets: RadarrSecrets) -> Self:
         with radarr_api_client(secrets=secrets) as api_client:
-            naming_remote_attrs = radarr.NamingConfigApi(api_client).get_naming_config()
-            mediamanagement_remote_attrs = radarr.MediaManagementConfigApi(
+            api_naming_config = radarr.NamingConfigApi(api_client).get_naming_config()
+            api_mediamanagement_config = radarr.MediaManagementConfigApi(
                 api_client,
             ).get_media_management_config()
         return cls(
             # Episode Naming
-            **cls.get_local_attrs(cls._naming_remote_map, naming_remote_attrs),
+            **cls.get_local_attrs(
+                remote_map=cls._naming_remote_map,
+                remote_attrs=api_naming_config.to_dict(),
+            ),
             # All other sections except Root Folders
-            **cls.get_local_attrs(cls._mediamanagement_remote_map, mediamanagement_remote_attrs),
+            **cls.get_local_attrs(
+                remote_map=cls._mediamanagement_remote_map,
+                remote_attrs=api_mediamanagement_config.to_dict(),
+            ),
             # Root Folders
             root_folders=RootFoldersSettings.from_remote(secrets=secrets),
         )

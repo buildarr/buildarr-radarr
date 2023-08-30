@@ -101,7 +101,7 @@ class RadarrInstanceConfig(_RadarrInstanceConfig):
     ```
     """
 
-    port: Port = 9696  # type: ignore[assignment]
+    port: Port = 7878  # type: ignore[assignment]
     """
     Port number of the Radarr instance to connect to.
     """

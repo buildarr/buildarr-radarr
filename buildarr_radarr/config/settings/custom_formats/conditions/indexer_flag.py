@@ -12,7 +12,7 @@
 # If not, see <https://www.gnu.org/licenses/>.
 from __future__ import annotations
 
-from typing import List, Literal, cast
+from typing import Any, Dict, List, Literal, cast
 
 import radarr
 
@@ -34,17 +34,14 @@ class IndexerFlagCondition(Condition):
     _implementation: Literal["IndexerFlagSpecification"] = "IndexerFlagSpecification"
 
     @classmethod
-    def _get_remote_map(
-        cls,
-        api_schema: radarr.CustomFormatSpecificationSchema,
-    ) -> List[RemoteMapEntry]:
+    def _get_remote_map(cls, api_schema_dict: Dict[str, Any]) -> List[RemoteMapEntry]:
         return [
             (
                 "flag",
                 "value",
                 {
-                    "decoder": lambda v: cls._flag_decode(api_schema, v),
-                    "encoder": lambda v: cls._flag_encode(api_schema, v),
+                    "decoder": lambda v: cls._flag_decode(api_schema_dict, v),
+                    "encoder": lambda v: cls._flag_encode(api_schema_dict, v),
                     "is_field": True,
                 },
             ),
@@ -75,12 +72,8 @@ class IndexerFlagCondition(Condition):
         )
 
     @classmethod
-    def _flag_encode(
-        cls,
-        api_schema: radarr.CustomFormatSpecificationSchema,
-        value: str,
-    ) -> str:
-        field: radarr.Field = next(f for f in api_schema.fields if f.name == "value")
+    def _flag_encode(cls, api_schema_dict: Dict[str, Any], value: str) -> str:
+        field: radarr.Field = next(f for f in api_schema_dict["fields"] if f["name"] == "value")
         for o in field.select_options:
             option = cast(radarr.SelectOption, o)
             if cls._flag_parse(option.name) == value:
