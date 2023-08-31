@@ -147,9 +147,8 @@ class RadarrInstanceConfig(_RadarrInstanceConfig):
     def uses_trash_metadata(self) -> bool:
         if self.settings.quality.uses_trash_metadata():
             return True
-        # for release_profile in self.settings.profiles.release_profiles.definitions.values():
-        #     if release_profile.uses_trash_metadata():
-        #         return True
+        if self.settings.custom_formats.uses_trash_metadata():
+            return True
         return False
 
     def render(self) -> Self:
@@ -162,9 +161,8 @@ class RadarrInstanceConfig(_RadarrInstanceConfig):
     def _render(self) -> None:
         if self.settings.quality.uses_trash_metadata():
             self.settings.quality._render()
-        # for rp in self.settings.profiles.release_profiles.definitions.values():
-        #     if rp.uses_trash_metadata():
-        #         rp._render()
+        if self.settings.custom_formats.uses_trash_metadata():
+            self.settings.custom_formats.render()
 
     @classmethod
     def from_remote(cls, secrets: RadarrSecrets) -> Self:

@@ -14,12 +14,16 @@
 
 from __future__ import annotations
 
+import json
+
 from logging import getLogger
-from typing import Any, Dict, List, Union, cast
+from typing import Any, Dict, List, Optional, Union, cast
 
 import radarr
 
-from buildarr.config import RemoteMapEntry
+from buildarr.config import RemoteMapEntry, ConfigTrashIDNotFoundError
+from buildarr.state import state
+from buildarr.types import TrashID
 from pydantic import Field
 from typing_extensions import Annotated, Self
 
@@ -69,6 +73,19 @@ CONDITION_TYPE_MAP = {
 class CustomFormat(RadarrConfigBase):
     """ """
 
+    trash_id: Optional[TrashID] = None
+    """
+    Trash ID of the TRaSH-Guides custom format profile to load default values from.
+
+    If there is an update in the profile, the custom format conditions will be updated accordingly.
+
+    If a condition that is explicitly defined on this custom format in Buildarr has the same name
+    as a condition in the TRaSH-Guides profile, the explicitly defined condition takes precedence.
+    """
+
+    default_score: Optional[int] = None
+    """ """
+
     include_when_renaming: bool = False
     """
     Make available in the `{Custom Formats}` template when renaming media titles.
@@ -80,9 +97,42 @@ class CustomFormat(RadarrConfigBase):
     conditions: Dict[str, Annotated[ConditionType, Field(discriminator="type")]] = {}
     """ """
 
+    # TODO: Validate conditions not empty if `trash_id` is not defined.
+
     _remote_map: List[RemoteMapEntry] = [
         ("include_when_renaming", "includeCustomFormatWhenRenaming", {}),
     ]
+
+    def uses_trash_metadata(self) -> bool:
+        return bool(self.trash_id)
+
+    def _render(self, api_condition_schema_dicts: Dict[str, Dict[str, Any]]) -> None:
+        if not self.trash_id:
+            return
+        for customformat_file in (
+            state.trash_metadata_dir / "docs" / "json" / "radarr" / "cf"
+        ).iterdir():
+            with customformat_file.open() as f:
+                trash_customformat = json.load(f)
+                if cast(str, trash_customformat["trash_id"]).lower() == self.trash_id:
+                    for api_condition_dict in trash_customformat["specifications"]:
+                        condition_name = api_condition_dict["name"]
+                        if condition_name not in self.conditions:
+                            self.conditions[condition_name] = CONDITION_TYPE_MAP[  # type: ignore[attr-defined]
+                                api_condition_dict["implementation"]
+                            ]._from_remote(
+                                api_schema_dict=api_condition_schema_dicts[
+                                    api_condition_dict["implementation"]
+                                ],
+                                api_condition=radarr.CustomFormatSpecificationSchema.from_dict(
+                                    api_condition_dict,
+                                ),
+                            )
+                    self.delete_unmanaged_conditions = True
+                    return
+        raise ConfigTrashIDNotFoundError(
+            f"Unable to find Radarr custom format profile with trash ID '{self.trash_id}'",
+        )
 
     @classmethod
     def _from_remote(
@@ -226,6 +276,22 @@ class RadarrCustomFormatsSettings(RadarrConfigBase):
     """
     Define download clients under this attribute.
     """
+
+    def uses_trash_metadata(self) -> bool:
+        for customformat in self.definitions.values():
+            if customformat.uses_trash_metadata():
+                return True
+        return False
+
+    def _render(self) -> None:
+        with radarr_api_client(secrets=secrets) as api_client:
+            customformat_api = radarr.CustomFormatApi(api_client)
+            # TODO: Replace with CustomFormatApi.get_custom_format_schama when fixed.
+            # https://github.com/devopsarr/radarr-py/issues/36
+            api_condition_schema_dicts: Dict[str, Dict[str, Any]] = {
+                api_schema_dict["implementation"]: api_schema_dict
+                for api_schema_dict in api_get(secrets, "/api/v3/customformat/schema")
+            }
 
     @classmethod
     def from_remote(cls, secrets: RadarrSecrets) -> Self:
