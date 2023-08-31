@@ -48,13 +48,14 @@ class RadarrMetadataSettings(RadarrConfigBase):
     """
 
     certification_country: LowerCaseNonEmptyStr = "us"  # type: ignore[assignment]
+    """ """
 
     emby_legacy = EmbyLegacyMetadata()
     kodi_emby = KodiEmbyMetadata()
     roksbox = RoksboxMetadata()
     wdtv = WdtvMetadata()
 
-    _remote_map: List[RemoteMapEntry] = [("movie_metadata", "movieMetadata", {"is_field": True})]
+    _remote_map: List[RemoteMapEntry] = [("certification_country", "certificationCountry", {})]
 
     @classmethod
     def from_remote(cls, secrets: RadarrSecrets) -> Self:

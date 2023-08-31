@@ -185,7 +185,7 @@ class RadarrIndexersSettings(RadarrConfigBase):
                 else {}
             )
         return cls(
-            **cls.get_local_attrs(cls._remote_map, api_indexer_config),
+            **cls.get_local_attrs(cls._remote_map, api_indexer_config.to_dict()),
             definitions={
                 api_indexer.name: INDEXER_TYPE_MAP[api_indexer.implementation.lower()]._from_remote(
                     downloadclient_ids=downloadclient_ids,

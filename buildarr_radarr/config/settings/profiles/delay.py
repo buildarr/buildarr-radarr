@@ -254,7 +254,8 @@ class DelayProfile(RadarrConfigBase):
         )
         if updated:
             with radarr_api_client(secrets=secrets) as api_client:
-                radarr.DelayProfileApi(api_client).create_delay_profile(
+                radarr.DelayProfileApi(api_client).update_delay_profile(
+                    id=str(api_profile.id),
                     delay_profile_resource=radarr.DelayProfileResource.from_dict(
                         {**api_profile.to_dict(), "order": order, **updated_attrs},
                     ),
@@ -351,30 +352,38 @@ class RadarrDelayProfilesSettings(RadarrConfigBase):
             )
             tag_ids: Dict[str, int] = (
                 {tag.label: tag.id for tag in radarr.TagApi(api_client).list_tag()}
-                if any(api_profile.tags for api_profile in api_profiles)
+                if (
+                    any(profile.tags for profile in self.definitions) or
+                    any(profile.tags for profile in remote.definitions)
+                )
                 else {}
             )
         #
-        for api_index in range(max(len(self.definitions), len(remote.definitions))):
-            local_index = len(self.definitions) - 1 - api_index
-            remote_index = len(remote.definitions) - 1 - api_index
-            # If the index is negative, then there are more delay profiles
+        num_local = len(self.definitions)
+        num_remote = len(remote.definitions)
+        max_num = max(num_local, num_remote)
+        for max_index in range(max_num):
+            local_index = num_local - max_num + max_index
+            remote_index = num_remote - max_num + max_index
+            # If the local index is negative, then there are more delay profiles
             # on the remote than there are defined in the local configuration.
             # Delete those extra delay profiles from the remote.
             if local_index < 0:
                 remote.definitions[remote_index]._delete_remote(
                     tree=f"{tree}.definitions[{local_index}]",
                     secrets=secrets,
-                    profile_id=api_profiles[api_index].id,
+                    profile_id=api_profiles[remote_index].id,
                 )
                 changed = True
-            # If the current index (order) is one that does not exist on the remote, create it.
+            # If the remote index is negative, then there are more delay profiles
+            # defined locally than there are on the remote.
+            # Create the missing delay profiles on the remote.
             elif remote_index < 0:
                 self.definitions[local_index]._create_remote(
                     tree=f"{tree}.definitions[{local_index}]",
                     secrets=secrets,
                     tag_ids=tag_ids,
-                    order=api_index,
+                    order=api_profiles[0].order + abs(remote_index),
                 )
                 changed = True
             # If none of the above conditions checked out, then the current index exists
@@ -385,8 +394,8 @@ class RadarrDelayProfilesSettings(RadarrConfigBase):
                 secrets=secrets,
                 remote=remote.definitions[remote_index],
                 tag_ids=tag_ids,
-                api_profile=api_profiles[api_index],
-                order=api_index,
+                api_profile=api_profiles[remote_index],
+                order=api_profiles[remote_index].order,
             ):
                 changed = True
         #

@@ -30,7 +30,7 @@ from typing_extensions import Self
 
 from ...api import radarr_api_client
 from ...secrets import RadarrSecrets
-from ...types import LowerCaseStr
+from ...types import LowerCaseNonEmptyStr
 from ..types import RadarrConfigBase
 
 
@@ -188,12 +188,13 @@ class RadarrUISettings(RadarrConfigBase):
     """
 
     # Style
-    theme: Theme = Theme.light
+    theme: Theme = Theme.auto
     """
     The theme to use when browsing the Radarr UI.
 
     Values:
 
+    * `auto` (Auto-detect based on browser settings)
     * `light` (Light-coloured theme)
     * `dark` (Dark-coloured theme)
     """
@@ -205,9 +206,14 @@ class RadarrUISettings(RadarrConfigBase):
     """
 
     # Language
-    movie_info_language: LowerCaseStr = "Original"  # type: ignore[assignment]
+    movie_info_language: LowerCaseNonEmptyStr = "english"  # type: ignore[assignment]
+    """
+    The language that Radarr will use for movie information in the UI.
 
-    ui_language: LowerCaseStr = "English"  # type: ignore[assignment]
+    Set to `original` to use the original language of the media.
+    """
+
+    ui_language: LowerCaseNonEmptyStr = "english"  # type: ignore[assignment]
     """
     The display language for the Radarr UI.
 
@@ -248,7 +254,7 @@ class RadarrUISettings(RadarrConfigBase):
                 {
                     "decoder": lambda v: next(
                         language_name
-                        for language_id, language_name in language_ids.items()
+                        for language_name, language_id in language_ids.items()
                         if language_id == v
                     ),
                     "encoder": lambda v: language_ids[v],
@@ -260,7 +266,7 @@ class RadarrUISettings(RadarrConfigBase):
                 {
                     "decoder": lambda v: next(
                         language_name
-                        for language_id, language_name in language_ids.items()
+                        for language_name, language_id in language_ids.items()
                         if language_id == v
                     ),
                     "encoder": lambda v: language_ids[v],

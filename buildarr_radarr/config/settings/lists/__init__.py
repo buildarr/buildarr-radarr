@@ -25,6 +25,7 @@ from typing import Dict, List, Union
 import radarr
 
 from buildarr.config import RemoteMapEntry
+from buildarr.types import BaseEnum
 from pydantic import Field
 from typing_extensions import Annotated, Self
 
@@ -85,6 +86,14 @@ ImportListType = Union[
 ]
 
 
+class CleanLibraryLevel(BaseEnum):
+    disabled = "disabled"
+    log_only = "logOnly"
+    keep_and_unmonitor = "keepAndUnmonitor"
+    remove_and_keep = "removeAndKeep"
+    remove_and_delete = "removeAndDelete"
+
+
 class RadarrListsSettings(RadarrConfigBase):
     """
     Using import lists, Radarr can monitor and import episodes from external sources.
@@ -119,6 +128,9 @@ class RadarrListsSettings(RadarrConfigBase):
     attribute.
     """
 
+    clean_library_level: CleanLibraryLevel = CleanLibraryLevel.disabled
+    """ """
+
     exclusions: ListExclusionsSettings = ListExclusionsSettings()
     """ """
 
@@ -132,10 +144,7 @@ class RadarrListsSettings(RadarrConfigBase):
     Import list definitions go here.
     """
 
-    _remote_map: List[RemoteMapEntry] = [
-        ("list_update_interval", "importListSyncInterval", {}),
-        ("clean_library_level", "listSyncLevel", {}),
-    ]
+    _remote_map: List[RemoteMapEntry] = [("clean_library_level", "listSyncLevel", {})]
 
     @classmethod
     def from_remote(cls, secrets: RadarrSecrets) -> Self:
@@ -235,6 +244,7 @@ class RadarrListsSettings(RadarrConfigBase):
         remote: Self,
         check_unmanaged: bool = False,
     ) -> bool:
+        changed = False
         with radarr_api_client(secrets=secrets) as api_client:
             importlist_api = radarr.ImportListApi(api_client)
             api_importlist_schemas = importlist_api.list_import_list_schema()

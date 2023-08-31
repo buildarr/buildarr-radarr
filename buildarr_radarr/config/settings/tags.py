@@ -59,11 +59,13 @@ class RadarrTagsSettings(RadarrConfigBase):
     tags from either Buildarr or Radarr.
     """
 
+    # TODO: Auto-tagging.
+
     @classmethod
     def from_remote(cls, secrets: RadarrSecrets) -> Self:
         with radarr_api_client(secrets=secrets) as api_client:
             tags = radarr.TagApi(api_client).list_tag()
-        return cls(definitions=[tag.label for tag in tags])
+        return cls(definitions=set([tag.label for tag in tags]))
 
     def update_remote(
         self,
@@ -83,6 +85,6 @@ class RadarrTagsSettings(RadarrConfigBase):
                         logger.debug("%s.definitions[%i]: %s (exists)", tree, i, repr(tag))
                     else:
                         logger.info("%s.definitions[%i]: %s -> (created)", tree, i, repr(tag))
-                        tag_api.create_tag(radarr.TagResource.from_dict({"label": tag}))
+                        tag_api.create_tag(radarr.TagResource(label=tag))
                         changed = True
         return changed

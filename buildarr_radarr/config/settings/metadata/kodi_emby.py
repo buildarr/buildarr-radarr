@@ -109,7 +109,7 @@ class KodiEmbyMetadata(Metadata):
     def _get_remote_map(cls, api_schema: radarr.MetadataResource) -> List[RemoteMapEntry]:
         return [
             ("movie_metadata", "movieMetadata", {"is_field": True}),
-            ("movie_metadata_url", "movieMetadataUrl", {"is_field": True}),
+            ("movie_metadata_url", "movieMetadataURL", {"is_field": True}),
             (
                 "movie_metadata_language",
                 "movieMetadataLanguage",
@@ -130,7 +130,9 @@ class KodiEmbyMetadata(Metadata):
         api_schema: radarr.CustomFormatSpecificationSchema,
         value: int,
     ) -> str:
-        field: radarr.Field = next(f for f in api_schema.fields if f.name == "value")
+        field: radarr.Field = next(
+            (f for f in api_schema.fields if f.name == "movieMetadataLanguage"),
+        )
         for o in field.select_options:
             option = cast(radarr.SelectOption, o)
             if option.value == value:
@@ -147,7 +149,9 @@ class KodiEmbyMetadata(Metadata):
         api_schema: radarr.CustomFormatSpecificationSchema,
         value: str,
     ) -> str:
-        field: radarr.Field = next(f for f in api_schema.fields if f.name == "value")
+        field: radarr.Field = next(
+            (f for f in api_schema.fields if f.name == "movieMetadataLanguage"),
+        )
         for o in field.select_options:
             option = cast(radarr.SelectOption, o)
             if cls._movie_metadata_language_parse(option.name) == value:

@@ -144,6 +144,28 @@ class RadarrInstanceConfig(_RadarrInstanceConfig):
     Configuration options for Radarr itself are set within this structure.
     """
 
+    def uses_trash_metadata(self) -> bool:
+        if self.settings.quality.uses_trash_metadata():
+            return True
+        # for release_profile in self.settings.profiles.release_profiles.definitions.values():
+        #     if release_profile.uses_trash_metadata():
+        #         return True
+        return False
+
+    def render(self) -> Self:
+        if not self.uses_trash_metadata():
+            return self
+        copy = self.copy(deep=True)
+        copy._render()
+        return copy
+
+    def _render(self) -> None:
+        if self.settings.quality.uses_trash_metadata():
+            self.settings.quality._render()
+        # for rp in self.settings.profiles.release_profiles.definitions.values():
+        #     if rp.uses_trash_metadata():
+        #         rp._render()
+
     @classmethod
     def from_remote(cls, secrets: RadarrSecrets) -> Self:
         with radarr_api_client(secrets=secrets) as api_client:

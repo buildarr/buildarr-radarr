@@ -41,7 +41,7 @@ class RoksboxMetadata(Metadata):
     ```
     """
 
-    movbie_metadata: bool = True
+    movie_metadata: bool = True
     """
     Create metadata file.
     """

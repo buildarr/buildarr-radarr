@@ -134,7 +134,7 @@ class RootFoldersSettings(RadarrConfigBase):
                 else:
                     logger.info("%s[%i]: %s -> (created)", tree, i, repr(str(root_folder)))
                     rootfolder_api.create_root_folder(
-                        root_folder_resource=radarr.RootFolderResource(root_folder),
+                        root_folder_resource=radarr.RootFolderResource(path=root_folder),
                     )
                     changed = True
         return changed
@@ -243,6 +243,12 @@ class RadarrMediaManagementSettings(RadarrConfigBase):
     You may temporarily disable seeding and use Radarr's rename function as a work around.
     """
 
+    import_using_script: bool = False
+    """ """
+
+    import_script_path: Optional[str] = None
+    """ """
+
     import_extra_files: bool = False
     """
     Import matching extra files (subtitles, `.nfo` file, etc) after importing an episode file.
@@ -254,13 +260,13 @@ class RadarrMediaManagementSettings(RadarrConfigBase):
     Movies deleted from disk are automatically unmonitored in Radarr.
     """
 
-    propers_and_repacks: PropersAndRepacks = PropersAndRepacks.do_not_prefer
+    propers_and_repacks: PropersAndRepacks = PropersAndRepacks.prefer_and_upgrade
     """
     Whether or not to automatically upgrade to Propers/Repacks.
 
     Values:
 
-    * `prefer-and-upgrade` - Automaitcally upgrade to propers/repacks
+    * `prefer-and-upgrade` - Automatically upgrade to propers/repacks
     * `do-not-upgrade-automatically`
     * `do-not-prefer` - Sort by custom format score over propers/repacks
     """
@@ -367,6 +373,12 @@ class RadarrMediaManagementSettings(RadarrConfigBase):
         ("skip_free_space_check", "skipFreeSpaceCheckWhenImporting", {}),
         ("minimum_free_space", "minimumFreeSpaceWhenImporting", {}),
         ("use_hardlinks", "copyUsingHardlinks", {}),
+        ("import_using_script", "useScriptImport", {}),
+        (
+            "import_script_path",
+            "scriptImportPath",
+            {"decoder": lambda v: v or None, "encoder": lambda v: v or ""},
+        ),
         ("import_extra_files", "importExtraFiles", {}),
         # File Management
         ("unmonitor_deleted_movies", "autoUnmonitorPreviouslyDownloadedMovies", {}),
@@ -492,8 +504,10 @@ class RadarrMediaManagementSettings(RadarrConfigBase):
                 api_mediamanagement_config = mediamanagement_api.get_media_management_config()
                 mediamanagement_api.update_media_management_config(
                     id=str(api_mediamanagement_config.id),
-                    naming_config_resource=radarr.MediaManagementConfigResource.from_dict(
-                        {**api_mediamanagement_config.to_dict(), **updated_attrs},
+                    media_management_config_resource=(
+                        radarr.MediaManagementConfigResource.from_dict(
+                            {**api_mediamanagement_config.to_dict(), **updated_attrs},
+                        )
                     ),
                 )
             return True
