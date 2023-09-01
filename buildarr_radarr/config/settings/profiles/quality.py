@@ -20,7 +20,7 @@ Radarr plugin quality profile configuration.
 from __future__ import annotations
 
 from logging import getLogger
-from typing import Any, Dict, List, Mapping, Optional, Sequence, Set, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional, Sequence, Set, Union, cast
 
 import radarr
 
@@ -32,6 +32,9 @@ from typing_extensions import Annotated, Self
 from ....api import radarr_api_client
 from ....secrets import RadarrSecrets
 from ...types import RadarrConfigBase
+
+if TYPE_CHECKING:
+    from ..custom_formats.custom_format import CustomFormat
 
 logger = getLogger(__name__)
 
@@ -53,6 +56,11 @@ class QualityGroup(RadarrConfigBase):
             "allowed": True,
             "items": [_quality_str_encoder(api_qualities, member, True) for member in self.members],
         }
+
+
+class CustomFormatScore(RadarrConfigBase):
+    name: NonEmptyStr
+    score: Optional[int] = None
 
 
 class QualityProfile(RadarrConfigBase):
@@ -137,7 +145,10 @@ class QualityProfile(RadarrConfigBase):
     minimum_custom_format_score: int = 0
     """ """
 
-    custom_formats: Dict[str, int] = {}
+    upgrade_until_custom_format_score: int = 0
+    """ """
+
+    custom_formats: List[CustomFormatScore] = []
     """
     If not defined here, add it with a score of 0 to the request.
     """
@@ -202,6 +213,28 @@ class QualityProfile(RadarrConfigBase):
             raise ValueError("must be set to a value enabled in 'qualities'")
         return value
 
+    # TODO: Validate that upgrade_until_custom_format_score is above minimum_custom_format_score.
+
+    @validator("custom_formats")
+    def validate_custom_format(cls, value: List[CustomFormatScore]) -> List[CustomFormatScore]:
+        custom_formats: Dict[str, Optional[int]] = {}
+        for cf in value:
+            if isinstance(cf, CustomFormatScore):
+                name: str = cf.name
+                score = cf.score
+            else:
+                name = cf
+                score = None
+            if name in custom_formats:
+                raise ValueError(
+                    (
+                        f"custom format '{name}' defined more than once"
+                        f" (static scores: {custom_formats[name]}, {score})"
+                    ),
+                )
+            custom_formats[name] = score
+        return value
+
     @classmethod
     def _get_remote_map(
         cls,
@@ -232,24 +265,19 @@ class QualityProfile(RadarrConfigBase):
                         api_qualities=api_qualities,
                         group_ids=group_ids,
                         qualities=vs.qualities,
-                        upgrade_until=vs.upgrade_until,
+                        upgrade_until_quality=vs.upgrade_until_quality,
                     ),
                 },
             ),
-            ("minimum_custom_format_score", "cutoffFormatScore", {}),
+            ("minimum_custom_format_score", "minFormatScore", {}),
+            ("upgrade_until_custom_format_score", "cutoffFormatScore", {}),
             # TODO: Error handler for defined custom formats that don't exist.
             (
                 "custom_formats",
                 "formatItems",
                 {
-                    "decoder": lambda v: {f["name"]: f["score"] for f in v},
-                    "encoder": lambda v: sorted(
-                        [
-                            {"format": api_customformat.id, "name": name, "score": v.get(name, 0)}
-                            for name, api_customformat in api_customformats.items()
-                        ],
-                        key=lambda f: (-f["score"], f["name"]),
-                    ),
+                    "decoder": lambda v: cls._custom_formats_decoder(v),
+                    "encoder": lambda v: cls._custom_formats_encoder(api_customformats, v),
                 },
             ),
             # TODO: Error handler for defined languages that don't exist.
@@ -292,9 +320,9 @@ class QualityProfile(RadarrConfigBase):
         api_qualities: Mapping[str, radarr.Quality],
         group_ids: Mapping[str, int],
         qualities: Sequence[Union[str, QualityGroup]],
-        upgrade_until: Optional[str],
+        upgrade_until_quality: Optional[str],
     ) -> int:
-        if not upgrade_until:
+        if not upgrade_until_quality:
             quality = qualities[0]
             return (
                 group_ids[quality.name]
@@ -302,9 +330,9 @@ class QualityProfile(RadarrConfigBase):
                 else api_qualities[quality].id
             )
         return (
-            group_ids[upgrade_until]
-            if upgrade_until in group_ids
-            else api_qualities[upgrade_until].id
+            group_ids[upgrade_until_quality]
+            if upgrade_until_quality in group_ids
+            else api_qualities[upgrade_until_quality].id
         )
 
     @classmethod
@@ -316,7 +344,7 @@ class QualityProfile(RadarrConfigBase):
             (
                 QualityGroup(
                     name=quality["name"],
-                    members=[member["quality"]["name"] for member in quality["items"]],
+                    members=set([member["quality"]["name"] for member in quality["items"]]),
                 )
                 if quality["items"]
                 else quality["quality"]["name"]
@@ -349,6 +377,60 @@ class QualityProfile(RadarrConfigBase):
                 qualities_json.append(_quality_str_encoder(api_qualities, quality_name, False))
 
         return list(reversed(qualities_json))
+
+    @classmethod
+    def _custom_formats_decoder(
+        cls,
+        api_customformat_scores: List[Mapping[str, Any]],
+    ) -> List[CustomFormatScore]:
+        return sorted(
+            (
+                CustomFormatScore(name=api_cfs["name"], score=api_cfs["score"])
+                for api_cfs in api_customformat_scores
+                if api_cfs["score"] != 0
+            ),
+            key=lambda cfs: (-cast(int, cfs.score), cfs.name),
+        )
+
+    @classmethod
+    def _custom_formats_encoder(
+        cls,
+        api_customformats: Mapping[str, radarr.CustomFormatResource],
+        customformat_scores: List[CustomFormatScore],
+    ) -> List[Dict[str, Any]]:
+        customformat_names: Set[str] = set()
+        custom_formats: List[Dict[str, Any]] = []
+        for cfs in customformat_scores:
+            custom_formats.append(
+                {"format": api_customformats[cfs.name].id, "name": cfs.name, "score": cfs.score},
+            )
+            customformat_names.add(cfs.name)
+        for customformat_name, api_customformat in api_customformats.items():
+            if customformat_name not in customformat_names:
+                custom_formats.append(
+                    {"format": api_customformat.id, "name": customformat_name, "score": 0},
+                )
+                customformat_names.add(customformat_name)
+        return custom_formats
+
+    def _render(self, custom_formats: Dict[str, CustomFormat]) -> None:
+        custom_format_scores: List[CustomFormatScore] = []
+        for cfs in self.custom_formats:
+            custom_format = custom_formats[cfs.name]
+            if cfs.score is not None:
+                score = cfs.score
+            else:
+                score = (
+                    custom_format.default_score if custom_format.default_score is not None else 0
+                )
+            if score != 0:
+                custom_format_scores.append(
+                    CustomFormatScore(name=cfs.name, score=score),
+                )
+        self.custom_formats = sorted(
+            custom_format_scores,
+            key=lambda cfs: (-cast(int, cfs.score), cfs.name),
+        )
 
     @classmethod
     def _from_remote(cls, remote_attrs: Mapping[str, Any]) -> Self:
@@ -454,6 +536,10 @@ class RadarrQualityProfilesSettings(RadarrConfigBase):
     Buildarr will not modify existing quality profiles, but if `delete_unmanaged` is `True`,
     **Buildarr will delete all existing profiles. Be careful when using `delete_unmanaged`.**
     """
+
+    def _render(self, custom_formats: Dict[str, CustomFormat]) -> None:
+        for profile in self.definitions.values():
+            profile._render(custom_formats=custom_formats)
 
     @classmethod
     def from_remote(cls, secrets: RadarrSecrets) -> Self:

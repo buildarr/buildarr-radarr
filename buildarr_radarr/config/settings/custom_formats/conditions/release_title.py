@@ -22,7 +22,7 @@ from .base import Condition
 class ReleaseTitleCondition(Condition):
     """ """
 
-    type: Literal["release-title", "release_title"] = "release-title"
+    type: Literal["release-title", "release_title", "releasetitle"] = "release-title"
     """ """
 
     regex: Optional[str] = None

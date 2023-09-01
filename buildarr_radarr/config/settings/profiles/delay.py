@@ -353,8 +353,8 @@ class RadarrDelayProfilesSettings(RadarrConfigBase):
             tag_ids: Dict[str, int] = (
                 {tag.label: tag.id for tag in radarr.TagApi(api_client).list_tag()}
                 if (
-                    any(profile.tags for profile in self.definitions) or
-                    any(profile.tags for profile in remote.definitions)
+                    any(profile.tags for profile in self.definitions)
+                    or any(profile.tags for profile in remote.definitions)
                 )
                 else {}
             )

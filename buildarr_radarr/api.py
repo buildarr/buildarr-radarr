@@ -20,7 +20,6 @@ Radarr plugin API functions.
 from __future__ import annotations
 
 import logging
-import re
 
 from contextlib import contextmanager
 from http import HTTPStatus
@@ -34,7 +33,7 @@ from radarr import ApiClient, Configuration
 from .exceptions import RadarrAPIError
 
 if TYPE_CHECKING:
-    from typing import Any, Dict, Generator, Optional, Union
+    from typing import Any, Generator, Optional, Union
 
     from .secrets import RadarrSecrets
 

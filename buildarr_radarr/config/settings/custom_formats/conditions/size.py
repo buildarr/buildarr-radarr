@@ -23,7 +23,7 @@ from .base import Condition
 class SizeCondition(Condition):
     """ """
 
-    type: Literal["language"] = "language"
+    type: Literal["size"] = "size"
     """ """
 
     min: int = Field(0, ge=0)

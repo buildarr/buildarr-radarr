@@ -151,18 +151,19 @@ class RadarrInstanceConfig(_RadarrInstanceConfig):
             return True
         return False
 
-    def render(self) -> Self:
-        if not self.uses_trash_metadata():
-            return self
+    def post_init_render(self, secrets: RadarrSecrets) -> Self:
         copy = self.copy(deep=True)
-        copy._render()
+        copy._post_init_render(secrets=secrets)
         return copy
 
-    def _render(self) -> None:
+    def _post_init_render(self, secrets: RadarrSecrets) -> None:
         if self.settings.quality.uses_trash_metadata():
             self.settings.quality._render()
         if self.settings.custom_formats.uses_trash_metadata():
-            self.settings.custom_formats.render()
+            self.settings.custom_formats._post_init_render(secrets=secrets)
+        self.settings.profiles.quality_profiles._render(
+            custom_formats=self.settings.custom_formats.definitions,
+        )
 
     @classmethod
     def from_remote(cls, secrets: RadarrSecrets) -> Self:

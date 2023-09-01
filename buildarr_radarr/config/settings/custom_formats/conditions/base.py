@@ -73,7 +73,7 @@ class Condition(RadarrConfigBase):
             field["name"]: field["value"] for field in set_attrs["fields"]
         }
         set_attrs["fields"] = [
-            ({**f.to_dict(), "value": field_values[f.name]} if f.name in field_values else f)
+            ({**f, "value": field_values[f["name"]]} if f["name"] in field_values else f)
             for f in api_schema_dict["fields"]
         ]
         return {"name": condition_name, **api_schema_dict, **set_attrs}

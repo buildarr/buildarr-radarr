@@ -24,29 +24,17 @@ import re
 from datetime import datetime
 from logging import getLogger
 from typing import (
-    Any,
-    Dict,
-    Iterable,
     List,
-    Literal,
     Mapping,
     Optional,
     Set,
-    Tuple,
-    Type,
-    Union,
-    cast,
 )
 
 from buildarr.config import RemoteMapEntry
-from buildarr.state import state
-from buildarr.types import BaseEnum, InstanceName, NonEmptyStr, Password
-from pydantic import AnyHttpUrl, ConstrainedStr, Field, PositiveInt, validator
-from typing_extensions import Annotated, Self
+from buildarr.types import NonEmptyStr, Password
+from pydantic import ConstrainedStr, PositiveInt
 
-from .....secrets import RadarrSecrets
-from .....types import ArrApiKey, LowerCaseNonEmptyStr
-from ....types import RadarrConfigBase
+from .....types import LowerCaseNonEmptyStr
 from ....util import trakt_expires_encoder
 from ..base import ImportList
 

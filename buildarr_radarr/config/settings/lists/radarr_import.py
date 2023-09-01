@@ -28,7 +28,7 @@ from buildarr.types import InstanceName, NonEmptyStr
 from pydantic import AnyHttpUrl, Field, PositiveInt, validator
 from typing_extensions import Self
 
-from ....api import radarr_api_client
+from ....api import api_get
 from ....secrets import RadarrSecrets
 from ....types import ArrApiKey
 from .base import ImportList

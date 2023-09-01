@@ -93,8 +93,7 @@ class QualityDefinition(RadarrConfigBase):
             quality_min: float = values["min"]
             if (value - quality_min) < 1:
                 raise ValueError(
-                    f"'max' ({value}) is not "
-                    f"at least 1 greater than 'min' ({quality_min})",
+                    f"'max' ({value}) is not " f"at least 1 greater than 'min' ({quality_min})",
                 )
         except KeyError:
             # `min` only doesn't exist when it failed type validation.

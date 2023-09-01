@@ -23,7 +23,7 @@ from .base import Condition
 class ReleaseGroupCondition(Condition):
     """ """
 
-    type: Literal["release-group", "release_group"] = "release-group"
+    type: Literal["release-group", "release_group", "releasegroup"] = "release-group"
     """ """
 
     regex: NonEmptyStr

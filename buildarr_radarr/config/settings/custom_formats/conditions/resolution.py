@@ -12,9 +12,7 @@
 # If not, see <https://www.gnu.org/licenses/>.
 from __future__ import annotations
 
-from typing import List, Literal, cast
-
-import radarr
+from typing import Any, Dict, List, Literal, cast
 
 from buildarr.config import RemoteMapEntry
 
@@ -34,35 +32,31 @@ class ResolutionCondition(Condition):
     _implementation: Literal["ResolutionSpecification"] = "ResolutionSpecification"
 
     @classmethod
-    def _get_remote_map(
-        cls,
-        api_schema: radarr.CustomFormatSpecificationSchema,
-    ) -> List[RemoteMapEntry]:
+    def _get_remote_map(cls, api_schema_dict: Dict[str, Any]) -> List[RemoteMapEntry]:
         return [
             (
                 "resolution",
                 "value",
                 {
-                    "decoder": lambda v: cls._resolution_decode(api_schema, v),
-                    "encoder": lambda v: cls._resolution_encode(api_schema, v),
+                    "decoder": lambda v: cls._resolution_decode(api_schema_dict, v),
+                    "encoder": lambda v: cls._resolution_encode(api_schema_dict, v),
                     "is_field": True,
                 },
             ),
         ]
 
     @classmethod
-    def _resolution_decode(
-        cls,
-        api_schema: radarr.CustomFormatSpecificationSchema,
-        value: int,
-    ) -> str:
-        field: radarr.Field = next(f for f in api_schema.fields if f.name == "value")
-        for o in field.select_options:
-            option = cast(radarr.SelectOption, o)
-            if option.value == value:
-                return option.name.lower()
+    def _resolution_decode(cls, api_schema_dict: Dict[str, Any], value: int) -> str:
+        field: Dict[str, Any] = next(f for f in api_schema_dict["fields"] if f["name"] == "value")
+        select_options = cast(List[Dict[str, Any]], field["selectOptions"])
+        for o in select_options:
+            option = cast(Dict[str, Any], o)
+            option_name = cast(str, option["name"])
+            option_value = cast(int, option["value"])
+            if option_value == value:
+                return option_name.lower()
         supported_resolutions = ", ".join(
-            (f"{o.name.lower()} ({o.value})" for o in field.select_options),
+            (f"{o['name'].lower()} ({o['value']})" for o in select_options),
         )
         raise ValueError(
             f"Invalid custom format quality resolution value {value} during decoding"
@@ -70,17 +64,16 @@ class ResolutionCondition(Condition):
         )
 
     @classmethod
-    def _resolution_encode(
-        cls,
-        api_schema: radarr.CustomFormatSpecificationSchema,
-        value: str,
-    ) -> str:
-        field: radarr.Field = next((f for f in api_schema.fields if f.name.lower == "value"))
-        for o in field.select_options:
-            option = cast(radarr.SelectOption, o)
-            if option.name.lower() == value:
-                return option.value
-        supported_resolutions = ", ".join(o.name.lower() for o in field.select_options)
+    def _resolution_encode(cls, api_schema_dict: Dict[str, Any], value: str) -> int:
+        field: Dict[str, Any] = next(f for f in api_schema_dict["fields"] if f["name"] == "value")
+        select_options = cast(List[Dict[str, Any]], field["selectOptions"])
+        for o in select_options:
+            option = cast(Dict[str, Any], o)
+            option_name = cast(str, option["name"])
+            option_value = cast(int, option["value"])
+            if option_name.lower() == value:
+                return option_value
+        supported_resolutions = ", ".join(o["name"].lower() for o in select_options)
         raise ValueError(
             f"Invalid or unsupported custom format resolution name '{value}'"
             f", supported resolutions are: {supported_resolutions}",
