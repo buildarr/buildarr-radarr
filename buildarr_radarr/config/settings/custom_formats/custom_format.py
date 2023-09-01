@@ -21,7 +21,7 @@ from typing import Any, Dict, List, Optional, Union, cast
 
 import radarr
 
-from buildarr.config import RemoteMapEntry, ConfigTrashIDNotFoundError
+from buildarr.config import ConfigTrashIDNotFoundError, RemoteMapEntry
 from buildarr.state import state
 from buildarr.types import TrashID
 from pydantic import Field
@@ -115,7 +115,10 @@ class CustomFormat(RadarrConfigBase):
             with customformat_file.open() as f:
                 trash_customformat = json.load(f)
                 if cast(str, trash_customformat["trash_id"]).lower() == self.trash_id:
-                    if "trash_score" in trash_customformat and "default_score" not in self.__fields_set__:
+                    if (
+                        "trash_score" in trash_customformat
+                        and "default_score" not in self.__fields_set__
+                    ):
                         self.default_score = trash_customformat["trash_score"]
                     for trash_condition in trash_customformat["specifications"]:
                         condition_name = trash_condition["name"]
@@ -127,17 +130,17 @@ class CustomFormat(RadarrConfigBase):
                                     for name, value in trash_condition["fields"].items()
                                 ],
                             }
-                            self.conditions[condition_name] = (
-                                CONDITION_TYPE_MAP[  # type: ignore[attr-defined]
+                            self.conditions[
+                                condition_name
+                            ] = CONDITION_TYPE_MAP[  # type: ignore[attr-defined]
+                                api_condition_dict["implementation"]
+                            ]._from_remote(
+                                api_schema_dict=api_condition_schema_dicts[
                                     api_condition_dict["implementation"]
-                                ]._from_remote(
-                                    api_schema_dict=api_condition_schema_dicts[
-                                        api_condition_dict["implementation"]
-                                    ],
-                                    api_condition=radarr.CustomFormatSpecificationSchema.from_dict(
-                                        api_condition_dict,
-                                    ),
-                                )
+                                ],
+                                api_condition=radarr.CustomFormatSpecificationSchema.from_dict(
+                                    api_condition_dict,
+                                ),
                             )
                     self.delete_unmanaged_conditions = True
                     return
