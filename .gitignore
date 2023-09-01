@@ -128,5 +128,6 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# Buildarr secret/temporary files
+# Buildarr local environment and secret files
+buildarr*.yml
 secret*.json
