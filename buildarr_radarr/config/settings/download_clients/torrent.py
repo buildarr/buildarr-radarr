@@ -289,7 +289,7 @@ class DelugeDownloadClient(TorrentDownloadClient):
         ("password", "password", {"is_field": True}),
         (
             "category",
-            "category",
+            "movieCategory",
             {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
         ),
         ("client_priority", "priority", {"is_field": True}),
@@ -356,12 +356,12 @@ class DownloadstationTorrentDownloadClient(TorrentDownloadClient):
         ("password", "password", {"is_field": True}),
         (
             "category",
-            "category",
+            "movieCategory",
             {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
         ),
         (
-            "category",
-            "tvDirectory",
+            "directory",
+            "movieDirectory",
             {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
         ),
     ]
@@ -545,7 +545,7 @@ class FreeboxDownloadClient(TorrentDownloadClient):
         ),
         (
             "category",
-            "category",
+            "movieCategory",
             {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
         ),
         ("client_priority", "priority", {"is_field": True}),
@@ -613,7 +613,7 @@ class HadoukenDownloadClient(TorrentDownloadClient):
         ),
         ("username", "username", {"is_field": True}),
         ("password", "password", {"is_field": True}),
-        ("category", "category", {"is_field": True}),
+        ("category", "movieCategory", {"is_field": True}),
     ]
 
 
@@ -696,7 +696,7 @@ class QbittorrentDownloadClient(TorrentDownloadClient):
         ("password", "password", {"is_field": True}),
         (
             "category",
-            "category",
+            "movieCategory",
             {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
         ),
         ("client_priority", "priority", {"is_field": True}),
@@ -790,15 +790,15 @@ class RtorrentDownloadClient(TorrentDownloadClient):
         ("password", "password", {"is_field": True}),
         (
             "category",
-            "category",
+            "movieCategory",
             {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
         ),
         (
             "directory",
-            "directory",
+            "movieDirectory",
             {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
         ),
-        ("client_priority", "recentTvPriority", {"is_field": True}),
+        ("client_priority", "recentMoviePriority", {"is_field": True}),
         ("add_stopped", "addStopped", {"is_field": True}),
     ]
 
@@ -891,9 +891,19 @@ class TransmissionDownloadClientBase(TorrentDownloadClient):
     Leave blank, set to `null` or undefined to use the default download client location.
     """
 
-    client_priority: TransmissionPriority = TransmissionPriority.last
+    recent_priority: TransmissionPriority = TransmissionPriority.last
     """
-    Priority to use when grabbing releases.
+    Priority to use when grabbing recent releases.
+
+    Values:
+
+    * `last`
+    * `first`
+    """
+
+    older_priority: TransmissionPriority = TransmissionPriority.last
+    """
+    Priority to use when grabbing older releases.
 
     Values:
 
@@ -919,15 +929,16 @@ class TransmissionDownloadClientBase(TorrentDownloadClient):
         ("password", "password", {"is_field": True, "field_default": None}),
         (
             "category",
-            "category",
+            "movieCategory",
             {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
         ),
         (
             "directory",
-            "directory",
+            "movieDirectory",
             {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
         ),
-        ("client_priority", "priority", {"is_field": True}),
+        ("recent_priority", "recentMoviePriority", {"is_field": True}),
+        ("older_priority", "olderMoviePriority", {"is_field": True}),
         ("add_paused", "addPaused", {"is_field": True}),
     ]
 
@@ -1050,7 +1061,7 @@ class UtorrentDownloadClient(TorrentDownloadClient):
         ("password", "password", {"is_field": True}),
         (
             "category",
-            "category",
+            "movieCategory",
             {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
         ),
         ("client_priority", "priority", {"is_field": True}),
