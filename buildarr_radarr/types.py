@@ -13,7 +13,7 @@
 
 
 """
-Radarr plugin type hints.
+Plugin type hints.
 """
 
 

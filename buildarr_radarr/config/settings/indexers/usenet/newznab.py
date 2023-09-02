@@ -13,7 +13,7 @@
 
 
 """
-Radarr plugin Usenet indexers configuration.
+Newznab indexer configuration.
 """
 
 

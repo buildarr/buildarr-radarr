@@ -13,7 +13,7 @@
 
 
 """
-Radarr plugin torrent indexers configuration.
+Nyaa indexer configuration.
 """
 
 

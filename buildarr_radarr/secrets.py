@@ -13,7 +13,7 @@
 
 
 """
-Radarr plugin secrets file model.
+Plugin secrets file model.
 """
 
 

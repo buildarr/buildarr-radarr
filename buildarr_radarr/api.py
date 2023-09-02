@@ -13,7 +13,7 @@
 
 
 """
-Radarr plugin API functions.
+Application API functions.
 """
 
 

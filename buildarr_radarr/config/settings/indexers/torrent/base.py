@@ -13,7 +13,7 @@
 
 
 """
-Radarr plugin torrent indexers configuration.
+Torrent indexer configuration base class.
 """
 
 

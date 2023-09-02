@@ -13,7 +13,7 @@
 
 
 """
-Radarr plugin general settings configuration.
+General settings configuration.
 """
 
 

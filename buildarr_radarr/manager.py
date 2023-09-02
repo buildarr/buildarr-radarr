@@ -13,7 +13,7 @@
 
 
 """
-Radarr plugin manager class.
+Plugin manager class.
 """
 
 

@@ -13,7 +13,7 @@
 
 
 """
-Radarr plugin settings configuration.
+Instance settings configuration.
 """
 
 
@@ -41,10 +41,6 @@ if TYPE_CHECKING:
 
 
 class RadarrSettings(RadarrConfigBase):
-    """
-    Radarr settings, used to configure a remote Radarr instance.
-    """
-
     media_management: RadarrMediaManagementSettings = (
         RadarrMediaManagementSettings()  # type: ignore[call-arg]
     )

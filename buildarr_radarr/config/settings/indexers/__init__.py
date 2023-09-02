@@ -13,7 +13,7 @@
 
 
 """
-Radarr plugin indexer settings.
+Indexer settings configuration.
 """
 
 

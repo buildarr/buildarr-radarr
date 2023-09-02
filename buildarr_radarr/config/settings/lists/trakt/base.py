@@ -13,7 +13,7 @@
 
 
 """
-Radarr plugin import list settings configuration.
+Trakt import list configuration base class.
 """
 
 

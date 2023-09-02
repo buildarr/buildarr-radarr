@@ -4,7 +4,7 @@
 
 The Buildarr Radarr plugin (`buildarr-radarr`) is a plugin for Buildarr that adds the capability to configure and manage [Radarr](http://radarr.video) instances.
 
-Radarr is a manager/proxy for *Arr application Usenet and Torrent indexers. It handles communication with individual indexers for multiple instances on their behalf from a single client, allowing easier configuration of indexers by only setting them up once, and better management of traffic going to indexers to reduce the risk of running into rate limits.
+Radarr is a PVR application which downloads, renames and manages the lifecycle of movies in your media library. In other words, it is to movies what [Sonarr](https://sonarr.tv) is to TV shoes. It can monitor for both upcoming and current releases and grab them when they become available, as well as upgrade to higher quality versions of monitored releases when a suitable version is available.
 
 ## Installation
 
@@ -92,7 +92,7 @@ Try a `buildarr run`. If the output is similar to the below output, Buildarr was
 
 The following sections cover comprehensive configuration of a Radarr instance.
 
-Note that these documents do not show how you *should* configure a Radarr instance. Rather, they show how you *can* configure a Radarr instance the way you want with Buildarr. For more information on how to optimally configure Radarr, you can refer to the excellent guides from [WikiArr](https://wiki.servarr.com/radarr) and [TRaSH-Guides](https://trash-guides.info/Radarr/).
+Note that these documents do not show how you *should* configure a Radarr instance. Rather, they show how you *can* configure a Radarr instance the way you want with Buildarr. For more information on how to optimally configure Radarr, you can refer to the excellent guides from [WikiArr](https://wiki.servarr.com/radarr) and [TRaSH-Guides](https://trash-guides.info/Radarr).
 
 !!! note
 

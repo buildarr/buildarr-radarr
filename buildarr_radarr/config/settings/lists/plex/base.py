@@ -13,7 +13,7 @@
 
 
 """
-Plex import list base configuration.
+Plex import list configuration base class.
 """
 
 

@@ -13,7 +13,7 @@
 
 
 """
-Radarr plugin profiles settings configuration.
+Profiles settings configuration.
 """
 
 from __future__ import annotations

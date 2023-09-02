@@ -13,7 +13,7 @@
 
 
 """
-Radarr plugin utility classes and functions.
+Plugin utility classes and functions.
 """
 
 

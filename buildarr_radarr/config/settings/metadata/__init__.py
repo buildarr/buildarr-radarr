@@ -13,7 +13,7 @@
 
 
 """
-Radarr plugin metadata settings configuration.
+Metadata settings configuration.
 """
 
 

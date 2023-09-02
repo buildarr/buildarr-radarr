@@ -13,7 +13,7 @@
 
 
 """
-Radarr plugin notification connection configuration.
+Notification connection configuration base class.
 """
 
 

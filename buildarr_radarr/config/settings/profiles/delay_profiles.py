@@ -13,7 +13,7 @@
 
 
 """
-Radarr plugin delay profile configuration.
+Delay profiles settings configuration.
 """
 
 

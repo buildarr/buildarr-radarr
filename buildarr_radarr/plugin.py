@@ -13,7 +13,7 @@
 
 
 """
-Radarr plugin interface.
+Buildarr plugin interface.
 """
 
 
@@ -30,7 +30,7 @@ from .secrets import RadarrSecrets
 
 class RadarrPlugin(Plugin):
     """
-    Radarr plugin class that Buildarr reads to process Radarr instances.
+    Plugin class that Buildarr reads to process Radarr instances.
     """
 
     cli = radarr

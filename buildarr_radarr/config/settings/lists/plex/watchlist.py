@@ -13,7 +13,7 @@
 
 
 """
-Plex import list base configuration.
+Plex watchlist import list configuration.
 """
 
 

@@ -8,4 +8,5 @@
         - protocol
         - api_key
         - version
+        - image
         - settings

@@ -13,7 +13,7 @@
 
 
 """
-Radarr plugin torrent indexers configuration.
+HDBits indexer configuration.
 """
 
 

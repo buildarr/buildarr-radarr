@@ -13,7 +13,7 @@
 
 
 """
-Radarr plugin media management settings configuration.
+Media management settings configuration.
 """
 
 
@@ -84,8 +84,10 @@ class ChmodFolder(BaseEnum):
 
 class RootFoldersSettings(RadarrConfigBase):
     """
-    This allows you to create a root path for a place to either
-    place new imported downloads, or to allow Radarr to scan existing media.
+    Root folders are paths used by Radarr as either a target folder
+    for newly downloaded releases, or a source folder for Radarr to scan existing media.
+
+    Root folders are assigned to releases when they are submitted for monitoring in Radarr.
 
     ```yaml
     radarr:
@@ -94,7 +96,7 @@ class RootFoldersSettings(RadarrConfigBase):
           root_folders:
             delete_unmanaged: false
             definitions:
-              - "/path/to/rootfolder"
+              - /path/to/movies
     ```
     """
 
@@ -107,6 +109,8 @@ class RootFoldersSettings(RadarrConfigBase):
     you want Radarr to scan are defined in Buildarr,
     as Radarr might remove imported media from its database
     when root folder definitions are deleted.
+
+    If unsure, leave set to the default of `false`.
     """
 
     definitions: Set[NonEmptyStr] = set()
@@ -162,21 +166,9 @@ class RootFoldersSettings(RadarrConfigBase):
 
 
 class RadarrMediaManagementSettings(RadarrConfigBase):
-    """
-    Naming, file management and root folder configuration.
-
-    ```yaml
-    radarr:
-      settings:
-        media_management:
-          ...
-    ```
-
-    For more information on how to configure these options correctly,
-    refer to these guides from
-    [WikiArr](https://wiki.servarr.com/radarr/settings#media-management)
-    and [TRaSH-Guides](https://trash-guides.info/Radarr/Radarr-recommended-naming-scheme).
-    """
+    # Naming, file management and root folder configuration.
+    #
+    # For more information on how to configure this, check the plugin documentation.
 
     # Movie Naming
     rename_movies: bool = False
@@ -190,11 +182,21 @@ class RadarrMediaManagementSettings(RadarrConfigBase):
     """
     Replace illegal characters within the file name.
 
-    If set to `False`, Radarr will remove them instead.
+    If set to `false`, Radarr will remove them instead.
     """
 
     colon_replacement: ColonReplacement = ColonReplacement.delete
-    """ """
+    """
+    Replace or delete full colons (`:`) in release titles with alternative characters
+    when saving files.
+
+    Values:
+
+    * `delete` - Delete without replacement (e.g. `One:Two` → `OneTwo`) (default)
+    * `dash` - Replace with a dash (e.g. `One:Two` → `One-Two`)
+    * `dash-space` - Replace with a dash and a space (e.g. `One:Two` → `One- Two`)
+    * `space-dash-space` - Replace with a space-separated dash (e.g. `One:Two` → `One - Two`)
+    """
 
     standard_movie_format: NonEmptyStr = (
         "{Movie Title} ({Release Year}) {Quality Full}"  # type: ignore[assignment]
@@ -237,17 +239,36 @@ class RadarrMediaManagementSettings(RadarrConfigBase):
 
     use_hardlinks: bool = True
     """
-    Use hard links when trying to copy files from torrents that are still being seeded.
+    Use hard links when trying to copy downloaded media files from torrents
+    that are still being seeded.
 
-    Occasionally, file locks may prevent renaming files that are being seeded.
-    You may temporarily disable seeding and use Radarr's rename function as a work around.
+    Using hard links saves a large amount of disk space due to having only one physical copy
+    of the data accessible from multiple locations.
+
+    However, using hard links requires that the following conditions are met in your setup:
+
+    * Torrent folders and root folders are on the same physical filesystem.
+    * When using containers, both containers use the same directory tree structure for all folders
+      (e.g. `/path/to/torrents` and `/path/to/movies` must be located at the same paths
+      according to both containers).
+
+    !!! note
+
+        Occasionally, file locks may prevent renaming files that are being seeded.
+        You may temporarily disable seeding and use Radarr's rename function as a work around.
     """
 
     import_using_script: bool = False
-    """ """
+    """
+    Copy files for importing using a script (e.g. for transcoding).
+    """
 
     import_script_path: Optional[str] = None
-    """ """
+    """
+    The path to the script for use for importing.
+
+    Required when `import_using_script` is set to `true`.
+    """
 
     import_extra_files: bool = False
     """
@@ -257,7 +278,7 @@ class RadarrMediaManagementSettings(RadarrConfigBase):
     # File Management
     unmonitor_deleted_movies: bool = False
     """
-    Movies deleted from disk are automatically unmonitored in Radarr.
+    When set to `true`, movies deleted from disk are automatically unmonitored in Radarr.
     """
 
     propers_and_repacks: PropersAndRepacks = PropersAndRepacks.prefer_and_upgrade
@@ -267,7 +288,8 @@ class RadarrMediaManagementSettings(RadarrConfigBase):
     Values:
 
     * `prefer-and-upgrade` - Automatically upgrade to propers/repacks
-    * `do-not-upgrade-automatically`
+    * `do-not-upgrade-automatically` - Prefer propers/repacks,
+      but do not upgrade to them automatically
     * `do-not-prefer` - Sort by custom format score over propers/repacks
     """
 
@@ -290,7 +312,7 @@ class RadarrMediaManagementSettings(RadarrConfigBase):
     * `after-manual-refresh`
     * `never`
 
-    !!! note
+    !!! warning
 
         Radarr will not automatically detect changes to files
         unless this attribute is set to `always`.
@@ -317,7 +339,7 @@ class RadarrMediaManagementSettings(RadarrConfigBase):
     Files in the recycle bin older than the selected number of days
     will be cleaned up automatically.
 
-    Set to 0 to disable automatic cleanup.
+    Set to `0` to disable automatic cleanup.
     """
 
     # Permissions
@@ -335,7 +357,7 @@ class RadarrMediaManagementSettings(RadarrConfigBase):
     File permissions are set without execute bits.
 
     This only works if the user running Radarr is the owner of the file.
-    It's better to ensure the download client sets the permissions properly.
+    Ideally, the download client should already set these permissions appropriately.
 
     Values:
 
@@ -351,11 +373,13 @@ class RadarrMediaManagementSettings(RadarrConfigBase):
     Group name or GID. Use GID for remote file systems.
 
     This only works if the user running Radarr is the owner of the file.
-    It's better to ensure the download client uses the same group as Radarr.
+    Ideally, the download client should be using  the same group as Radarr.
     """
 
     root_folders: RootFoldersSettings = RootFoldersSettings()
-    """ """
+    """
+    Root folder settings should be defined here.
+    """
 
     _naming_remote_map: List[RemoteMapEntry] = [
         # Episode Naming

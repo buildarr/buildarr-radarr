@@ -13,7 +13,7 @@
 
 
 """
-Radarr plugin import list exclusions configuration.
+Import list exclusions settings configuration.
 """
 
 

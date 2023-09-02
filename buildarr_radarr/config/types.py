@@ -13,7 +13,7 @@
 
 
 """
-Radarr plugin configuration utility classes and functions.
+Configuration base class and field type hints.
 """
 
 

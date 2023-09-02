@@ -13,7 +13,7 @@
 
 
 """
-CouchPotato import list configuration
+CouchPotato import list configuration.
 """
 
 

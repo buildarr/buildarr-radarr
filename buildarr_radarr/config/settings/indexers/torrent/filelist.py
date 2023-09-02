@@ -13,7 +13,7 @@
 
 
 """
-Radarr plugin torrent indexers configuration.
+FileList.io indexer configuration.
 """
 
 

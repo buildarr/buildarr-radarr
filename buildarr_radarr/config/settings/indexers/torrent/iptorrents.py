@@ -13,7 +13,7 @@
 
 
 """
-Radarr plugin torrent indexers configuration.
+IP Torrents native API indexer configuration.
 """
 
 
@@ -32,6 +32,7 @@ class IptorrentsIndexer(TorrentIndexer):
     Monitor for releases using the IP Torrents native API.
 
     !!! note
+
         IP Torrents' native API does not support automatic searching.
         It is recommended to instead configure IP Torrents as a Torznab indexer.
     """
@@ -40,9 +41,6 @@ class IptorrentsIndexer(TorrentIndexer):
     """
     Type value associated with this kind of indexer.
     """
-
-    # NOTE: automatic_search and interactive_search are not supported
-    # by this indexer, therefore its value is ignored.
 
     feed_url: RssUrl
     """

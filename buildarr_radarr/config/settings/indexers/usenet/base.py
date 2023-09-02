@@ -13,7 +13,7 @@
 
 
 """
-Radarr plugin Usenet indexers configuration.
+Usenet indexer configuration base class.
 """
 
 

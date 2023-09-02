@@ -13,7 +13,7 @@
 
 
 """
-Radarr plugin quality profile configuration.
+Quality profiles settings configuration.
 """
 
 

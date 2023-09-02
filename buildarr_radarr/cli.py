@@ -13,7 +13,7 @@
 
 
 """
-Radarr plugin CLI commands.
+Buildarr plugin CLI commands.
 """
 
 

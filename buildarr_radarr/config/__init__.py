@@ -13,7 +13,7 @@
 
 
 """
-Radarr plugin configuration.
+Plugin and instance configuration.
 """
 
 
@@ -122,11 +122,8 @@ class RadarrInstanceConfig(_RadarrInstanceConfig):
 
     If undefined or set to `null`, automatically retrieve the API key.
     This can only be done on Radarr instances with authentication disabled.
-    """
 
-    image: NonEmptyStr = "lscr.io/linuxserver/radarr"  # type: ignore[assignment]
-    """
-    The default Docker image URI when generating a Docker Compose file.
+    **If authentication is enabled on the Radarr instance, this field is required.**
     """
 
     version: Optional[str] = None
@@ -138,9 +135,14 @@ class RadarrInstanceConfig(_RadarrInstanceConfig):
     When undefined or set to `null`, the version tag will be set to `latest`.
     """
 
+    image: NonEmptyStr = "lscr.io/linuxserver/radarr"  # type: ignore[assignment]
+    """
+    The default Docker image URI to use when generating a Docker Compose file.
+    """
+
     settings: RadarrSettings = RadarrSettings()
     """
-    Radarr settings.
+    Radarr application settings.
 
     Configuration options for Radarr itself are set within this structure.
     """

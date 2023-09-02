@@ -13,7 +13,7 @@
 
 
 """
-Radarr plugin import list settings configuration.
+Import list settings configuration.
 """
 
 

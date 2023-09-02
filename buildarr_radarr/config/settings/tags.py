@@ -13,7 +13,7 @@
 
 
 """
-Radarr plugin tags configuration.
+Tags settings configuration.
 """
 
 

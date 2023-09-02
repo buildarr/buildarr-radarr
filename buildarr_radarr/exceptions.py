@@ -13,7 +13,7 @@
 
 
 """
-Radarr plugin exception classes.
+Plugin exception classes.
 """
 
 
@@ -24,7 +24,7 @@ from buildarr.exceptions import BuildarrError
 
 class RadarrError(BuildarrError):
     """
-    Radarr plugin exception base class.
+    Plugin exception base class.
     """
 
     pass
@@ -32,7 +32,9 @@ class RadarrError(BuildarrError):
 
 class RadarrAPIError(RadarrError):
     """
-    Radarr API exception class.
+    Application API exception class.
+
+    The `status_code` attribute can be used to check the returned HTTP status code.
     """
 
     def __init__(self, msg: str, status_code: int) -> None:
@@ -42,7 +44,7 @@ class RadarrAPIError(RadarrError):
 
 class RadarrSecretsError(RadarrError):
     """
-    Radarr plugin secrets exception base class.
+    Secrets exception base class.
     """
 
     pass

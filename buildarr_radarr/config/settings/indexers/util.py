@@ -13,7 +13,7 @@
 
 
 """
-Radarr plugin indexers settings configuration.
+Indexer configuration utility classes and functions.
 """
 
 
