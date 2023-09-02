@@ -1,38 +1,5 @@
 # Quality Profiles
 
-Quality profiles determine the allowed quality levels for media, and the behaviour of how to upgrade media files if higher quality versions become available.
-
-Within a quality profile you set upgrade settings, the maximum quality level to automatically upgrade media to, the allowed quality levels, and the priority given to those quality levels.
-
-```yaml
-radarr:
-  settings:
-    profiles:
-      quality_profiles:
-        # Set to `true` or `false` as desired. (Default `false`)
-        delete_unmanaged: true
-        definitions:
-          # Add Quality profiles here.
-          # The name of the block becomes the name of the quality profile.
-          SDTV:
-            upgrades_allowed: true
-            upgrade_until: "Bluray-1080p"
-            # Highest priority quality first, lowest priority goes last.
-            qualities:
-              - "Bluray-480p"
-              - "DVD"
-              - name: "WEB 480p"
-                members:
-                  - "WEBDL-480p"
-                  - "WEBRip-480p"
-              - "SDTV"
-          # Add additional quality profiles here as needed.
-```
-
-In Buildarr, quality profiles are defined using a dictonary structure. The quality levels listed in the `qualities` attribute are the qualities to enable, and are prioritised from first to last (top to bottom). Quality groups, where multiple qualities are given the same priority level, can also be defined.
-
-## General configuration
-
 ##### ::: buildarr_radarr.config.settings.profiles.quality_profiles.RadarrQualityProfilesSettings
     options:
       members:
@@ -41,9 +8,87 @@ In Buildarr, quality profiles are defined using a dictonary structure. The quali
 
 ## Creating a quality profile
 
+A basic quality profile looks something like this.
+
+```yaml
+...
+  quality_profiles:
+    SD:
+      upgrades_allowed: true
+      upgrade_until_quality: Bluray-480p
+      qualities:
+        - Bluray-480p
+        - DVD
+        - name: WEB 480p
+          members:
+            - WEBDL-480p
+            - WEBRip-480p
+      custom_formats:
+        - name: remaster
+          score: 0
+      language: english
+```
+
+For more insight into reasonable values for quality profiles,
+refer to these guides from [WikiArr](https://wiki.servarr.com/radarr/settings#quality-profiles)
+and TRaSH-Guides ([general](https://trash-guides.info/Radarr/radarr-setup-quality-profiles),
+[anime](https://trash-guides.info/Radarr/radarr-setup-quality-profiles-anime)).
+
 ##### ::: buildarr_radarr.config.settings.profiles.quality_profiles.QualityProfile
     options:
       members:
         - upgrades_allowed
-        - upgrade_until
+
+## Quality Levels
+
+Quality levels are used to prioritise media releases by resolution, bitrate and
+distribution method.
+
+```yaml
+...
+  qualities:
+    - Bluray-480p
+    - name: WEB 480p
+      members:
+        - WEBDL-480p
+        - WEBRip-480p
+```
+
+In Buildarr, the quality listed first (at the top) is given the highest priority, with
+subsequent qualities given lower priority. Quality levels not explicitly defined are
+disabled (not downloaded).
+
+Radarr supports grouping multiple qualities together to give them the same priority.
+In Buildarr, these are expressed by giving a `name` to the group, and listing the
+member quality levels under the `members` attribute.
+
+For details on the available quality levels, refer to
+[this guide](https://wiki.servarr.com/radarr/settings#qualities-defined) on WikiArr.
+
+##### ::: buildarr_radarr.config.settings.profiles.quality_profiles.QualityProfile
+    options:
+      members:
+        - upgrade_until_quality
         - qualities
+
+## Custom Formats
+
+##### ::: buildarr_radarr.config.settings.profiles.quality_profiles.QualityProfile
+    options:
+      members:
+        - minimum_custom_format_score
+        - upgrade_until_custom_format_score
+        - custom_formats
+
+##### ::: buildarr_radarr.config.settings.profiles.quality_profiles.CustomFormatScore
+    options:
+      members:
+        - name
+        - score
+
+## Language
+
+##### ::: buildarr_radarr.config.settings.profiles.quality_profiles.QualityProfile
+    options:
+      members:
+        - language

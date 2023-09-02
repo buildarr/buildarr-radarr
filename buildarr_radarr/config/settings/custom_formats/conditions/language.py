@@ -25,6 +25,7 @@ from buildarr.config import RemoteMapEntry
 from buildarr.types import NonEmptyStr
 from pydantic import validator
 
+from ....util import language_parse
 from .base import Condition
 
 
@@ -56,20 +57,9 @@ class LanguageCondition(Condition):
 
     _implementation: Literal["LanguageSpecification"] = "LanguageSpecification"
 
-    @classmethod
-    def _language_parse(cls, value: str) -> str:
-        # Results:
-        #   1. English -> english
-        #   2. english -> english
-        #   3. ENGLISH -> english
-        #   4. Portuguese (Brazil) -> portuguese-brazil
-        #   5. portuguese_brazil -> portuguese-brazil
-        #   6. PORTUGUESE-BRAZIL -> portuguese-brazil
-        return "-".join(value.lower().replace("_", "-").replace("()", "").split(" "))
-
     @validator("language")
     def validate_language(cls, value: str) -> str:
-        return cls._language_parse(value)
+        return language_parse(value)
 
     @classmethod
     def _get_remote_map(cls, api_schema_dict: Dict[str, Any]) -> List[RemoteMapEntry]:

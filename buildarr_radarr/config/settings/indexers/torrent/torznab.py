@@ -27,6 +27,7 @@ from buildarr.config import RemoteMapEntry
 from buildarr.types import NonEmptyStr, Password
 from pydantic import AnyHttpUrl, validator
 
+from ....util import language_parse
 from ..util import NabCategory
 from .base import TorrentIndexer
 
@@ -138,7 +139,7 @@ class TorznabIndexer(TorrentIndexer):
 
     @validator("multi_languages")
     def validate_language(cls, value: Set[str]) -> Set[str]:
-        return set(cls._language_parse(language) for language in value)
+        return set(language_parse(language) for language in value)
 
     @classmethod
     def _language_decode(cls, api_schema: radarr.IndexerResource, value: str) -> str:

@@ -32,6 +32,7 @@ from typing_extensions import Annotated, Self
 from ....api import radarr_api_client
 from ....secrets import RadarrSecrets
 from ...types import RadarrConfigBase
+from ...util import language_parse
 
 if TYPE_CHECKING:
     from ..custom_formats.custom_format import CustomFormat
@@ -64,42 +65,9 @@ class CustomFormatScore(RadarrConfigBase):
 
 
 class QualityProfile(RadarrConfigBase):
-    """
-    The main things to consider when creating a quality profile are
-    what quality settings to enable, and how to prioritise each.
-
-    ```yaml
-    ...
-      quality_profiles:
-        SDTV:
-          upgrades_allowed: true
-          upgrade_until_quality: "Bluray-1080p"
-          qualities:
-          - "Bluray-480p"
-          - "DVD"
-          - name: "WEB 480p"
-            members:
-              - "WEBDL-480p"
-              - "WEBRip-480p"
-          - "SDTV"
-          custom_formats:
-            "Name of Custom Format": 0
-          language: "English"
-    ```
-
-    In Buildarr, the quality listed first (at the top) is given the highest priority, with
-    subsequent qualities given lower priority. Qualities not explicitly defined are
-    disabled (not downloaded).
-
-    Radarr supports grouping multiple qualities together to give them the same priority.
-    In Buildarr, these are expressed by giving a `name` to the group, and listing the qualities
-    under the `members` attribute.
-
-    For more insight into reasonable values for quality profiles,
-    refer to these guides from [WikiArr](https://wiki.servarr.com/radarr/settings#quality-profiles)
-    and TRaSH-Guides ([general](https://trash-guides.info/Radarr/radarr-setup-quality-profiles),
-    [anime](https://trash-guides.info/Radarr/radarr-setup-quality-profiles-anime)).
-    """
+    # Quality profile definition configuration.
+    #
+    # For more information on how to configure this, refer to the plugin docs.
 
     upgrades_allowed: bool = False
     """
@@ -110,51 +78,59 @@ class QualityProfile(RadarrConfigBase):
 
     qualities: Annotated[List[Union[NonEmptyStr, QualityGroup]], Field(min_items=1)]
     """
-    The qualities to enable downloading episodes for. The order determines the priority
-    (highest priority first, lowest priority last).
+    The quality levels (or quality groups) to enable downloading releases for.
+    The order determines the priority (highest priority first, lowest priority last).
 
-    Individual qualities can be specified using the name (e.g. `Bluray-480p`).
-
-    Qualities can also be grouped together in a structure to give them the same
-    priority level. A new version of the episode will not be downloaded if it is
-    at least one of the qualities listed in the group, until a higher quality
-    version is found.
-
-    ```yaml
-    ...
-      qualities:
-        - name: "WEB 480p"
-          members:
-            - "WEBDL-480p"
-            - "WEBRip-480p"
-    ```
-
-    At least one quality must be specified.
+    At least one quality level must be specified.
     """
 
     upgrade_until_quality: Optional[NonEmptyStr] = None
     """
-    The maximum quality level to upgrade an episode to.
-    For a quality group, specify the group name.
+    The maximum quality level (or quality group) to upgrade a movie to.
 
-    Once this quality is reached Radarr will no longer download episodes.
+    Once this quality is reached, Radarr will no longer upgrade movie releases
+    based on quality level.
 
-    This attribute is required if `upgrades_allowed` is set to `True`.
+    This attribute is required if `upgrades_allowed` is set to `true`.
     """
 
     minimum_custom_format_score: int = 0
-    """ """
+    """
+    The minimum sum of custom format scores matching a release
+    for the release to be considered for download.
+
+    If the score sum is below this number, it will not be downloaded.
+    """
 
     upgrade_until_custom_format_score: int = 0
-    """ """
+    """
+    The maximum sum of custom format scores to upgrade a movie to.
+
+    Once this number is reached, Radarr will no longer upgrade movie releases
+    based on custom format score.
+
+    This must be greater than or equal to `minimum_custom_format_score`.
+    """
 
     custom_formats: List[CustomFormatScore] = []
     """
     If not defined here, add it with a score of 0 to the request.
     """
 
-    language: NonEmptyStr = "English"  # type: ignore[assignment]
-    """ """
+    language: NonEmptyStr = "english"  # type: ignore[assignment]
+    """
+    The desired media language, written in English.
+
+    Use the `any` keyword to allow any language.
+    Use the `original` keyword to require the original language of the media.
+
+    All languages supported by your Radarr instance version can be defined here.
+
+    Examples:
+
+    * `english`
+    * `portuguese-brazil`
+    """
 
     @validator("qualities")
     def validate_qualities(
@@ -235,6 +211,10 @@ class QualityProfile(RadarrConfigBase):
             custom_formats[name] = score
         return value
 
+    @validator("language")
+    def validate_language(cls, value: str) -> str:
+        return language_parse(value)
+
     @classmethod
     def _get_remote_map(
         cls,
@@ -286,10 +266,9 @@ class QualityProfile(RadarrConfigBase):
                 "language",
                 {
                     "decoder": lambda v: v["name"],
-                    "equals": lambda a, b: a.lower() == b.lower(),
                     "encoder": lambda v: {
-                        "id": api_languages[v.lower()].id,
-                        "name": api_languages[v.lower()].name,
+                        "id": api_languages[v].id,
+                        "name": api_languages[v].name,
                     },
                 },
             ),
@@ -517,7 +496,62 @@ class QualityProfile(RadarrConfigBase):
 
 class RadarrQualityProfilesSettings(RadarrConfigBase):
     """
-    Configuration parameters for controlling how Buildarr handles quality profiles.
+    Quality profiles are used by Radarr as the guideline for
+    desired quality when searching for releases.
+
+    When media is requested for download in Radarr, the user selects a quality profile
+    to use. Once all available releases have been found, the release that most closely
+    matches the quality profile will be selected for download.
+
+    Within a quality profile you can set desired [quality levels](../quality.md)
+    (and their priority), the maximum quality level to automatically upgrade media to,
+    and the priority of [Custom Formats](../custom-formats.md) within the context of this
+    profile.
+
+    ```yaml
+    radarr:
+      settings:
+        profiles:
+          quality_profiles:
+            delete_unmanaged: false
+            definitions:
+              # Add Quality profiles here.
+              # The name of the block becomes the name of the quality profile.
+              HD/SD:
+                upgrades_allowed: true
+                upgrade_until_quality: Bluray-1080p
+                qualities:
+                  - Bluray-1080p  # Quality definition name.
+                  - name: WEB 1080p  # Group quality definitions of equal priority.
+                    members:
+                      - WEBRip-1080p
+                    -   WEBDL-1080p
+                  - Bluray-720p
+                  - name: WEB 720p
+                    members:
+                      - WEBRip-720p
+                      - WEBDL-720p
+                  - Bluray-576p
+                  - Bluray-480p
+                  - name: WEB 480p
+                    members:
+                      - WEBRip-480p
+                      - WEBDL-480p
+                  - name: DVD-Video
+                    members:
+                      - DVD-R
+                      - DVD
+                minimum_custom_format_score: 0
+                upgrade_until_custom_format_score: 10000
+                custom_formats:
+                  - name: remaster  # Use the `default_score` field in the custom format definition.
+                  - name: 4k-remaster
+                    score: 100  # Explicitly set score for the custom format in the profile.
+                language: english
+    ```
+
+    In Buildarr, quality profiles are defined using a dictonary structure,
+    where the name of the definition becomes the name of the quality profile in Radarr.
     """
 
     delete_unmanaged: bool = False
@@ -525,16 +559,14 @@ class RadarrQualityProfilesSettings(RadarrConfigBase):
     Automatically delete quality profiles not defined in Buildarr.
 
     Out of the box Radarr provides some pre-defined quality profiles.
-    Take care when enabling this option, as those will also be deleted.
+    **If there are no quality profiles defined in Buildarr and
+    `delete_unmanaged` is `true`, Buildarr will delete all existing profiles.
+    Be careful when using `delete_unmanaged`.**
     """
 
     definitions: Dict[str, QualityProfile] = {}
     """
     Define quality profiles to configure on Radarr here.
-
-    If there are no quality profiles defined and `delete_unmanaged` is `False`,
-    Buildarr will not modify existing quality profiles, but if `delete_unmanaged` is `True`,
-    **Buildarr will delete all existing profiles. Be careful when using `delete_unmanaged`.**
     """
 
     def _render(self, custom_formats: Dict[str, CustomFormat]) -> None:
@@ -577,7 +609,7 @@ class RadarrQualityProfilesSettings(RadarrConfigBase):
                 for api_customformat in radarr.CustomFormatApi(api_client).list_custom_format()
             }
             api_languages: Dict[str, radarr.LanguageResource] = {
-                api_language.name_lower: api_language
+                language_parse(api_language.name): api_language
                 for api_language in radarr.LanguageApi(api_client).list_language()
             }
         for profile_name, profile in self.definitions.items():
