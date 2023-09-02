@@ -165,7 +165,7 @@ class RadarrNotificationsSettings(RadarrConfigBase):
         # If it does exist on the remote, attempt an an in-place modification,
         # and set the `changed` flag if modifications were made.
         for notification_name, notification in self.definitions.items():
-            notification_tree = f"{tree}.definitions[{repr(notification_name)}]"
+            notification_tree = f"{tree}.definitions[{notification_name!r}]"
             if notification_name not in remote.definitions:
                 notification._create_remote(
                     tree=notification_tree,
@@ -203,7 +203,7 @@ class RadarrNotificationsSettings(RadarrConfigBase):
         # the existence of the unmanaged definition.
         for notification_name, notification in remote.definitions.items():
             if notification_name not in self.definitions:
-                notification_tree = f"{tree}.definitions[{repr(notification_name)}]"
+                notification_tree = f"{tree}.definitions[{notification_name!r}]"
                 if self.delete_unmanaged:
                     logger.info("%s: (...) -> (deleted)", notification_tree)
                     notification._delete_remote(

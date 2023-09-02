@@ -189,7 +189,7 @@ class CustomFormat(RadarrConfigBase):
                         **self.get_create_remote_attrs(tree=tree, remote_map=self._remote_map),
                         "specifications": [
                             condition._create_remote(
-                                tree=f"{tree}.conditions[{repr(condition_name)}]",
+                                tree=f"{tree}.conditions[{condition_name!r}]",
                                 api_schema_dict=api_condition_schema_dicts[
                                     condition._implementation
                                 ],
@@ -223,7 +223,7 @@ class CustomFormat(RadarrConfigBase):
         )
         api_condition_dicts: List[Dict[str, Any]] = []
         for condition_name, condition in self.conditions.items():
-            condition_tree = f"{tree}.conditions[{repr(condition_name)}]"
+            condition_tree = f"{tree}.conditions[{condition_name!r}]"
             if condition_name not in remote.conditions:
                 api_condition_dicts.append(
                     condition._create_remote(
@@ -245,7 +245,7 @@ class CustomFormat(RadarrConfigBase):
                     changed = True
         for condition_name in remote.conditions.keys():
             if condition_name not in self.conditions:
-                condition_tree = f"{tree}.conditions[{repr(condition_name)}]"
+                condition_tree = f"{tree}.conditions[{condition_name!r}]"
                 if self.delete_unmanaged_conditions:
                     logger.info("%s: (...) -> (deleted)", condition_tree)
                     changed = True

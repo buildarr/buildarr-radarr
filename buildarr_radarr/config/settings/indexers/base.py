@@ -20,12 +20,12 @@ Radarr plugin indexers settings configuration.
 from __future__ import annotations
 
 from logging import getLogger
-from typing import Any, Dict, Iterable, List, Mapping, Optional
+from typing import Any, Dict, List, Mapping, Optional
 
 import radarr
 
 from buildarr.config import RemoteMapEntry
-from buildarr.types import BaseEnum, NonEmptyStr
+from buildarr.types import NonEmptyStr
 from pydantic import Field
 from typing_extensions import Self
 
@@ -34,33 +34,6 @@ from ....secrets import RadarrSecrets
 from ...types import RadarrConfigBase
 
 logger = getLogger(__name__)
-
-
-class NabCategory(BaseEnum):
-    """
-    Newznab/Torznab category enumeration.
-    """
-
-    TV_WEBDL = 5010
-    TV_FOREIGN = 5020
-    TV_SD = 5030
-    TV_HD = 5040
-    TV_UHD = 5045
-    TV_OTHER = 5050
-    TV_SPORTS = 5060
-    TV_ANIME = 5070
-    TV_DOCUMENTARY = 5080
-
-    # TODO: Make the enum also accept these values.
-    # TV_WEBDL = "TV/WEB-DL"
-    # TV_FOREIGN = "TV/Foreign"
-    # TV_SD = "TV/SD"
-    # TV_HD = "TV/HD"
-    # TV_UHD = "TV/UHD"
-    # TV_OTHER = "TV/Other"
-    # TV_SPORTS = "TV/Sports"
-    # TV_ANIME = "TV/Anime"
-    # TV_DOCUMENTARY = "TV/Documentary"
 
 
 class Indexer(RadarrConfigBase):
@@ -132,11 +105,12 @@ class Indexer(RadarrConfigBase):
     """
 
     _implementation: str
-    _remote_map: List[RemoteMapEntry]
+    _remote_map: List[RemoteMapEntry] = []
 
     @classmethod
     def _get_base_remote_map(
         cls,
+        api_schema: radarr.IndexerResource,
         downloadclient_ids: Mapping[str, int],
         tag_ids: Mapping[str, int],
     ) -> List[RemoteMapEntry]:
@@ -150,7 +124,7 @@ class Indexer(RadarrConfigBase):
                 "downloadClientId",
                 {
                     "decoder": lambda v: (
-                        [dc for dc, dc_id in downloadclient_ids.items() if dc_id == v][0]
+                        next(dc for dc, dc_id in downloadclient_ids.items() if dc_id == v)
                         if v
                         else None
                     ),
@@ -168,43 +142,65 @@ class Indexer(RadarrConfigBase):
         ]
 
     @classmethod
-    def _from_remote(
+    def _get_remote_map(
         cls,
+        api_schema: radarr.IndexerResource,
         downloadclient_ids: Mapping[str, int],
         tag_ids: Mapping[str, int],
-        remote_attrs: Mapping[str, Any],
+    ) -> List[RemoteMapEntry]:
+        return []
+
+    @classmethod
+    def _from_remote(
+        cls,
+        api_schema: radarr.IndexerResource,
+        downloadclient_ids: Mapping[str, int],
+        tag_ids: Mapping[str, int],
+        api_indexer: radarr.IndexerResource,
     ) -> Self:
         return cls(
             **cls.get_local_attrs(
-                cls._get_base_remote_map(downloadclient_ids, tag_ids) + cls._remote_map,
-                remote_attrs,
+                remote_map=(
+                    cls._get_base_remote_map(
+                        api_schema=api_schema,
+                        downloadclient_ids=downloadclient_ids,
+                        tag_ids=tag_ids,
+                    )
+                    + cls._get_remote_map(
+                        api_schema=api_schema,
+                        downloadclient_ids=downloadclient_ids,
+                        tag_ids=tag_ids,
+                    )
+                    + cls._remote_map
+                ),
+                remote_attrs=api_indexer.to_dict(),
             ),
         )
-
-    def _get_api_schema(self, schemas: Iterable[radarr.IndexerResource]) -> Dict[str, Any]:
-        return {
-            k: v
-            for k, v in next(
-                s for s in schemas if s.implementation.lower() == self._implementation.lower()
-            )
-            .to_dict()
-            .items()
-            if k not in ["id", "name"]
-        }
 
     def _create_remote(
         self,
         tree: str,
         secrets: RadarrSecrets,
-        api_indexer_schemas: Iterable[radarr.IndexerResource],
+        api_schema: radarr.IndexerResource,
         downloadclient_ids: Mapping[str, int],
         tag_ids: Mapping[str, int],
         indexer_name: str,
     ) -> None:
-        api_schema = self._get_api_schema(api_indexer_schemas)
         set_attrs = self.get_create_remote_attrs(
             tree=tree,
-            remote_map=self._get_base_remote_map(downloadclient_ids, tag_ids) + self._remote_map,
+            remote_map=(
+                self._get_base_remote_map(
+                    api_schema=api_schema,
+                    downloadclient_ids=downloadclient_ids,
+                    tag_ids=tag_ids,
+                )
+                + self._get_remote_map(
+                    api_schema=api_schema,
+                    downloadclient_ids=downloadclient_ids,
+                    tag_ids=tag_ids,
+                )
+                + self._remote_map
+            ),
         )
         field_values: Dict[str, Any] = {
             field["name"]: field["value"] for field in set_attrs["fields"]
@@ -224,6 +220,7 @@ class Indexer(RadarrConfigBase):
         tree: str,
         secrets: RadarrSecrets,
         remote: Self,
+        api_schema: radarr.IndexerResource,
         downloadclient_ids: Mapping[str, int],
         tag_ids: Mapping[str, int],
         api_indexer: radarr.IndexerResource,
@@ -231,8 +228,19 @@ class Indexer(RadarrConfigBase):
         updated, updated_attrs = self.get_update_remote_attrs(
             tree=tree,
             remote=remote,
-            remote_map=self._get_base_remote_map(downloadclient_ids, tag_ids) + self._remote_map,
-            set_unchanged=True,
+            remote_map=(
+                self._get_base_remote_map(
+                    api_schema=api_schema,
+                    downloadclient_ids=downloadclient_ids,
+                    tag_ids=tag_ids,
+                )
+                + self._get_remote_map(
+                    api_schema=api_schema,
+                    downloadclient_ids=downloadclient_ids,
+                    tag_ids=tag_ids,
+                )
+                + self._remote_map
+            ),
         )
         if updated:
             if "fields" in updated_attrs:

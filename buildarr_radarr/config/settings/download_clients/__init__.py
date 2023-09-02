@@ -20,7 +20,7 @@ Radarr plugin download client settings.
 from __future__ import annotations
 
 from logging import getLogger
-from typing import Dict, Tuple, Type, Union
+from typing import Dict, Union
 
 import radarr
 
@@ -30,54 +30,47 @@ from typing_extensions import Annotated, Self
 from ....api import radarr_api_client
 from ....secrets import RadarrSecrets
 from ...types import RadarrConfigBase
-from .base import DownloadClient
-from .torrent import (
-    Aria2DownloadClient,
-    DelugeDownloadClient,
-    DownloadstationTorrentDownloadClient,
-    FloodDownloadClient,
-    HadoukenDownloadClient,
-    QbittorrentDownloadClient,
-    RtorrentDownloadClient,
-    TorrentBlackholeDownloadClient,
-    TransmissionDownloadClient,
-    UtorrentDownloadClient,
-    VuzeDownloadClient,
-)
-from .usenet import (
-    DownloadstationUsenetDownloadClient,
-    NzbgetDownloadClient,
-    NzbvortexDownloadClient,
-    PneumaticDownloadClient,
-    SabnzbdDownloadClient,
-    UsenetBlackholeDownloadClient,
-)
+from .torrent.aria2 import Aria2DownloadClient
+from .torrent.blackhole import TorrentBlackholeDownloadClient
+from .torrent.deluge import DelugeDownloadClient
+from .torrent.downloadstation import DownloadstationTorrentDownloadClient
+from .torrent.flood import FloodDownloadClient
+from .torrent.hadouken import HadoukenDownloadClient
+from .torrent.qbittorrent import QbittorrentDownloadClient
+from .torrent.rtorrent import RtorrentDownloadClient
+from .torrent.transmission import TransmissionDownloadClient
+from .torrent.utorrent import UtorrentDownloadClient
+from .torrent.vuze import VuzeDownloadClient
+from .usenet.blackhole import UsenetBlackholeDownloadClient
+from .usenet.downloadstation import DownloadstationUsenetDownloadClient
+from .usenet.nzbget import NzbgetDownloadClient
+from .usenet.nzbvortex import NzbvortexDownloadClient
+from .usenet.pneumatic import PneumaticDownloadClient
+from .usenet.sabnzbd import SabnzbdDownloadClient
 
 logger = getLogger(__name__)
 
-DOWNLOADCLIENT_TYPES: Tuple[Type[DownloadClient], ...] = (
-    Aria2DownloadClient,
-    DelugeDownloadClient,
-    DownloadstationTorrentDownloadClient,
-    DownloadstationUsenetDownloadClient,
-    FloodDownloadClient,
-    HadoukenDownloadClient,
-    NzbgetDownloadClient,
-    NzbvortexDownloadClient,
-    PneumaticDownloadClient,
-    QbittorrentDownloadClient,
-    RtorrentDownloadClient,
-    SabnzbdDownloadClient,
-    TorrentBlackholeDownloadClient,
-    TransmissionDownloadClient,
-    UsenetBlackholeDownloadClient,
-    UtorrentDownloadClient,
-    VuzeDownloadClient,
-)
-
 DOWNLOADCLIENT_TYPE_MAP = {
-    downloadclient_type._implementation.lower(): downloadclient_type
-    for downloadclient_type in DOWNLOADCLIENT_TYPES
+    downloadclient_type._implementation: downloadclient_type  # type: ignore[attr-defined]
+    for downloadclient_type in (
+        Aria2DownloadClient,
+        DelugeDownloadClient,
+        DownloadstationTorrentDownloadClient,
+        DownloadstationUsenetDownloadClient,
+        FloodDownloadClient,
+        HadoukenDownloadClient,
+        NzbgetDownloadClient,
+        NzbvortexDownloadClient,
+        PneumaticDownloadClient,
+        QbittorrentDownloadClient,
+        RtorrentDownloadClient,
+        SabnzbdDownloadClient,
+        TorrentBlackholeDownloadClient,
+        TransmissionDownloadClient,
+        UsenetBlackholeDownloadClient,
+        UtorrentDownloadClient,
+        VuzeDownloadClient,
+    )
 }
 
 DownloadClientType = Union[
@@ -99,6 +92,8 @@ DownloadClientType = Union[
     UtorrentDownloadClient,
     VuzeDownloadClient,
 ]
+
+poop = 0
 
 
 class RadarrDownloadClientsSettings(RadarrConfigBase):
@@ -152,8 +147,8 @@ class RadarrDownloadClientsSettings(RadarrConfigBase):
             )
         return cls(
             definitions={
-                api_downloadclient.name: DOWNLOADCLIENT_TYPE_MAP[
-                    api_downloadclient.implementation.lower()
+                api_downloadclient.name: DOWNLOADCLIENT_TYPE_MAP[  # type: ignore[attr-defined]
+                    api_downloadclient.implementation
                 ]._from_remote(tag_ids=tag_ids, remote_attrs=api_downloadclient.to_dict())
                 for api_downloadclient in api_downloadclients
             },
@@ -187,7 +182,7 @@ class RadarrDownloadClientsSettings(RadarrConfigBase):
         # If it does exist on the remote, attempt an an in-place modification,
         # and set the `changed` flag if modifications were made.
         for downloadclient_name, downloadclient in self.definitions.items():
-            downloadclient_tree = f"{tree}.definitions[{repr(downloadclient_name)}]"
+            downloadclient_tree = f"{tree}.definitions[{downloadclient_name!r}]"
             if downloadclient_name not in remote.definitions:
                 downloadclient._create_remote(
                     tree=downloadclient_tree,
@@ -226,7 +221,7 @@ class RadarrDownloadClientsSettings(RadarrConfigBase):
         # the existence of the unmanaged definition.
         for downloadclient_name, downloadclient in remote.definitions.items():
             if downloadclient_name not in self.definitions:
-                downloadclient_tree = f"{tree}.definitions[{repr(downloadclient_name)}]"
+                downloadclient_tree = f"{tree}.definitions[{downloadclient_name!r}]"
                 if self.delete_unmanaged:
                     logger.info("%s: (...) -> (deleted)", downloadclient_tree)
                     downloadclient._delete_remote(

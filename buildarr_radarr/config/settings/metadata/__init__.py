@@ -50,10 +50,10 @@ class RadarrMetadataSettings(RadarrConfigBase):
     certification_country: LowerCaseNonEmptyStr = "us"  # type: ignore[assignment]
     """ """
 
-    emby_legacy = EmbyLegacyMetadata()
-    kodi_emby = KodiEmbyMetadata()
-    roksbox = RoksboxMetadata()
-    wdtv = WdtvMetadata()
+    emby_legacy: EmbyLegacyMetadata = EmbyLegacyMetadata()
+    kodi_emby: KodiEmbyMetadata = KodiEmbyMetadata()
+    roksbox: RoksboxMetadata = RoksboxMetadata()
+    wdtv: WdtvMetadata = WdtvMetadata()
 
     _remote_map: List[RemoteMapEntry] = [("certification_country", "certificationCountry", {})]
 

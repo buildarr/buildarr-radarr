@@ -22,14 +22,17 @@ from __future__ import annotations
 import functools
 
 from getpass import getpass
+from typing import cast
 from urllib.parse import urlparse
 
 import click
-import click_params  # type: ignore[import]
+
+from buildarr.types import NonEmptyStr, Port
 
 from .config import RadarrInstanceConfig
 from .manager import RadarrManager
 from .secrets import RadarrSecrets
+from .types import ArrApiKey, RadarrProtocol
 
 HOSTNAME_PORT_TUPLE_LENGTH = 2
 
@@ -49,7 +52,7 @@ def radarr():
         "The configuration is dumped to standard output in Buildarr-compatible YAML format."
     ),
 )
-@click.argument("url", type=click_params.URL)
+@click.argument("url", type=click.STRING)
 @click.option(
     "-k",
     "--api-key",
@@ -77,12 +80,16 @@ def dump_config(url: str, api_key: str) -> int:
     click.echo(
         RadarrManager()
         .from_remote(
-            instance_config=RadarrInstanceConfig(hostname=hostname, port=port, protocol=protocol),
+            instance_config=RadarrInstanceConfig(
+                hostname=cast(NonEmptyStr, hostname),
+                port=cast(Port, port),
+                protocol=cast(RadarrProtocol, protocol),
+            ),
             secrets=RadarrSecrets(
-                hostname=hostname,
-                port=port,
-                protocol=protocol,
-                api_key=api_key,
+                hostname=cast(NonEmptyStr, hostname),
+                port=cast(Port, port),
+                protocol=cast(RadarrProtocol, protocol),
+                api_key=cast(ArrApiKey, api_key),
             ),
         )
         .yaml(),

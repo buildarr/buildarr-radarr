@@ -28,7 +28,6 @@ from .custom_formats import RadarrCustomFormatsSettings
 from .download_clients import RadarrDownloadClientsSettings
 from .general import RadarrGeneralSettings
 from .indexers import RadarrIndexersSettings
-from .lists import RadarrListsSettings
 from .media_management import RadarrMediaManagementSettings
 from .metadata import RadarrMetadataSettings
 from .notifications import RadarrNotificationsSettings
@@ -46,13 +45,16 @@ class RadarrSettings(RadarrConfigBase):
     Radarr settings, used to configure a remote Radarr instance.
     """
 
-    media_management: RadarrMediaManagementSettings = RadarrMediaManagementSettings()
+    media_management: RadarrMediaManagementSettings = (
+        RadarrMediaManagementSettings()  # type: ignore[call-arg]
+    )
     profiles: RadarrProfilesSettings = RadarrProfilesSettings()
     quality: RadarrQualitySettings = RadarrQualitySettings()
     custom_formats: RadarrCustomFormatsSettings = RadarrCustomFormatsSettings()
-    indexers: RadarrIndexersSettings = RadarrIndexersSettings()
+    indexers: RadarrIndexersSettings = RadarrIndexersSettings()  # type: ignore[call-arg]
     download_clients: RadarrDownloadClientsSettings = RadarrDownloadClientsSettings()
-    lists: RadarrListsSettings = RadarrListsSettings()
+    # TODO: Enable import lists.
+    # lists: RadarrListsSettings = RadarrListsSettings()
     notifications: RadarrNotificationsSettings = RadarrNotificationsSettings()
     metadata: RadarrMetadataSettings = RadarrMetadataSettings()
     tags: RadarrTagsSettings = RadarrTagsSettings()
@@ -114,12 +116,12 @@ class RadarrSettings(RadarrConfigBase):
                     remote=remote.profiles,
                     check_unmanaged=check_unmanaged,
                 ),
-                self.lists.update_remote(
-                    tree=f"{tree}.lists",
-                    secrets=secrets,
-                    remote=remote.lists,
-                    check_unmanaged=check_unmanaged,
-                ),
+                # self.lists.update_remote(
+                #     tree=f"{tree}.lists",
+                #     secrets=secrets,
+                #     remote=remote.lists,
+                #     check_unmanaged=check_unmanaged,
+                # ),
                 self.notifications.update_remote(
                     tree=f"{tree}.notifications",
                     secrets=secrets,
@@ -164,7 +166,11 @@ class RadarrSettings(RadarrConfigBase):
                     secrets=secrets,
                     remote=remote.media_management,
                 ),
-                self.lists.delete_remote(f"{tree}.lists", secrets, remote.lists),
+                # self.lists.delete_remote(
+                #     tree=f"{tree}.lists",
+                #     secrets=secrets,
+                #     remote=remote.lists,
+                # ),
                 self.notifications.delete_remote(
                     tree=f"{tree}.notifications",
                     secrets=secrets,

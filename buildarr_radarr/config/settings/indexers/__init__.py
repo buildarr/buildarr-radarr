@@ -20,7 +20,7 @@ Radarr plugin indexer settings.
 from __future__ import annotations
 
 from logging import getLogger
-from typing import Dict, List, Tuple, Type, Union
+from typing import Dict, List, Union
 
 import radarr
 
@@ -31,48 +31,45 @@ from typing_extensions import Annotated, Self
 from ....api import radarr_api_client
 from ....secrets import RadarrSecrets
 from ...types import RadarrConfigBase
-from .base import Indexer
-from .torrent import (
-    FilelistIndexer,
-    HdbitsIndexer,
-    IptorrentsIndexer,
-    NyaaIndexer,
-    # PassthepopornIndexer,
-    RarbgIndexer,
-    TorrentrssfeedIndexer,
-    # TorrentPotatoIndexer,
-    TorznabIndexer,
-)
-from .usenet import NewznabIndexer
+from .torrent.filelist import FilelistIndexer
+from .torrent.hdbits import HdbitsIndexer
+from .torrent.iptorrents import IptorrentsIndexer
+from .torrent.nyaa import NyaaIndexer
+from .torrent.rarbg import RarbgIndexer
+from .torrent.rss import TorrentRssIndexer
+from .torrent.torznab import TorznabIndexer
+from .usenet.newznab import NewznabIndexer
+
+# from .torrent.passthepopcorn import PassthepopornIndexer
+# from .torrent.torrentpotato import TorrentPotatoIndexer
 
 logger = getLogger(__name__)
 
-INDEXER_TYPES: Tuple[Type[Indexer], ...] = (
-    NewznabIndexer,
-    FilelistIndexer,
-    HdbitsIndexer,
-    IptorrentsIndexer,
-    NyaaIndexer,
-    # PassthepopornIndexer,
-    RarbgIndexer,
-    TorrentrssfeedIndexer,
-    # TorrentPotatoIndexer,
-    TorznabIndexer,
-)
-
 INDEXER_TYPE_MAP = {
-    indexer_type._implementation.lower(): indexer_type for indexer_type in INDEXER_TYPES
+    indexer_type._implementation: indexer_type  # type: ignore[attr-defined]
+    for indexer_type in (
+        FilelistIndexer,
+        HdbitsIndexer,
+        IptorrentsIndexer,
+        NewznabIndexer,
+        NyaaIndexer,
+        # PassthepopornIndexer,
+        RarbgIndexer,
+        TorrentRssIndexer,
+        # TorrentPotatoIndexer,
+        TorznabIndexer,
+    )
 }
 
 IndexerType = Union[
-    NewznabIndexer,
     FilelistIndexer,
     HdbitsIndexer,
     IptorrentsIndexer,
+    NewznabIndexer,
     NyaaIndexer,
     # PassthepopornIndexer,
     RarbgIndexer,
-    TorrentrssfeedIndexer,
+    TorrentRssIndexer,
     # TorrentPotatoIndexer,
     TorznabIndexer,
 ]
@@ -173,26 +170,36 @@ class RadarrIndexersSettings(RadarrConfigBase):
     def from_remote(cls, secrets: RadarrSecrets) -> Self:
         with radarr_api_client(secrets=secrets) as api_client:
             api_indexer_config = radarr.IndexerConfigApi(api_client).get_indexer_config()
-            api_indexers = radarr.IndexerApi(api_client).list_indexer()
+            indexer_api = radarr.IndexerApi(api_client)
+            api_indexer_schemas: Dict[str, radarr.IndexerResource] = {
+                api_schema.implementation: api_schema
+                for api_schema in indexer_api.list_indexer_schema()
+            }
+            api_indexers: Dict[str, radarr.IndexerResource] = {
+                api_indexer.name: api_indexer for api_indexer in indexer_api.list_indexer()
+            }
             downloadclient_ids: Dict[str, int] = (
                 {dc.name: dc.id for dc in radarr.DownloadClientApi().list_download_client()}
-                if any(api_indexer.download_client_id for api_indexer in api_indexers)
+                if any(api_indexer.download_client_id for api_indexer in api_indexers.values())
                 else {}
             )
             tag_ids: Dict[str, int] = (
                 {tag.label: tag.id for tag in radarr.TagApi(api_client).list_tag()}
-                if any(api_indexer.tags for api_indexer in api_indexers)
+                if any(api_indexer.tags for api_indexer in api_indexers.values())
                 else {}
             )
         return cls(
             **cls.get_local_attrs(cls._remote_map, api_indexer_config.to_dict()),
             definitions={
-                api_indexer.name: INDEXER_TYPE_MAP[api_indexer.implementation.lower()]._from_remote(
+                indexer_name: INDEXER_TYPE_MAP[  # type: ignore[attr-defined]
+                    api_indexer.implementation
+                ]._from_remote(
+                    api_schema=api_indexer_schemas[api_indexer.implementation],
                     downloadclient_ids=downloadclient_ids,
                     tag_ids=tag_ids,
-                    remote_attrs=api_indexer.to_dict(),
+                    api_indexer=api_indexer,
                 )
-                for api_indexer in api_indexers
+                for indexer_name, api_indexer in api_indexers.items()
             },
         )
 
@@ -206,16 +213,24 @@ class RadarrIndexersSettings(RadarrConfigBase):
         updated = False
         with radarr_api_client(secrets=secrets) as api_client:
             api_indexer_config = radarr.IndexerConfigApi(api_client).get_indexer_config()
-            api_indexer_schemas = radarr.IndexerApi(api_client).list_indexer_schema()
-            api_indexers = radarr.IndexerApi(api_client).list_indexer()
+            indexer_api = radarr.IndexerApi(api_client)
+            api_indexer_schemas: Dict[str, radarr.IndexerResource] = {
+                api_schema.implementation: api_schema
+                for api_schema in indexer_api.list_indexer_schema()
+            }
+            api_indexers: Dict[str, radarr.IndexerResource] = {
+                api_indexer.name: api_indexer for api_indexer in indexer_api.list_indexer()
+            }
             downloadclient_ids: Dict[str, int] = (
                 {dc.name: dc.id for dc in radarr.DownloadClientApi().list_download_client()}
-                if any(api_indexer.download_client_id for api_indexer in api_indexers)
+                if any(indexer.download_client for indexer in self.definitions.values())
+                or any(indexer.download_client for indexer in remote.definitions.values())
                 else {}
             )
             tag_ids: Dict[str, int] = (
                 {tag.label: tag.id for tag in radarr.TagApi(api_client).list_tag()}
-                if any(api_indexer.tags for api_indexer in api_indexers)
+                if any(indexer.tags for indexer in self.definitions.values())
+                or any(indexer.tags for indexer in remote.definitions.values())
                 else {}
             )
         config_updated, config_updated_attrs = self.get_update_remote_attrs(
@@ -233,12 +248,13 @@ class RadarrIndexersSettings(RadarrConfigBase):
                 )
             updated = True
         for indexer_name, indexer in self.definitions.items():
-            indexer_tree = f"{tree}.definitions[{repr(indexer_name)}]"
+            indexer_tree = f"{tree}.definitions[{indexer_name!r}]"
+            api_schema = api_indexer_schemas[indexer._implementation]
             if indexer_name not in remote.definitions:
                 indexer._create_remote(
                     tree=indexer_tree,
                     secrets=secrets,
-                    api_indexer_schemas=api_indexer_schemas,
+                    api_schema=api_schema,
                     downloadclient_ids=downloadclient_ids,
                     tag_ids=tag_ids,
                     indexer_name=indexer_name,
@@ -247,6 +263,7 @@ class RadarrIndexersSettings(RadarrConfigBase):
             elif indexer._update_remote(
                 tree=indexer_tree,
                 secrets=secrets,
+                api_schema=api_schema,
                 remote=remote.definitions[indexer_name],  # type: ignore[arg-type]
                 downloadclient_ids=downloadclient_ids,
                 tag_ids=tag_ids,
@@ -264,7 +281,7 @@ class RadarrIndexersSettings(RadarrConfigBase):
             }
         for indexer_name, indexer in remote.definitions.items():
             if indexer_name not in self.definitions:
-                indexer_tree = f"{tree}.definitions[{repr(indexer_name)}]"
+                indexer_tree = f"{tree}.definitions[{indexer_name!r}]"
                 if self.delete_unmanaged:
                     logger.info("%s: (...) -> (deleted)", indexer_tree)
                     indexer._delete_remote(

@@ -19,24 +19,14 @@ Radarr plugin Usenet indexers configuration.
 
 from __future__ import annotations
 
-from logging import getLogger
 from typing import List, Literal, Optional, Set
 
 from buildarr.config import RemoteMapEntry
 from buildarr.types import NonEmptyStr, Password
 from pydantic import AnyHttpUrl
 
-from .base import Indexer, NabCategory
-
-logger = getLogger(__name__)
-
-
-class UsenetIndexer(Indexer):
-    """
-    Usenet indexer base class.
-    """
-
-    pass
+from ..util import NabCategory
+from .base import UsenetIndexer
 
 
 class NewznabIndexer(UsenetIndexer):
@@ -66,22 +56,28 @@ class NewznabIndexer(UsenetIndexer):
     API key for use with the Newznab API.
     """
 
-    categories: Set[NabCategory] = {NabCategory.TV_SD, NabCategory.TV_HD}
+    categories: Set[NabCategory] = {
+        NabCategory.MOVIES_FOREIGN,
+        NabCategory.MOVIES_OTHER,
+        NabCategory.MOVIES_SD,
+        NabCategory.MOVIES_HD,
+        NabCategory.MOVIES_UHD,
+        NabCategory.MOVIES_BLURAY,
+        NabCategory.MOVIES_3D,
+    }
     """
-    Categories to monitor for standard/daily shows.
+    Categories to monitor for release.
     Define as empty to disable.
 
     Values:
 
-    * `TV-WEBDL`
-    * `TV-Foreign`
-    * `TV-SD`
-    * `TV-HD`
-    * `TV-UHD`
-    * `TV-Other`
-    * `TV-Sports`
-    * `TV-Anime`
-    * `TV-Documentary`
+    * `Movies-Foreign`
+    * `Movies-Other`
+    * `Movies-SD`
+    * `Movies-HD`
+    * `Movies-UHD`
+    * `Movies-Bluray`
+    * `Movies-3D`
     """
 
     anime_categories: Set[NabCategory] = set()

@@ -109,7 +109,7 @@ class RadarrCustomFormatsSettings(RadarrConfigBase):
         # If it does exist on the remote, attempt an an in-place modification,
         # and set the `changed` flag if modifications were made.
         for customformat_name, customformat in self.definitions.items():
-            customformat_tree = f"{tree}.definitions[{repr(customformat_name)}]"
+            customformat_tree = f"{tree}.definitions[{customformat_name!r}]"
             if customformat_name not in remote.definitions:
                 customformat._create_remote(
                     tree=customformat_tree,
@@ -145,7 +145,7 @@ class RadarrCustomFormatsSettings(RadarrConfigBase):
         # the existence of the unmanaged definition.
         for customformat_name, customformat in remote.definitions.items():
             if customformat_name not in self.definitions:
-                customformat_tree = f"{tree}.definitions[{repr(customformat_name)}]"
+                customformat_tree = f"{tree}.definitions[{customformat_name!r}]"
                 if self.delete_unmanaged:
                     logger.info("%s: (...) -> (deleted)", customformat_tree)
                     customformat._delete_remote(
