@@ -1,6 +1,6 @@
 # Tags
 
-##### ::: buildarr_prowlarr.config.settings.tags.ProwlarrTagsSettings
+##### ::: buildarr_radarr.config.settings.tags.RadarrTagsSettings
     options:
       members:
         - definitions

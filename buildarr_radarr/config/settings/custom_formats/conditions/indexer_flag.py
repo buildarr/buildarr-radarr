@@ -10,6 +10,13 @@
 #
 # You should have received a copy of the GNU General Public License along with Buildarr.
 # If not, see <https://www.gnu.org/licenses/>.
+
+
+"""
+Custom format condition for matching based on indexer flags.
+"""
+
+
 from __future__ import annotations
 
 from typing import Any, Dict, List, Literal, cast
@@ -21,13 +28,34 @@ from .base import Condition
 
 
 class IndexerFlagCondition(Condition):
-    """ """
+    """
+    Custom format condition for matching based on indexer flags.
+    """
 
     type: Literal["indexer-flag", "indexer_flag", "indexerflag"] = "indexer-flag"
-    """ """
+    """
+    Buildarr type keywords associated with this condition type.
+    """
 
     flag: NonEmptyStr
-    """If str, check against API. Otherwise, use integer value directly."""
+    """
+    The indexer flag to match against.
+
+    All values supported by your Radarr instance version can be defined.
+    As of Radarr v4.7.5, the following flags are available:
+
+    * `g-freeleech`
+    * `g-halfleech`
+    * `g-doubleupload`
+    * `ptp-golden`
+    * `ptp-approved`
+    * `hdb-internal`
+    * `ahd-internal`
+    * `g-scene`
+    * `g-freeleech75`
+    * `g-freeleech25`
+    * `ahd-userrelease`
+    """
 
     _implementation: Literal["IndexerFlagSpecification"] = "IndexerFlagSpecification"
 

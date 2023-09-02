@@ -13,7 +13,7 @@
 
 
 """
-Prowlarr plugin notification connection configuration.
+Custom script notification connection configuration.
 """
 
 
@@ -32,7 +32,7 @@ logger = getLogger(__name__)
 
 class CustomScriptNotification(Notification):
     """
-    Execute a local script on the Prowlarr instance when events occur.
+    Execute a local script on the Radarr host (container) when events occur.
     """
 
     type: Literal["custom-script", "custom_script", "customscript"] = "custom-script"

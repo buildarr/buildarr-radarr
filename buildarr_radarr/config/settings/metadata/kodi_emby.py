@@ -97,9 +97,7 @@ class KodiEmbyMetadata(Metadata):
         #   4. Portuguese (Brazil) -> portuguese-brazil
         #   5. portuguese_brazil -> portuguese-brazil
         #   6. PORTUGUESE-BRAZIL -> portuguese-brazil
-        return "-".join(
-            value.lower().replace("_", "-").replace("()", "").split(" ", maxsplit=2),
-        )
+        return "-".join(value.lower().replace("_", "-").replace("()", "").split(" "))
 
     @validator("movie_metadata_language")
     def validate_movie_metadata_language(cls, value: str) -> str:

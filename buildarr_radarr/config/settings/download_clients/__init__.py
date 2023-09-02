@@ -13,7 +13,7 @@
 
 
 """
-Radarr plugin download client settings.
+Download client settings configuration.
 """
 
 
@@ -98,32 +98,34 @@ poop = 0
 
 class RadarrDownloadClientsSettings(RadarrConfigBase):
     """
-    Download clients are entirely optional in Radarr, but are available
-    so you can manually perform grabs entirely within Radarr.
-
-    In Buildarr, download clients for Radarr are configured in
-    [much the same way](https://buildarr.github.io/plugins/sonarr/configuration/download-clients)
-    as they are for Sonarr, although some attributes are different.
-
-    The main differences are:
-
-    * All instances of the `recent_priority` attribute are renamed to `client_priority`.
-    * The `older_priority` attribute has been removed.
-    * Any attribute relating to post-import management has been removed.
-
-    Download clients that use Usenet or BitTorrent can be configured.
+    Download clients are defined using the following format.
+    Here is an example of a Transmission download client being configured.
 
     ```yaml
+    ---
+
     radarr:
       settings:
         download_clients:
           definitions:
-            Transmission:
-              type: "transmission"
+            Transmission: # Name of the download client
+              type: "transmission" # Type of download client
+              enable: true # Enable the download client in Radarr
               host: "transmission"
               port: 9091
-              ...
+              category: "radarr"
+              # Define any other type-specific or global
+              # download client attributes as needed.
     ```
+
+    Every download client definition must have the correct `type` value defined,
+    to tell Buildarr what type of download client to configure.
+    The name of the download client definition is just a name, and has no meaning.
+
+    `enable` can be set to `false` to keep the download client configured on Radarr,
+    but disabled so that it is inactive.
+
+    The below attributes can be defined on any type of download client.
     """
 
     delete_unmanaged: bool = False

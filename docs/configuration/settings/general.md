@@ -3,7 +3,7 @@
 General configuration for Prowlarr are separated by category.
 
 ```yaml
-prowlarr:
+radarr:
   settings:
     general:
       host:
@@ -35,7 +35,7 @@ Take care when changing these settings.
 
 ## Host
 
-##### ::: buildarr_prowlarr.config.settings.general.HostGeneralSettings
+##### ::: buildarr_radarr.config.settings.general.HostGeneralSettings
     options:
       members:
         - bind_address
@@ -47,7 +47,7 @@ Take care when changing these settings.
 
 ## Security
 
-##### ::: buildarr_prowlarr.config.settings.general.SecurityGeneralSettings
+##### ::: buildarr_radarr.config.settings.general.SecurityGeneralSettings
     options:
       members:
         - authentication
@@ -58,7 +58,7 @@ Take care when changing these settings.
 
 ## Proxy
 
-##### ::: buildarr_prowlarr.config.settings.general.ProxyGeneralSettings
+##### ::: buildarr_radarr.config.settings.general.ProxyGeneralSettings
     options:
       members:
         - enable
@@ -72,21 +72,21 @@ Take care when changing these settings.
 
 ## Logging
 
-##### ::: buildarr_prowlarr.config.settings.general.LoggingGeneralSettings
+##### ::: buildarr_radarr.config.settings.general.LoggingGeneralSettings
     options:
       members:
         - log_level
 
 ## Analytics
 
-##### ::: buildarr_prowlarr.config.settings.general.AnalyticsGeneralSettings
+##### ::: buildarr_radarr.config.settings.general.AnalyticsGeneralSettings
     options:
       members:
         - send_anonymous_usage_data
 
 ## Updates
 
-##### ::: buildarr_prowlarr.config.settings.general.UpdatesGeneralSettings
+##### ::: buildarr_radarr.config.settings.general.UpdatesGeneralSettings
     options:
       members:
         - branch
@@ -96,7 +96,7 @@ Take care when changing these settings.
 
 ## Backup
 
-##### ::: buildarr_prowlarr.config.settings.general.BackupGeneralSettings
+##### ::: buildarr_radarr.config.settings.general.BackupGeneralSettings
     options:
       members:
         - folder

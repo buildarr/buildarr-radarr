@@ -13,7 +13,7 @@
 
 
 """
-Radarr plugin Usenet download client definitions.
+NZBVortex download client configuration.
 """
 
 
@@ -28,16 +28,6 @@ from .base import UsenetDownloadClient
 
 
 class NzbvortexPriority(BaseEnum):
-    """
-    NZBVortex media priority.
-
-    Values:
-
-    * `low` (Low)
-    * `normal` (Normal)
-    * `high` (High)
-    """
-
     low = -1
     normal = 0
     high = 1

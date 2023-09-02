@@ -10,6 +10,13 @@
 #
 # You should have received a copy of the GNU General Public License along with Buildarr.
 # If not, see <https://www.gnu.org/licenses/>.
+
+
+"""
+Custom format condition base class.
+"""
+
+
 from __future__ import annotations
 
 from typing import Any, Dict, List, Tuple
@@ -23,13 +30,26 @@ from ....types import RadarrConfigBase
 
 
 class Condition(RadarrConfigBase):
-    """ """
+    # Custom format condition base class.
+    #
+    # Implements fields common to all condition types, and the Radarr API functions.
 
     negate: bool = False
-    """ """
+    """
+    When set to `true`, negates the condition on the custom format.
+
+    If a condition with this field set to `true` matches, the custom format
+    will **not** apply to the media.
+    """
 
     required: bool = False
-    """ """
+    """
+    When set to `true`, this condition **must** match in order for the custom format to apply
+    to media.
+
+    If this field is `false` on all conditions in a custom format, it will apply
+    if any one of the defined conditions match.
+    """
 
     _implementation: str
     _base_remote_map: List[RemoteMapEntry] = [

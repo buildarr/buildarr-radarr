@@ -200,7 +200,7 @@ class SecurityGeneralSettings(GeneralSettings):
 
     authentication: AuthenticationMethod = AuthenticationMethod.none
     """
-    Authentication method for logging into Prowlarr.
+    Authentication method for logging into Radarr.
     By default, do not require authentication.
 
     Values:

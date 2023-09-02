@@ -13,7 +13,7 @@
 
 
 """
-Radarr plugin Usenet download client definitions.
+Usenet download client configuration base class.
 """
 
 

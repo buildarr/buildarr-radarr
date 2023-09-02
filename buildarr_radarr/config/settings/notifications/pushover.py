@@ -13,7 +13,7 @@
 
 
 """
-Prowlarr plugin notification connection configuration.
+Pushover notification connection configuration.
 """
 
 
@@ -66,7 +66,7 @@ class PushoverNotification(Notification):
 
     api_key: Annotated[SecretStr, Field(min_length=30, max_length=30)]
     """
-    API key assigned to Prowlarr in Pushover.
+    API key assigned to this application in Pushover.
     """
 
     devices: Set[NonEmptyStr] = set()

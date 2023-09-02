@@ -10,6 +10,13 @@
 #
 # You should have received a copy of the GNU General Public License along with Buildarr.
 # If not, see <https://www.gnu.org/licenses/>.
+
+
+"""
+Custom format condition for matching based on release group.
+"""
+
+
 from __future__ import annotations
 
 from typing import List, Literal
@@ -21,13 +28,21 @@ from .base import Condition
 
 
 class ReleaseGroupCondition(Condition):
-    """ """
+    """
+    Custom format condition for matching based on release group.
+    """
 
     type: Literal["release-group", "release_group", "releasegroup"] = "release-group"
-    """ """
+    """
+    Buildarr type keywords associated with this condition type.
+    """
 
     regex: NonEmptyStr
-    """Case insensitive."""
+    """
+    The regular expression to use to match release groups to the custom format.
+
+    Regular expression matching is case-insensitive.
+    """
 
     _implementation: Literal["ReleaseGroupSpecification"] = "ReleaseGroupSpecification"
     _remote_map: List[RemoteMapEntry] = [

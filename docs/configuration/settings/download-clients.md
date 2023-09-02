@@ -1,6 +1,6 @@
 # Download Clients
 
-##### ::: buildarr_prowlarr.config.settings.download_clients.ProwlarrDownloadClientsSettings
+##### ::: buildarr_radarr.config.settings.download_clients.RadarrDownloadClientsSettings
     options:
       members:
         - delete_unmanaged
@@ -8,7 +8,7 @@
 
 ## Configuring download clients
 
-##### ::: buildarr_prowlarr.config.settings.download_clients.base.DownloadClient
+##### ::: buildarr_radarr.config.settings.download_clients.base.DownloadClient
     options:
       members:
         - enable
@@ -21,7 +21,7 @@ These download clients retrieve media using the [Usenet](https://en.wikipedia.or
 
 ## Download Station (Usenet)
 
-##### ::: buildarr_prowlarr.config.settings.download_clients.usenet.DownloadstationUsenetDownloadClient
+##### ::: buildarr_radarr.config.settings.download_clients.usenet.downloadstation.DownloadstationUsenetDownloadClient
     options:
       members:
         - type
@@ -35,7 +35,7 @@ These download clients retrieve media using the [Usenet](https://en.wikipedia.or
 
 ## NZBGet
 
-##### ::: buildarr_prowlarr.config.settings.download_clients.usenet.NzbgetDownloadClient
+##### ::: buildarr_radarr.config.settings.download_clients.usenet.nzbget.NzbgetDownloadClient
     options:
       members:
         - type
@@ -52,7 +52,7 @@ These download clients retrieve media using the [Usenet](https://en.wikipedia.or
 
 ## NZBVortex
 
-##### ::: buildarr_prowlarr.config.settings.download_clients.usenet.NzbvortexDownloadClient
+##### ::: buildarr_radarr.config.settings.download_clients.usenet.nzbvortex.NzbvortexDownloadClient
     options:
       members:
         - type
@@ -67,7 +67,7 @@ These download clients retrieve media using the [Usenet](https://en.wikipedia.or
 
 ## Pneumatic
 
-##### ::: buildarr_prowlarr.config.settings.download_clients.usenet.PneumaticDownloadClient
+##### ::: buildarr_radarr.config.settings.download_clients.usenet.pneumatic.PneumaticDownloadClient
     options:
       members:
         - type
@@ -75,7 +75,7 @@ These download clients retrieve media using the [Usenet](https://en.wikipedia.or
 
 ## SABnzbd
 
-##### ::: buildarr_prowlarr.config.settings.download_clients.usenet.SabnzbdDownloadClient
+##### ::: buildarr_radarr.config.settings.download_clients.usenet.sabnzbd.SabnzbdDownloadClient
     options:
       members:
         - type
@@ -90,7 +90,7 @@ These download clients retrieve media using the [Usenet](https://en.wikipedia.or
 
 ## Usenet Blackhole
 
-##### ::: buildarr_prowlarr.config.settings.download_clients.usenet.UsenetBlackholeDownloadClient
+##### ::: buildarr_radarr.config.settings.download_clients.usenet.blackhole.UsenetBlackholeDownloadClient
     options:
       members:
         - type
@@ -103,7 +103,7 @@ peer-to-peer file sharing protocol to retrieve media files.
 
 ## Aria2
 
-##### ::: buildarr_prowlarr.config.settings.download_clients.torrent.Aria2DownloadClient
+##### ::: buildarr_radarr.config.settings.download_clients.torrent.aria2.Aria2DownloadClient
     options:
       members:
         - type
@@ -115,7 +115,7 @@ peer-to-peer file sharing protocol to retrieve media files.
 
 ## Deluge
 
-##### ::: buildarr_prowlarr.config.settings.download_clients.torrent.DelugeDownloadClient
+##### ::: buildarr_radarr.config.settings.download_clients.torrent.deluge.DelugeDownloadClient
     options:
       members:
         - type
@@ -130,7 +130,7 @@ peer-to-peer file sharing protocol to retrieve media files.
 
 ## Download Station (Torrent)
 
-##### ::: buildarr_prowlarr.config.settings.download_clients.torrent.DownloadstationTorrentDownloadClient
+##### ::: buildarr_radarr.config.settings.download_clients.torrent.downloadstation.DownloadstationTorrentDownloadClient
     options:
       members:
         - type
@@ -144,7 +144,7 @@ peer-to-peer file sharing protocol to retrieve media files.
 
 ## Flood
 
-##### ::: buildarr_prowlarr.config.settings.download_clients.torrent.FloodDownloadClient
+##### ::: buildarr_radarr.config.settings.download_clients.torrent.flood.FloodDownloadClient
     options:
       members:
         - type
@@ -162,7 +162,7 @@ peer-to-peer file sharing protocol to retrieve media files.
 
 ## Freebox
 
-##### ::: buildarr_prowlarr.config.settings.download_clients.torrent.FreeboxDownloadClient
+##### ::: buildarr_radarr.config.settings.download_clients.torrent.freebox.FreeboxDownloadClient
     options:
       members:
         - type
@@ -180,7 +180,7 @@ peer-to-peer file sharing protocol to retrieve media files.
 
 ## Hadouken
 
-##### ::: buildarr_prowlarr.config.settings.download_clients.torrent.HadoukenDownloadClient
+##### ::: buildarr_radarr.config.settings.download_clients.torrent.hadouken.HadoukenDownloadClient
     options:
       members:
         - type
@@ -195,7 +195,7 @@ peer-to-peer file sharing protocol to retrieve media files.
 
 ## qBittorrent
 
-##### ::: buildarr_prowlarr.config.settings.download_clients.torrent.QbittorrentDownloadClient
+##### ::: buildarr_radarr.config.settings.download_clients.torrent.qbittorrent.QbittorrentDownloadClient
     options:
       members:
         - type
@@ -214,7 +214,7 @@ peer-to-peer file sharing protocol to retrieve media files.
 
 ## RTorrent (ruTorrent)
 
-##### ::: buildarr_prowlarr.config.settings.download_clients.torrent.RtorrentDownloadClient
+##### ::: buildarr_radarr.config.settings.download_clients.torrent.rtorrent.RtorrentDownloadClient
     options:
       members:
         - type
@@ -231,7 +231,7 @@ peer-to-peer file sharing protocol to retrieve media files.
 
 ## Torrent Blackhole
 
-##### ::: buildarr_prowlarr.config.settings.download_clients.torrent.TorrentBlackholeDownloadClient
+##### ::: buildarr_radarr.config.settings.download_clients.torrent.blackhole.TorrentBlackholeDownloadClient
     options:
       members:
         - type
@@ -248,7 +248,7 @@ To use Transmission, set the `type` attribute in the download client to `transmi
 
 To use Vuze, set the `type` attribute in the download client to `vuze`.
 
-##### ::: buildarr_prowlarr.config.settings.download_clients.torrent.TransmissionDownloadClientBase
+##### ::: buildarr_radarr.config.settings.download_clients.torrent.transmission.TransmissionDownloadClientBase
     options:
       members:
         - host
@@ -264,7 +264,7 @@ To use Vuze, set the `type` attribute in the download client to `vuze`.
 
 ## uTorrent
 
-##### ::: buildarr_prowlarr.config.settings.download_clients.torrent.UtorrentDownloadClient
+##### ::: buildarr_radarr.config.settings.download_clients.torrent.utorrent.UtorrentDownloadClient
     options:
       members:
         - type

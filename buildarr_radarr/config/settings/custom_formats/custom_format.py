@@ -12,6 +12,11 @@
 # If not, see <https://www.gnu.org/licenses/>.
 
 
+"""
+Custom format definition configuration.
+"""
+
+
 from __future__ import annotations
 
 import json

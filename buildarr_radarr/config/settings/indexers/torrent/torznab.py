@@ -13,7 +13,7 @@
 
 
 """
-Radarr plugin torrent indexers configuration.
+Torznab indexer configuration.
 """
 
 
@@ -34,8 +34,6 @@ from .base import TorrentIndexer
 class TorznabIndexer(TorrentIndexer):
     """
     Monitor and search for new releases on a Torznab-compliant torrent indexing site.
-
-    Sonarr defines presets for several popular sites.
     """
 
     type: Literal["torznab"] = "torznab"
@@ -136,9 +134,7 @@ class TorznabIndexer(TorrentIndexer):
         #   4. Portuguese (Brazil) -> portuguese-brazil
         #   5. portuguese_brazil -> portuguese-brazil
         #   6. PORTUGUESE-BRAZIL -> portuguese-brazil
-        return "-".join(
-            value.lower().replace("_", "-").replace("()", "").split(" ", maxsplit=2),
-        )
+        return "-".join(value.lower().replace("_", "-").replace("()", "").split(" "))
 
     @validator("multi_languages")
     def validate_language(cls, value: Set[str]) -> Set[str]:

@@ -10,6 +10,13 @@
 #
 # You should have received a copy of the GNU General Public License along with Buildarr.
 # If not, see <https://www.gnu.org/licenses/>.
+
+
+"""
+Custom format condition for matching based on media language.
+"""
+
+
 from __future__ import annotations
 
 from typing import Any, Dict, List, Literal, cast
@@ -22,13 +29,30 @@ from .base import Condition
 
 
 class LanguageCondition(Condition):
-    """ """
+    """
+    Custom format condition for matching based on media language.
+    """
 
     type: Literal["language"] = "language"
-    """ """
+    """
+    Buildarr type keyword associated with this condition type.
+    """
 
     language: NonEmptyStr
-    """Evaluate against available languages in Radarr API."""
+    """
+    The language to match against, written in English.
+
+    Use the `any` keyword to match any language.
+    Use the `original` keyword to match for the original language of the media.
+
+    All languages supported by your Radarr instance version can be defined
+    in this condition.
+
+    Examples:
+
+    * `english`
+    * `portuguese-brazil`
+    """
 
     _implementation: Literal["LanguageSpecification"] = "LanguageSpecification"
 
@@ -41,9 +65,7 @@ class LanguageCondition(Condition):
         #   4. Portuguese (Brazil) -> portuguese-brazil
         #   5. portuguese_brazil -> portuguese-brazil
         #   6. PORTUGUESE-BRAZIL -> portuguese-brazil
-        return "-".join(
-            value.lower().replace("_", "-").replace("()", "").split(" ", maxsplit=2),
-        )
+        return "-".join(value.lower().replace("_", "-").replace("()", "").split(" "))
 
     @validator("language")
     def validate_language(cls, value: str) -> str:

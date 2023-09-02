@@ -1,4 +1,4 @@
-# Notifications
+# Notifications (Connect)
 
 Prowlarr supports pushing notifications to external applications and services.
 
@@ -8,7 +8,7 @@ some kind of event (or problem) occurs.
 
 ## Configuration
 
-##### ::: buildarr_prowlarr.config.settings.notifications.NotificationTriggers
+##### ::: buildarr_radarr.config.settings.notifications.base.NotificationTriggers
     options:
       members:
         - on_health_issue
@@ -17,7 +17,7 @@ some kind of event (or problem) occurs.
 
 ## Apprise
 
-##### ::: buildarr_prowlarr.config.settings.notifications.AppriseNotification
+##### ::: buildarr_radarr.config.settings.notifications.apprise.AppriseNotification
     options:
       members:
         - type
@@ -30,7 +30,7 @@ some kind of event (or problem) occurs.
 
 ## Boxcar
 
-##### ::: buildarr_prowlarr.config.settings.notifications.BoxcarNotification
+##### ::: buildarr_radarr.config.settings.notifications.boxcar.BoxcarNotification
     options:
       members:
         - type
@@ -38,7 +38,7 @@ some kind of event (or problem) occurs.
 
 ## Custom Script
 
-##### ::: buildarr_prowlarr.config.settings.notifications.CustomscriptNotification
+##### ::: buildarr_radarr.config.settings.notifications.custom_script.CustomScriptNotification
     options:
       members:
         - type
@@ -46,7 +46,7 @@ some kind of event (or problem) occurs.
 
 ## Discord
 
-##### ::: buildarr_prowlarr.config.settings.notifications.DiscordNotification
+##### ::: buildarr_radarr.config.settings.notifications.discord.DiscordNotification
     options:
       members:
         - type
@@ -59,7 +59,7 @@ some kind of event (or problem) occurs.
 
 ## Email
 
-##### ::: buildarr_prowlarr.config.settings.notifications.EmailNotification
+##### ::: buildarr_radarr.config.settings.notifications.email.EmailNotification
     options:
       members:
         - type
@@ -75,7 +75,7 @@ some kind of event (or problem) occurs.
 
 ## Gotify
 
-##### ::: buildarr_prowlarr.config.settings.notifications.GotifyNotification
+##### ::: buildarr_radarr.config.settings.notifications.gotify.GotifyNotification
     options:
       members:
         - type
@@ -85,7 +85,7 @@ some kind of event (or problem) occurs.
 
 ## Join
 
-##### ::: buildarr_prowlarr.config.settings.notifications.JoinNotification
+##### ::: buildarr_radarr.config.settings.notifications.join.JoinNotification
     options:
       members:
         - type
@@ -95,7 +95,7 @@ some kind of event (or problem) occurs.
 
 ## Mailgun
 
-##### ::: buildarr_prowlarr.config.settings.notifications.MailgunNotification
+##### ::: buildarr_radarr.config.settings.notifications.mailgun.MailgunNotification
     options:
       members:
         - type
@@ -107,7 +107,7 @@ some kind of event (or problem) occurs.
 
 ## Notifiarr
 
-##### ::: buildarr_prowlarr.config.settings.notifications.NotifiarrNotification
+##### ::: buildarr_radarr.config.settings.notifications.notifiarr.NotifiarrNotification
     options:
       members:
         - type
@@ -115,7 +115,7 @@ some kind of event (or problem) occurs.
 
 ## ntfy
 
-##### ::: buildarr_prowlarr.config.settings.notifications.NtfyNotification
+##### ::: buildarr_radarr.config.settings.notifications.ntfy.NtfyNotification
     options:
       members:
         - type
@@ -129,7 +129,7 @@ some kind of event (or problem) occurs.
 
 ## Prowl
 
-##### ::: buildarr_prowlarr.config.settings.notifications.ProwlNotification
+##### ::: buildarr_radarr.config.settings.notifications.prowl.ProwlNotification
     options:
       members:
         - type
@@ -138,7 +138,7 @@ some kind of event (or problem) occurs.
 
 ## Pushbullet
 
-##### ::: buildarr_prowlarr.config.settings.notifications.PushbulletNotification
+##### ::: buildarr_radarr.config.settings.notifications.pushbullet.PushbulletNotification
     options:
       members:
         - type
@@ -149,7 +149,7 @@ some kind of event (or problem) occurs.
 
 ## Pushover
 
-##### ::: buildarr_prowlarr.config.settings.notifications.PushoverNotification
+##### ::: buildarr_radarr.config.settings.notifications.pushover.PushoverNotification
     options:
       members:
         - type
@@ -163,7 +163,7 @@ some kind of event (or problem) occurs.
 
 ## SendGrid
 
-##### ::: buildarr_prowlarr.config.settings.notifications.SendgridNotification
+##### ::: buildarr_radarr.config.settings.notifications.sendgrid.SendgridNotification
     options:
       members:
         - type
@@ -173,7 +173,7 @@ some kind of event (or problem) occurs.
 
 ## Slack
 
-##### ::: buildarr_prowlarr.config.settings.notifications.SlackNotification
+##### ::: buildarr_radarr.config.settings.notifications.slack.SlackNotification
     options:
       members:
         - type
@@ -184,7 +184,7 @@ some kind of event (or problem) occurs.
 
 ## Telegram
 
-##### ::: buildarr_prowlarr.config.settings.notifications.TelegramNotification
+##### ::: buildarr_radarr.config.settings.notifications.telegram.TelegramNotification
     options:
       members:
         - type
@@ -194,7 +194,7 @@ some kind of event (or problem) occurs.
 
 ## Twitter
 
-##### ::: buildarr_prowlarr.config.settings.notifications.TwitterNotification
+##### ::: buildarr_radarr.config.settings.notifications.twitter.TwitterNotification
     options:
       members:
         - type
@@ -207,7 +207,7 @@ some kind of event (or problem) occurs.
 
 ## Webhook
 
-##### ::: buildarr_prowlarr.config.settings.notifications.WebhookNotification
+##### ::: buildarr_radarr.config.settings.notifications.webhook.WebhookNotification
     options:
       members:
         - type

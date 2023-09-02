@@ -1,6 +1,6 @@
 # UI
 
-##### ::: buildarr_prowlarr.config.settings.ui.ProwlarrUISettings
+##### ::: buildarr_radarr.config.settings.ui.RadarrUISettings
     options:
       members:
         - first_day_of_week

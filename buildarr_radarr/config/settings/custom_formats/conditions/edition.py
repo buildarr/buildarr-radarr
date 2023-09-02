@@ -10,6 +10,13 @@
 #
 # You should have received a copy of the GNU General Public License along with Buildarr.
 # If not, see <https://www.gnu.org/licenses/>.
+
+
+"""
+Custom format condition for matching based on media edition.
+"""
+
+
 from __future__ import annotations
 
 from typing import List, Literal
@@ -21,13 +28,21 @@ from .base import Condition
 
 
 class EditionCondition(Condition):
-    """ """
+    """
+    Custom format condition for matching based on media edition.
+    """
 
     type: Literal["edition"] = "edition"
-    """ """
+    """
+    Buildarr type keyword associated with this condition type.
+    """
 
     regex: NonEmptyStr
-    """Case insensitive."""
+    """
+    The regular expression to use to match editions to the custom format.
+
+    Regular expression matching is case-insensitive.
+    """
 
     _implementation: Literal["EditionSpecification"] = "EditionSpecification"
     _remote_map: List[RemoteMapEntry] = [

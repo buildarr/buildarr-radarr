@@ -13,7 +13,7 @@
 
 
 """
-Radarr plugin UI settings configuration.
+UI settings configuration.
 """
 
 
@@ -119,8 +119,8 @@ class RadarrUISettings(RadarrConfigBase):
 
     Values:
 
-    * `sunday` - Sunday
-    * `monday` - Monday
+    * `sunday`
+    * `monday`
     """
 
     week_column_header: WeekColumnHeader = WeekColumnHeader.month_first
@@ -183,8 +183,8 @@ class RadarrUISettings(RadarrConfigBase):
 
     show_relative_dates: bool = True
     """
-    When set to `True`, Radarr will show relative dates (e.g. today, yesterday)
-    instead of absolute dates (e.g. Monday, Tuesday ...).
+    When set to `true`, Radarr will show relative dates (e.g. today, yesterday)
+    instead of absolute dates (e.g. 4 Mar 2014).
     """
 
     # Style
@@ -216,8 +216,6 @@ class RadarrUISettings(RadarrConfigBase):
     ui_language: LowerCaseNonEmptyStr = "english"  # type: ignore[assignment]
     """
     The display language for the Radarr UI.
-
-    Specify the language using the two-character language code.
     """
 
     @validator("movie_info_language", "ui_language")

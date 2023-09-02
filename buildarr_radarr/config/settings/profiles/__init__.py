@@ -19,8 +19,8 @@ Radarr plugin profiles settings configuration.
 from __future__ import annotations
 
 from ...types import RadarrConfigBase
-from .delay import RadarrDelayProfilesSettings
-from .quality import RadarrQualityProfilesSettings
+from .delay_profiles import RadarrDelayProfilesSettings
+from .quality_profiles import RadarrQualityProfilesSettings
 
 
 class RadarrProfilesSettings(RadarrConfigBase):

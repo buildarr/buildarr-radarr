@@ -13,7 +13,7 @@
 
 
 """
-Radarr plugin torrent download client definitions.
+Flood download client configuration.
 """
 
 
@@ -28,22 +28,6 @@ from .base import TorrentDownloadClient
 
 
 class FloodMediaTag(BaseEnum):
-    """
-    Type of tag to set on media within Flood.
-
-    Multiple can be specified at a time.
-
-    Values:
-
-    * `title-slug` (Title Slug)
-    * `quality` (Quality)
-    * `language` (Language)
-    * `release-group` (Release Group)
-    * `year` (Year)
-    * `indexer` (Indexer)
-    * `network` (Network)
-    """
-
     title_slug = 0
     quality = 1
     language = 2
@@ -109,6 +93,18 @@ class FloodDownloadClient(TorrentDownloadClient):
     additional_tags: Set[FloodMediaTag] = set()
     """
     Adds properties of media as tags within Flood.
+
+    Multiple can be specified at a time.
+
+    Values:
+
+    * `title-slug` (Title Slug)
+    * `quality` (Quality)
+    * `language` (Language)
+    * `release-group` (Release Group)
+    * `year` (Year)
+    * `indexer` (Indexer)
+    * `network` (Network)
     """
 
     add_paused: bool = False

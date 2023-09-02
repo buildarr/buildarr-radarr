@@ -13,7 +13,7 @@
 
 
 """
-Prowlarr plugin for Buildarr root module.
+Radarr plugin for Buildarr.
 """
 
 
@@ -24,6 +24,6 @@ from importlib_metadata import PackageNotFoundError, version as package_version
 __all__ = ["__version__"]
 
 try:
-    __version__: str = package_version("buildarr-prowlarr")
+    __version__: str = package_version("buildarr-radarr")
 except PackageNotFoundError:
     __version__ = "0.1.0"

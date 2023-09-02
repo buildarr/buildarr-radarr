@@ -120,7 +120,7 @@ class RadarrInstanceConfig(_RadarrInstanceConfig):
     """
     API key to use to authenticate with the Radarr instance.
 
-    If undefined or set to `None`, automatically retrieve the API key.
+    If undefined or set to `null`, automatically retrieve the API key.
     This can only be done on Radarr instances with authentication disabled.
     """
 
@@ -132,15 +132,16 @@ class RadarrInstanceConfig(_RadarrInstanceConfig):
     version: Optional[str] = None
     """
     The expected version of the Radarr instance.
-    If undefined or set to `None`, the version is auto-detected.
+    If undefined or set to `null`, the version is auto-detected.
 
     This value is also used when generating a Docker Compose file.
-    When undefined or set to `None`, the version tag will be set to `latest`.
+    When undefined or set to `null`, the version tag will be set to `latest`.
     """
 
     settings: RadarrSettings = RadarrSettings()
     """
     Radarr settings.
+
     Configuration options for Radarr itself are set within this structure.
     """
 

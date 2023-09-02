@@ -13,7 +13,7 @@
 
 
 """
-Radarr plugin Usenet download client definitions.
+SABnzbd download client configuration.
 """
 
 
@@ -29,19 +29,6 @@ from .base import UsenetDownloadClient
 
 
 class SabnzbdPriority(BaseEnum):
-    """
-    SABnzbd media priority.
-
-    Values:
-
-    * `default` (Default)
-    * `paused` (Paused)
-    * `low` (Low)
-    * `normal` (Normal)
-    * `high` (High)
-    * `force` (Force)
-    """
-
     default = -100
     paused = -2
     low = -1

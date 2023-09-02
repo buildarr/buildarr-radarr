@@ -13,7 +13,7 @@
 
 
 """
-Radarr plugin Usenet download client definitions.
+Pneumatic (Kodi/XBMC) download client configuration.
 """
 
 

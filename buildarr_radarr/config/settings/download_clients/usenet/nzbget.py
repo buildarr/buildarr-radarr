@@ -13,7 +13,7 @@
 
 
 """
-Radarr plugin Usenet download client definitions.
+NZBGet download client configuration.
 """
 
 
@@ -31,19 +31,6 @@ logger = getLogger(__name__)
 
 
 class NzbgetPriority(BaseEnum):
-    """
-    NZBGet media priority.
-
-    Values:
-
-    * `verylow` (Very Low)
-    * `low` (Low)
-    * `normal` (Normal)
-    * `high` (High)
-    * `veryhigh` (Very High)
-    * `force` (Force)
-    """
-
     verylow = -100
     low = -50
     normal = 0

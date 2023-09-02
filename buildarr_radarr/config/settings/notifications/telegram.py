@@ -13,7 +13,7 @@
 
 
 """
-Prowlarr plugin notification connection configuration.
+Telegram notification connection configuration.
 """
 
 
@@ -39,7 +39,7 @@ class TelegramNotification(Notification):
 
     bot_token: Password
     """
-    The bot token assigned to the Prowlarr instance.
+    The bot token assigned to this application.
     """
 
     chat_id: NonEmptyStr

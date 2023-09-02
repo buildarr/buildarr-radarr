@@ -10,6 +10,13 @@
 #
 # You should have received a copy of the GNU General Public License along with Buildarr.
 # If not, see <https://www.gnu.org/licenses/>.
+
+
+"""
+Custom format condition for matching based on release title contents.
+"""
+
+
 from __future__ import annotations
 
 from typing import List, Literal, Optional
@@ -20,16 +27,25 @@ from .base import Condition
 
 
 class ReleaseTitleCondition(Condition):
-    """ """
+    """
+    Custom format condition for matching based on release title contents.
+    """
 
     type: Literal["release-title", "release_title", "releasetitle"] = "release-title"
-    """ """
+    """
+    Buildarr type keywords associated with this condition type.
+    """
 
     regex: Optional[str] = None
-    """Case insensitive."""
+    """
+    The regular expression to use to match release titles to the custom format.
 
-    preset: Optional[str] = None
-    """Template preset from the Radarr API."""
+    Regular expression matching is case-insensitive.
+    """
+
+    # TODO: Support presets.
+    # preset: Optional[str] = None
+    # """Template preset from the Radarr API."""
 
     _implementation: Literal["ReleaseTitleSpecification"] = "ReleaseTitleSpecification"
     _remote_map: List[RemoteMapEntry] = [

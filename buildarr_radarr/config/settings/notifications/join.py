@@ -13,7 +13,7 @@
 
 
 """
-Prowlarr plugin notification connection configuration.
+Join notification connection configuration.
 """
 
 
@@ -54,7 +54,7 @@ class JoinNotification(Notification):
     API key to use to authenticate with Join.
     """
 
-    # Deprecated, only uncomment if absolutely required by Prowlarr
+    # Only uncomment if absolutely required.
     # device_ids: Set[int] = set()
 
     device_names: Set[NonEmptyStr] = set()

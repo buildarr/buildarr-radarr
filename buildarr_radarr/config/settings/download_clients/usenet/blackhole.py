@@ -13,7 +13,7 @@
 
 
 """
-Radarr plugin Usenet download client definitions.
+Usenet Blackhole download client configuration.
 """
 
 

@@ -13,7 +13,7 @@
 
 
 """
-Radarr plugin download client definition base class.
+Download client configuration base class.
 """
 
 

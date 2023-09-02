@@ -13,7 +13,7 @@
 
 
 """
-Radarr plugin torrent download client definitions.
+Transmission download client configuration.
 """
 
 

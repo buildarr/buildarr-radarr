@@ -1,6 +1,6 @@
 # Host Configuration
 
-##### ::: buildarr_prowlarr.config.ProwlarrInstanceConfig
+##### ::: buildarr_radarr.config.RadarrInstanceConfig
     options:
       members:
         - hostname

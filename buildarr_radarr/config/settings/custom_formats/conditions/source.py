@@ -10,6 +10,13 @@
 #
 # You should have received a copy of the GNU General Public License along with Buildarr.
 # If not, see <https://www.gnu.org/licenses/>.
+
+
+"""
+Custom format condition for matching based on media source type.
+"""
+
+
 from __future__ import annotations
 
 from typing import Any, Dict, List, Literal, cast
@@ -21,10 +28,14 @@ from .base import Condition
 
 
 class SourceCondition(Condition):
-    """ """
+    """
+    Custom format condition for matching based on media source type.
+    """
 
     type: Literal["source"] = "source"
-    """ """
+    """
+    Buildarr type keyword associated with this condition type.
+    """
 
     source: UpperCaseNonEmptyStr
     """Evaluate against available sources in Radarr API."""

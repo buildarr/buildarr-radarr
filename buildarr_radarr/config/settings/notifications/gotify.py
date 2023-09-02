@@ -13,7 +13,7 @@
 
 
 """
-Prowlarr plugin notification connection configuration.
+Gotify notification connection configuration.
 """
 
 
@@ -41,7 +41,7 @@ class GotifyPriority(BaseEnum):
 
 class GotifyNotification(Notification):
     """
-    Send media update and health alert push notifications via a Gotify server.
+    Send media update and health alert push notifications through a Gotify server.
     """
 
     type: Literal["gotify"] = "gotify"

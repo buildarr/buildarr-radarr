@@ -10,6 +10,13 @@
 #
 # You should have received a copy of the GNU General Public License along with Buildarr.
 # If not, see <https://www.gnu.org/licenses/>.
+
+
+"""
+Custom format condition for matching based on quality modifiers.
+"""
+
+
 from __future__ import annotations
 
 from typing import Any, Dict, List, Literal, cast
@@ -21,13 +28,38 @@ from .base import Condition
 
 
 class QualityModifierCondition(Condition):
-    """ """
+    """
+    Custom format condition for matching based on quality modifiers.
+    """
 
-    type: Literal["quality-modifier", "quality_modifier"] = "quality-modifier"
-    """ """
+    type: Literal[
+        "quality-modifier",
+        "quality_modifier",
+        "qualitymodifier",
+        "quality",
+    ] = "quality-modifier"
+    """
+    Buildarr type keywords associated with this condition type.
+    """
 
     modifier: UpperCaseNonEmptyStr
-    """Evaluate against available modifiers in Radarr API."""
+    """
+    The modifier to match against.
+
+    All values supported by your Radarr instance version can be defined.
+    As of Radarr v4.7.5, the following modifiers are available:
+
+    * `NONE`
+    * `REGIONAL`
+    * `SCREENER`
+    * `RAWHD`
+    * `BRDISK`
+    * `REMUX`
+    """
+
+    # TODO: Support presets.
+    # preset: Optional[str] = None
+    # """Template preset from the Radarr API."""
 
     _implementation: Literal["QualityModifierSpecification"] = "QualityModifierSpecification"
 

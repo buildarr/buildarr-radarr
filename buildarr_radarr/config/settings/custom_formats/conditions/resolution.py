@@ -10,6 +10,13 @@
 #
 # You should have received a copy of the GNU General Public License along with Buildarr.
 # If not, see <https://www.gnu.org/licenses/>.
+
+
+"""
+Custom format condition for matching based on media resolution.
+"""
+
+
 from __future__ import annotations
 
 from typing import Any, Dict, List, Literal, cast
@@ -21,13 +28,31 @@ from .base import Condition
 
 
 class ResolutionCondition(Condition):
-    """ """
+    """
+    Custom format condition for matching based on media resolution.
+    """
 
     type: Literal["resolution"] = "resolution"
-    """ """
+    """
+    Buildarr type keyword associated with this condition type.
+    """
+
+    # TODO: Support integer resolutions using post_init_render.
 
     resolution: LowerCaseNonEmptyStr
-    """Evaluate against available resolutions in Radarr API."""
+    """
+    The resolution to match against.
+
+    All values supported by your Radarr instance version can be defined.
+    As of Radarr v4.7.5, the following resolutions are available:
+
+    * `r360p` (360p)
+    * `r480p` (480p)
+    * `r576p` (576p)
+    * `r720p` (720p)
+    * `r1080p` (1080p HD)
+    * `r2160p` (2160p Ultra-HD)
+    """
 
     _implementation: Literal["ResolutionSpecification"] = "ResolutionSpecification"
 

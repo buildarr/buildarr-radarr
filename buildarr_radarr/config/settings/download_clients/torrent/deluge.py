@@ -13,7 +13,7 @@
 
 
 """
-Radarr plugin torrent download client definitions.
+Deluge download client configuration.
 """
 
 

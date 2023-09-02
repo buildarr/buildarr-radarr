@@ -13,7 +13,7 @@
 
 
 """
-Radarr plugin Usenet download client definitions.
+Download Station Usenet download client configuration.
 """
 
 

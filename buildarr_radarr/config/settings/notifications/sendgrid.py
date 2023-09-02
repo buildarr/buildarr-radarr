@@ -13,7 +13,7 @@
 
 
 """
-Prowlarr plugin notification connection configuration.
+SendGrid notification connection configuration.
 """
 
 
@@ -49,7 +49,7 @@ class SendgridNotification(Notification):
     Email address to send the mail as.
 
     RFC-5322 formatted mailbox addresses are also supported,
-    e.g. `Prowlarr Notifications <prowlarr@example.com>`.
+    e.g. `Radarr <radarr@example.com>`.
     """
 
     recipient_addresses: Annotated[List[NameEmail], Field(min_items=1, unique_items=True)]

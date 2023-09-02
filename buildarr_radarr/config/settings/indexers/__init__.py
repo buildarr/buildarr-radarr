@@ -143,7 +143,6 @@ class RadarrIndexersSettings(RadarrConfigBase):
     Set to `0` to disable syncing. This also disables automatic release grabbing.
     """
 
-    # TODO: Take into account the indexers created by Prowlarr instances.
     delete_unmanaged: bool = False
     """
     Automatically delete indexers not configured by Buildarr.

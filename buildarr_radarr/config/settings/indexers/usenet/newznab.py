@@ -32,8 +32,6 @@ from .base import UsenetIndexer
 class NewznabIndexer(UsenetIndexer):
     """
     An indexer for monitoring a Newznab-compliant Usenet indexing site.
-
-    Sonarr defines presets for several popular sites.
     """
 
     type: Literal["newznab"] = "newznab"
@@ -107,6 +105,8 @@ class NewznabIndexer(UsenetIndexer):
     """
     Additional Newznab API parameters.
     """
+
+    # TODO: Add support for presets.
 
     _implementation = "Newznab"
     _remote_map: List[RemoteMapEntry] = [

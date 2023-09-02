@@ -12,6 +12,11 @@
 # If not, see <https://www.gnu.org/licenses/>.
 
 
+"""
+Custom format settings configuration.
+"""
+
+
 from __future__ import annotations
 
 from logging import getLogger

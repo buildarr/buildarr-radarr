@@ -13,7 +13,7 @@
 
 
 """
-Prowlarr plugin notification connection configuration.
+Mailgun notification connection configuration.
 """
 
 
@@ -54,7 +54,7 @@ class MailgunNotification(Notification):
     Email address to send the mail as.
 
     RFC-5322 formatted mailbox addresses are also supported,
-    e.g. `Sonarr Notifications <sonarr@example.com>`.
+    e.g. `Radarr <radarr@example.com>`.
     """
 
     sender_domain: NonEmptyStr

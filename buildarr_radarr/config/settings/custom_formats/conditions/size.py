@@ -10,6 +10,13 @@
 #
 # You should have received a copy of the GNU General Public License along with Buildarr.
 # If not, see <https://www.gnu.org/licenses/>.
+
+
+"""
+Custom format condition for matching based on media file size.
+"""
+
+
 from __future__ import annotations
 
 from typing import Any, List, Literal, Mapping
@@ -21,16 +28,28 @@ from .base import Condition
 
 
 class SizeCondition(Condition):
-    """ """
+    """
+    Custom format condition for matching based on media file size.
+    """
 
     type: Literal["size"] = "size"
-    """ """
+    """
+    Buildarr type keyword associated with this condition type.
+    """
 
     min: int = Field(0, ge=0)
-    """Minimum size in GB. If defined, must be greater than this size."""
+    """
+    The minimum size, in gigabytes (GB).
+
+    In order to match, the media must be larger than this size.
+    """
 
     max: int = Field(1, ge=1)
-    """Minimum size in GB. If defined, must be less than or equal to this size."""
+    """
+    The maximum size, in gigabytes (GB).
+
+    In order to match, the media must be smaller than, or equal to, this size.
+    """
 
     _implementation: Literal["SizeSpecification"] = "SizeSpecification"
     _remote_map: List[RemoteMapEntry] = [

@@ -13,7 +13,7 @@
 
 
 """
-Prowlarr plugin notification connection configuration.
+Notifiarr notification connection configuration.
 """
 
 
