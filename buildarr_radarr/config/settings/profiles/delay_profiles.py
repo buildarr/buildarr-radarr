@@ -90,33 +90,11 @@ class PreferredProtocol(BaseEnum):
 
 class DelayProfile(RadarrConfigBase):
     """
-    Delay profiles are defined as an ordered list of objects.
+    The following parameters are available for configuring delay profiles.
 
     A preferred protocol must be specified for all delay profiles.
     Tags must be defined on all except the final profile (the default profile),
     where tags must not be defined.
-
-    ```yaml
-    ...
-      delay_profiles:
-        definitions:
-          # Ordered in priority, highest priority first.
-          - preferred_protocol: "usenet-prefer" # Required
-            usenet_delay: 0
-            torrent_delay: 0
-            bypass_if_highest_quality: true
-            tags:
-              - "tv-shows"
-            # Add additional delay profiles here as needed.
-            ...
-            # Default delay profile goes last, and MUST be defined
-            # if you have defined any other delay profiles.
-            - preferred_protocol: "torrent-prefer" # Required
-              usenet_delay: 1440
-              torrent_delay: 1440
-              bypass_if_highest_quality: false
-              # Tags will be ignored for default delay profile.
-    ```
     """
 
     preferred_protocol: PreferredProtocol
@@ -134,12 +112,12 @@ class DelayProfile(RadarrConfigBase):
 
     usenet_delay: int = Field(0, ge=0)  # minutes
     """
-    Delay (in minutes) to wait before grabbing a release from Usenet.
+    Delay (in minutes) to wait before grabbing Usenet releases.
     """
 
     torrent_delay: int = Field(0, ge=0)  # minutes
     """
-    Delay (in minutes) to wait before grabbing a torrent.
+    Delay (in minutes) to wait before grabbing torrent releases.
     """
 
     bypass_if_highest_quality: bool = False
@@ -153,7 +131,7 @@ class DelayProfile(RadarrConfigBase):
     """
     Tags to assign to this delay profile.
 
-    This delay profile will apply to series with at least one matching tag.
+    This delay profile will apply to movies with at least one matching tag.
     """
 
     @classmethod
@@ -276,7 +254,49 @@ class DelayProfile(RadarrConfigBase):
 
 class RadarrDelayProfilesSettings(RadarrConfigBase):
     """
-    Configuration parameters for controlling how Buildarr handles delay profiles.
+    Delay profiles facilitate better release matching by delaying grabbing movies
+    by a configured amount of time after release.
+
+    This gives time for more releases to become available to your configured indexers,
+    allowing Radarr to grab releases that better match your preferences.
+
+    ```yaml
+    radarr:
+      settings:
+        profiles:
+          delay_profiles:
+            # Set to `true` or `false` as desired. (Default `false`)
+            # Works a bit differently to other profile types, see
+            # the `delete_unmanaged` attribute docs.
+            delete_unmanaged: true
+            definitions:
+              # Ordered in priority, highest priority first.
+              - preferred_protocol: "torrent-prefer"
+                usenet_delay: 1440
+                torrent_delay: 1440
+                bypass_if_highest_quality: true
+                tags:
+                  - "anime-movies"
+              # Add additional delay profiles here as needed.
+              ...
+              # Default delay profile goes last, and MUST be defined
+              # if you have defined any other delay profiles.
+              - preferred_protocol: "usenet-prefer"
+                usenet_delay: 0
+                torrent_delay: 0
+                bypass_if_highest_quality: false
+                # Tags will be ignored for default delay profile.
+    ```
+
+    In Buildarr, delay profiles are defined using an ordered list structure,
+    prioritised from first to last (top to bottom).
+
+    The last delay profile in the list is assumed to be the default delay profile.
+    Every non-default delay profile must have tags defined, and the
+    default delay profile must have no tags defined.
+
+    For more information, see this guide from
+    [WikiArr](https://wiki.servarr.com/radarr/settings#delay-profiles).
     """
 
     delete_unmanaged = False
@@ -304,8 +324,8 @@ class RadarrDelayProfilesSettings(RadarrConfigBase):
     The final delay profile in the list is assumed to be the default delay profile.
     """
 
-    # TODO: add a validator that checks that all definitions except the last one have tags,
-    #       and the last one has no tags.
+    # TODO: Add a validator that checks that all profiles except the last one have tags.
+    #       Ignore the tags on the default profile.
 
     @classmethod
     def from_remote(cls, secrets: RadarrSecrets) -> Self:
