@@ -41,12 +41,6 @@ logger = getLogger(__name__)
 
 
 class QualityGroup(RadarrConfigBase):
-    """
-    Quality group.
-
-    Allows groups of quality definitions to be given the same prorioty in qualtity profiles.
-    """
-
     name: NonEmptyStr
     members: Set[NonEmptyStr] = Field(..., min_items=1)
 
@@ -60,8 +54,27 @@ class QualityGroup(RadarrConfigBase):
 
 
 class CustomFormatScore(RadarrConfigBase):
+    """
+    Custom format score definitions in quality profiles can have the
+    following attributes assigned to them.
+    """
+
     name: NonEmptyStr
+    """
+    The name of the custom format to assign a score to. Required.
+    """
+
     score: Optional[int] = None
+    """
+    The score to add to the release if the custom format is applied.
+
+    If not defined, Buildarr will use the `default_score` attribute
+    from the custom format definition.
+    This allows for defining a common score for a custom format
+    shared between multiple quality profiles.
+
+    If `default_score` is not defined, the score will be set to `0` (ignore this custom format).
+    """
 
 
 class QualityProfile(RadarrConfigBase):
@@ -114,7 +127,7 @@ class QualityProfile(RadarrConfigBase):
 
     custom_formats: List[CustomFormatScore] = []
     """
-    If not defined here, add it with a score of 0 to the request.
+    Map scores for each custom format applicable to a quality profile here.
     """
 
     language: NonEmptyStr = "english"  # type: ignore[assignment]
@@ -125,6 +138,10 @@ class QualityProfile(RadarrConfigBase):
     Use the `original` keyword to require the original language of the media.
 
     All languages supported by your Radarr instance version can be defined here.
+
+    !!! note
+
+        When prioritising by language using custom formats, this attribute should be set to `any`.
 
     Examples:
 
@@ -189,27 +206,40 @@ class QualityProfile(RadarrConfigBase):
             raise ValueError("must be set to a value enabled in 'qualities'")
         return value
 
-    # TODO: Validate that upgrade_until_custom_format_score is above minimum_custom_format_score.
+    @validator("upgrade_until_custom_format_score")
+    def validate_upgrade_until_custom_format_score(cls, value: int, values: Dict[str, Any]) -> int:
+        try:
+            minimum_custom_format_score = values["minimum_custom_format_score"]
+        except KeyError:
+            return value
+        if value < minimum_custom_format_score:
+            raise ValueError(
+                (
+                    f"value ({value}) must be greater than "
+                    f"'minimum_custom_format_score' ({minimum_custom_format_score})"
+                ),
+            )
+        return value
 
     @validator("custom_formats")
     def validate_custom_format(cls, value: List[CustomFormatScore]) -> List[CustomFormatScore]:
-        custom_formats: Dict[str, Optional[int]] = {}
+        custom_format_names: Dict[str, Optional[int]] = {}
+        custom_formats: List[CustomFormatScore] = []
         for cf in value:
-            if isinstance(cf, CustomFormatScore):
-                name: str = cf.name
-                score = cf.score
-            else:
-                name = cf
-                score = None
-            if name in custom_formats:
+            if cf.name in custom_format_names:
+                first_score = custom_format_names[cf.name]
+                # Just ignore the duplicate definition if the score is the same.
+                if first_score == cf.score:
+                    continue
                 raise ValueError(
                     (
-                        f"custom format '{name}' defined more than once"
-                        f" (static scores: {custom_formats[name]}, {score})"
+                        f"more than one score defined for custom format '{cf.name}'"
+                        f" (scores: {first_score}, {cf.score})"
                     ),
                 )
-            custom_formats[name] = score
-        return value
+            custom_format_names[cf.name] = cf.score
+            custom_formats.append(cf)
+        return custom_formats
 
     @validator("language")
     def validate_language(cls, value: str) -> str:
@@ -503,10 +533,10 @@ class RadarrQualityProfilesSettings(RadarrConfigBase):
     to use. Once all available releases have been found, the release that most closely
     matches the quality profile will be selected for download.
 
-    Within a quality profile you can set desired [quality levels](../quality.md)
-    (and their priority), the maximum quality level to automatically upgrade media to,
-    and the priority of [Custom Formats](../custom-formats.md) within the context of this
-    profile.
+    With a quality profile you can prioritise media releases by
+    the desired quality level, arbitrary conditions using custom formats,
+    or language. Parameters for upgrading existing media to higher quality versions
+    are also defined here.
 
     ```yaml
     radarr:
