@@ -19,15 +19,12 @@ Torznab indexer configuration.
 
 from __future__ import annotations
 
-from typing import List, Literal, Mapping, Optional, Set
-
-import radarr
+from typing import List, Literal, Optional, Set
 
 from buildarr.config import RemoteMapEntry
 from buildarr.types import NonEmptyStr, Password
-from pydantic import AnyHttpUrl, validator
+from pydantic import AnyHttpUrl
 
-from ....util import language_parse
 from ..util import NabCategory
 from .base import TorrentIndexer
 
@@ -55,14 +52,6 @@ class TorznabIndexer(TorrentIndexer):
     api_key: Password
     """
     API key for use with the Torznab API.
-    """
-
-    multi_languages: Set[NonEmptyStr] = set()
-    """
-    The list of languages normally found on a multi-release grabbed from this indexer.
-
-    The special value `original` can also be specified,
-    to include the original language of the media.
     """
 
     categories: Set[NabCategory] = {
@@ -97,65 +86,14 @@ class TorznabIndexer(TorrentIndexer):
     """
 
     _implementation = "Torznab"
-
-    @classmethod
-    def _get_remote_map(
-        cls,
-        api_schema: radarr.IndexerResource,
-        downloadclient_ids: Mapping[str, int],
-        tag_ids: Mapping[str, int],
-    ) -> List[RemoteMapEntry]:
-        return [
-            ("base_url", "baseUrl", {"is_field": True}),
-            ("api_path", "apiPath", {"is_field": True}),
-            ("api_key", "apiKey", {"is_field": True}),
-            (
-                "multi_languages",
-                "multiLanguages",
-                {
-                    "decoder": lambda v: set(cls._language_decode(api_schema, la) for la in v),
-                    "encoder": lambda v: sorted(cls._language_encode(api_schema, la) for la in v),
-                    "is_field": True,
-                },
-            ),
-            ("categories", "categories", {"is_field": True}),
-            (
-                "additional_parameters",
-                "additionalParameters",
-                {"is_field": True, "field_default": None, "decoder": lambda v: v or None},
-            ),
-        ]
-
-    @validator("multi_languages")
-    def validate_language(cls, value: Set[str]) -> Set[str]:
-        return set(language_parse(language) for language in value)
-
-    @classmethod
-    def _language_decode(cls, api_schema: radarr.IndexerResource, value: str) -> str:
-        field: radarr.Field = next(f for f in api_schema.fields if f.name == "multiLanguages")
-        select_options: List[radarr.SelectOption] = field.select_options
-        for option in select_options:
-            option_name: str = option.name
-            option_value: int = option.value
-            if option_value == value:
-                return option_name.lower()
-        supported_languages = ", ".join(f"{o.name.lower()} ({o.value})" for o in select_options)
-        raise ValueError(
-            f"Invalid custom format quality language value {value} during decoding"
-            f", supported quality languages are: {supported_languages}",
-        )
-
-    @classmethod
-    def _language_encode(cls, api_schema: radarr.IndexerResource, value: str) -> int:
-        field: radarr.Field = next(f for f in api_schema.fields if f.name == "multiLanguages")
-        select_options: List[radarr.SelectOption] = field.select_options
-        for option in select_options:
-            option_name: str = option.name
-            option_value: int = option.value
-            if option_name.lower() == value:
-                return option_value
-        supported_languages = ", ".join(o.name.lower() for o in select_options)
-        raise ValueError(
-            f"Invalid or unsupported custom format language name '{value}'"
-            f", supported languages are: {supported_languages}",
-        )
+    _remote_map: List[RemoteMapEntry] = [
+        ("base_url", "baseUrl", {"is_field": True}),
+        ("api_path", "apiPath", {"is_field": True}),
+        ("api_key", "apiKey", {"is_field": True}),
+        ("categories", "categories", {"is_field": True}),
+        (
+            "additional_parameters",
+            "additionalParameters",
+            {"is_field": True, "field_default": None, "decoder": lambda v: v or None},
+        ),
+    ]

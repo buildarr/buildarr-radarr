@@ -29,16 +29,17 @@ from .base import TorrentIndexer
 
 
 class FilelistCategory(BaseEnum):
-    """
-    Filelist category enumeration.
-    """
-
-    ANIME = "Anime"
-    ANIMATION = "Animation"
-    TV_4K = "TV 4K"
-    TV_HD = "TV HD"
-    TV_SD = "TV SD"
-    SPORT = "Sport"
+    # TODO: Use post_init_render to read the values from Radarr API.
+    MOVIES_SD = "Movies SD"
+    MOVIES_DVD = "Movies DVD"
+    MOVIES_DVD_RO = "Movies DVD-RO"
+    MOVIES_HD = "Movies HD"
+    MOVIES_HD_RO = "Movies HD-RO"
+    MOVIES_4K = "Movies 4K"
+    MOVIES_BLURAY = "Movies Blu-Ray"
+    MOVIES_4K_BLURAY = "Movies 4K Blu-Ray"
+    MOVIES_3D = "Movies 3D"
+    XXX = "XXX"
 
 
 class FilelistIndexer(TorrentIndexer):
@@ -70,9 +71,9 @@ class FilelistIndexer(TorrentIndexer):
     """
 
     categories: Set[FilelistCategory] = {
-        FilelistCategory.TV_SD,
-        FilelistCategory.TV_HD,
-        FilelistCategory.TV_4K,
+        FilelistCategory.MOVIES_HD,
+        FilelistCategory.MOVIES_SD,
+        FilelistCategory.MOVIES_4K,
     }
     """
     Categories to monitor for standard/daily show new releases.
@@ -81,28 +82,16 @@ class FilelistIndexer(TorrentIndexer):
 
     Values:
 
-    * `Anime`
-    * `Animation`
-    * `TV 4K`
-    * `TV HD`
-    * `TV SD`
-    * `Sport`
-    """
-
-    anime_categories: Set[FilelistCategory] = set()
-    """
-    Categories to monitor for anime new releases.
-
-    Leave empty to not monitor for anime.
-
-    Values:
-
-    * `Anime`
-    * `Animation`
-    * `TV 4K`
-    * `TV HD`
-    * `TV SD`
-    * `Sport`
+    * `Movies SD`
+    * `Movies DVD`
+    * `Movies DVD-RO`
+    * `Movies HD`
+    * `Movies HD-RO`
+    * `Movies 4K`
+    * `Movies Blu-Ray`
+    * `Movies 4K Blu-Ray`
+    * `Movies 3D`
+    * `XXX`
     """
 
     _implementation = "FileList"
@@ -110,14 +99,5 @@ class FilelistIndexer(TorrentIndexer):
         ("username", "username", {"is_field": True}),
         ("passkey", "passKey", {"is_field": True}),
         ("api_url", "apiUrl", {"is_field": True}),
-        (
-            "categories",
-            "categories",
-            {"is_field": True, "encoder": lambda v: sorted(c.value for c in v)},
-        ),
-        (
-            "anime_categories",
-            "animeCategories",
-            {"is_field": True, "encoder": lambda v: sorted(c.value for c in v)},
-        ),
+        ("categories", "categories", {"is_field": True}),
     ]

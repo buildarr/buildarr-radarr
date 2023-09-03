@@ -23,6 +23,7 @@ from typing import Any, Dict, List, Literal, cast
 
 from buildarr.config import RemoteMapEntry
 from buildarr.types import NonEmptyStr
+from pydantic import validator
 
 from .base import Condition
 
@@ -60,6 +61,17 @@ class IndexerFlagCondition(Condition):
     _implementation: Literal["IndexerFlagSpecification"] = "IndexerFlagSpecification"
 
     @classmethod
+    def _flag_parse(cls, value: str) -> str:
+        # Results:
+        #   1. G Freeleech -> g-freeleech
+        #   2. G_FREELEECH -> g-freeleech
+        return value.lower().replace("_", "-").replace(" ", "-")
+
+    @validator("flag")
+    def validate_flag(cls, value: str) -> str:
+        return cls._flag_parse(value)
+
+    @classmethod
     def _get_remote_map(cls, api_schema_dict: Dict[str, Any]) -> List[RemoteMapEntry]:
         return [
             (
@@ -72,13 +84,6 @@ class IndexerFlagCondition(Condition):
                 },
             ),
         ]
-
-    @classmethod
-    def _flag_parse(cls, value: str) -> str:
-        # Results:
-        #   1. G Freeleech -> g-freeleech
-        #   2. G_FREELEECH -> g-freeleech
-        return value.lower().replace("_", "-").replace(" ", "-")
 
     @classmethod
     def _flag_decode(cls, api_schema_dict: Dict[str, Any], value: int) -> str:

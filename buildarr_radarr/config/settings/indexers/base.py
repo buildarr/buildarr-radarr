@@ -20,18 +20,19 @@ Indexer configuration base class.
 from __future__ import annotations
 
 from logging import getLogger
-from typing import Any, Dict, List, Mapping, Optional
+from typing import Any, Dict, List, Mapping, Optional, Set
 
 import radarr
 
 from buildarr.config import RemoteMapEntry
 from buildarr.types import NonEmptyStr
-from pydantic import Field
+from pydantic import Field, validator
 from typing_extensions import Self
 
 from ....api import radarr_api_client
 from ....secrets import RadarrSecrets
 from ...types import RadarrConfigBase
+from ...util import language_parse
 
 logger = getLogger(__name__)
 
@@ -98,6 +99,14 @@ class Indexer(RadarrConfigBase):
     The name of the download client to use for grabs from this indexer.
     """
 
+    multi_languages: Set[NonEmptyStr] = set()
+    """
+    The list of languages normally found on a multi-release grabbed from this indexer.
+
+    The special value `original` can also be specified,
+    to include the original language of the media.
+    """
+
     tags: List[NonEmptyStr] = []
     """
     Only use this indexer for series with at least one matching tag.
@@ -106,6 +115,10 @@ class Indexer(RadarrConfigBase):
 
     _implementation: str
     _remote_map: List[RemoteMapEntry] = []
+
+    @validator("multi_languages")
+    def validate_multi_languages(cls, value: Set[str]) -> Set[str]:
+        return set(language_parse(language) for language in value)
 
     @classmethod
     def _get_base_remote_map(
@@ -132,6 +145,15 @@ class Indexer(RadarrConfigBase):
                 },
             ),
             (
+                "multi_languages",
+                "multiLanguages",
+                {
+                    "decoder": lambda v: set(cls._language_decode(api_schema, la) for la in v),
+                    "encoder": lambda v: sorted(cls._language_encode(api_schema, la) for la in v),
+                    "is_field": True,
+                },
+            ),
+            (
                 "tags",
                 "tags",
                 {
@@ -149,6 +171,36 @@ class Indexer(RadarrConfigBase):
         tag_ids: Mapping[str, int],
     ) -> List[RemoteMapEntry]:
         return []
+
+    @classmethod
+    def _language_decode(cls, api_schema: radarr.IndexerResource, value: str) -> str:
+        field: radarr.Field = next(f for f in api_schema.fields if f.name == "multiLanguages")
+        select_options: List[radarr.SelectOption] = field.select_options
+        for option in select_options:
+            option_name: str = option.name
+            option_value: int = option.value
+            if option_value == value:
+                return option_name.lower()
+        supported_languages = ", ".join(f"{o.name.lower()} ({o.value})" for o in select_options)
+        raise ValueError(
+            f"Invalid custom format quality language value {value} during decoding"
+            f", supported quality languages are: {supported_languages}",
+        )
+
+    @classmethod
+    def _language_encode(cls, api_schema: radarr.IndexerResource, value: str) -> int:
+        field: radarr.Field = next(f for f in api_schema.fields if f.name == "multiLanguages")
+        select_options: List[radarr.SelectOption] = field.select_options
+        for option in select_options:
+            option_name: str = option.name
+            option_value: int = option.value
+            if option_name.lower() == value:
+                return option_value
+        supported_languages = ", ".join(o.name.lower() for o in select_options)
+        raise ValueError(
+            f"Invalid or unsupported custom format language name '{value}'"
+            f", supported languages are: {supported_languages}",
+        )
 
     @classmethod
     def _from_remote(

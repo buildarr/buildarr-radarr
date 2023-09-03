@@ -77,13 +77,26 @@ IndexerType = Union[
 
 class RadarrIndexersSettings(RadarrConfigBase):
     """
+
+    !!! note
+
+        Instead of manually configuring indexers for each of your Radarr instances,
+        it is highly recommended to setup a [Prowlarr](https://prowlarr.com)
+        indexer manager, and using Buildarr to manage it using the
+        [Prowlarr plugin for Buildarr](https://buildarr.github.io/plugins/prowlarr).
+
+        This is particularly convenient when managing more than one Radarr instance.
+
+        When managing indexers using Prowlarr, do not add any indexer definitions
+        to this Radarr instance in Buildarr, and ensure `delete_unmanaged` is set to `false`.
+
     Indexers are used to monitor for new releases of media on external trackers.
     When a suitable release has been found, Radarr registers it for download
     on one of the configured download clients.
 
     ```yaml
     radarr:
-      config:
+      settings:
         indexers:
           minimum_age: 0
           retention: 0
@@ -91,9 +104,8 @@ class RadarrIndexersSettings(RadarrConfigBase):
           rss_sync_interval: 15
           delete_unmanaged: false # Better to leave off for the most part
           definitions:
-            Nyaa: # Indexer name
-              type: "nyaa" # Type of indexer
-              # Configuration common to all indexers
+            Nyaa:  # Indexer name
+              type: nyaa  # Type of indexer
               enable_rss: true
               enable_automatic_search: true
               enable_interactive_search: true
@@ -101,10 +113,8 @@ class RadarrIndexersSettings(RadarrConfigBase):
               indexer_priority: 25
               download_client: null
               tags:
-                - "example"
-              # Nyaa-specific configuration
-              website_url: "https://example.com"
-            # Define more indexers here.
+                - anime-movies
+              website_url: https://example.com
     ```
 
     The following parameters are available for configuring indexers and
