@@ -27,6 +27,7 @@ from buildarr.config import RemoteMapEntry
 from buildarr.types import NonEmptyStr
 from pydantic import validator
 
+from ...util import language_parse
 from .base import Metadata
 
 
@@ -42,10 +43,10 @@ class KodiEmbyMetadata(Metadata):
             enable: true
             movie_metadata: true
             movie_metadata_url: true
-            metadata_language: original
-            series_images: true
-            season_images: true
-            episode_images: true
+            movie_metadata_language: english
+            movie_images: true
+            use_movie_nfo: true
+            add_collection_name: true
     ```
     """
 
@@ -88,20 +89,9 @@ class KodiEmbyMetadata(Metadata):
 
     _implementation: str = "XbmcMetadata"
 
-    @classmethod
-    def _movie_metadata_language_parse(cls, value: str) -> str:
-        # Results:
-        #   1. English -> english
-        #   2. english -> english
-        #   3. ENGLISH -> english
-        #   4. Portuguese (Brazil) -> portuguese-brazil
-        #   5. portuguese_brazil -> portuguese-brazil
-        #   6. PORTUGUESE-BRAZIL -> portuguese-brazil
-        return "-".join(value.lower().replace("_", "-").replace("()", "").split(" "))
-
     @validator("movie_metadata_language")
     def validate_movie_metadata_language(cls, value: str) -> str:
-        return cls._movie_metadata_language_parse(value)
+        return language_parse(value)
 
     @classmethod
     def _get_remote_map(cls, api_schema: radarr.MetadataResource) -> List[RemoteMapEntry]:
@@ -134,7 +124,7 @@ class KodiEmbyMetadata(Metadata):
         for o in field.select_options:
             option = cast(radarr.SelectOption, o)
             if option.value == value:
-                return cls._movie_metadata_language_parse(option.name)
+                return language_parse(option.name)
         supported_languages = ", ".join(f"{o.name} ({o.value})" for o in field.select_options)
         raise ValueError(
             f"Invalid movie metadata language value {value} during decoding"
@@ -152,13 +142,10 @@ class KodiEmbyMetadata(Metadata):
         )
         for o in field.select_options:
             option = cast(radarr.SelectOption, o)
-            if cls._movie_metadata_language_parse(option.name) == value:
+            if language_parse(option.name) == value:
                 return option.value
         supported_languages = ", ".join(
-            (
-                f"{o.name} ({cls._movie_metadata_language_parse(o.name)})"
-                for o in field.select_options
-            ),
+            (f"{o.name} ({language_parse(o.name)})" for o in field.select_options),
         )
         raise ValueError(
             f"Invalid or unsupported movie metadata language name '{value}'"

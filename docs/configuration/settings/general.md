@@ -1,6 +1,6 @@
 # General
 
-General configuration for Prowlarr are separated by category.
+General configuration for Radarr are separated by category.
 
 ```yaml
 radarr:
@@ -8,12 +8,12 @@ radarr:
     general:
       host:
         bind_address: "*"
-        port: 9696
+        port: 7878
         url_base: null
         use_ssl: false
-        instance_name: "Prowlarr (Buildarr Example)"
+        instance_name: Radarr (Buildarr Example)
       security:
-        authentication: "none"
+        authentication: none
       proxy:
         enable: false
       logging:
@@ -21,11 +21,11 @@ radarr:
       analytics:
         send_anonymous_usage_data: true
       updates:
-        branch: "master"
+        branch: master
         automatic: false
-        mechanism: "docker"
+        mechanism: docker
       backup:
-        folder: "Backups"
+        folder: Backups
         interval: 7
         retention: 28
 ```
@@ -42,6 +42,8 @@ Take care when changing these settings.
         - port
         - ssl_port
         - use_ssl
+        - ssl_cert_path
+        - ssl_cert_password
         - url_base
         - instance_name
 
@@ -51,7 +53,6 @@ Take care when changing these settings.
     options:
       members:
         - authentication
-        - authenticaion_required
         - username
         - password
         - certificate_validation

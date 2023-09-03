@@ -1,8 +1,8 @@
 # Notifications (Connect)
 
-Prowlarr supports pushing notifications to external applications and services.
+Radarr supports pushing notifications to external applications and services.
 
-These are not only for Prowlarr to communicate with the outside world, they can also be useful
+These are not only for Radarr to communicate with the outside world, they can also be useful
 for monitoring since the user can be alerted, by a service of their choice, when
 some kind of event (or problem) occurs.
 

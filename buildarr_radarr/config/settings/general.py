@@ -123,7 +123,7 @@ class HostGeneralSettings(GeneralSettings):
     If Radarr is being run via Docker in the default bridge mode,
     this setting shouldn't be changed.
     Instead, change the external port it is bound to using
-    `--publish <port number>:9696`.
+    `--publish <port number>:7878`.
     """
 
     ssl_port: Port = 9898  # type: ignore[assignment]
@@ -159,7 +159,7 @@ class HostGeneralSettings(GeneralSettings):
     url_base: Optional[str] = None
     """
     Add a prefix to all Radarr URLs,
-    e.g. `http://localhost:9696/<url_base>/settings/general`.
+    e.g. `http://localhost:7878/<url_base>/settings/general`.
 
     Generally used to accommodate reverse proxies where Radarr
     is assigned to a subfolder, e.g. `https://example.com/radarr`.

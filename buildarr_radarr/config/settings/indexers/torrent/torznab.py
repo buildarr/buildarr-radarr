@@ -126,17 +126,6 @@ class TorznabIndexer(TorrentIndexer):
             ),
         ]
 
-    @classmethod
-    def _language_parse(cls, value: str) -> str:
-        # Results:
-        #   1. English -> english
-        #   2. english -> english
-        #   3. ENGLISH -> english
-        #   4. Portuguese (Brazil) -> portuguese-brazil
-        #   5. portuguese_brazil -> portuguese-brazil
-        #   6. PORTUGUESE-BRAZIL -> portuguese-brazil
-        return "-".join(value.lower().replace("_", "-").replace("()", "").split(" "))
-
     @validator("multi_languages")
     def validate_language(cls, value: Set[str]) -> Set[str]:
         return set(language_parse(language) for language in value)

@@ -11,4 +11,5 @@
         - show_relative_dates
         - enable_color_impaired_mode
         - theme
+        - movie_info_language
         - ui_language

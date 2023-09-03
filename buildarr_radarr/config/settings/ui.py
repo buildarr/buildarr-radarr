@@ -52,10 +52,6 @@ class RuntimeFormat(BaseEnum):
 
 
 class ShortDateFormat(BaseEnum):
-    """
-    Short date format enumeration for Radarr.
-    """
-
     word_month_first = "MMM D YYYY"
     word_month_second = "DD MMM YYYY"
     slash_month_first = "MM/D/YYYY"
@@ -65,28 +61,16 @@ class ShortDateFormat(BaseEnum):
 
 
 class LongDateFormat(BaseEnum):
-    """
-    Long date format enumeration for Radarr.
-    """
-
     month_first = "dddd, MMMM D YYYY"
     day_first = "dddd, D MMMM YYYY"
 
 
 class TimeFormat(BaseEnum):
-    """
-    Time format enumeration for Radarr.
-    """
-
     twelve_hour = "h(:mm)a"
     twentyfour_hour = "HH:mm"
 
 
 class Theme(BaseEnum):
-    """
-    Theme enumeration for Radarr.
-    """
-
     auto = "auto"
     light = "light"
     dark = "dark"
@@ -100,15 +84,16 @@ class RadarrUISettings(RadarrConfigBase):
     radarr:
       settings:
         ui:
-          first_day_of_week: "monday"
-          week_column_header: "day-first"
-          short_date_format: "word-month-second"
-          long_date_format: "day-first"
-          time_format: "twentyfour-hour"
+          first_day_of_week: monday
+          week_column_header: day-first
+          short_date_format: word-month-second
+          long_date_format: day-first
+          time_format: twentyfour-hour
           show_relative_dates: true
           enable_color_impaired_mode: false
-          theme: "light"
-          ui_language: "en"
+          theme: auto
+          movie_info_language: english
+          ui_language: english
     ```
     """
 

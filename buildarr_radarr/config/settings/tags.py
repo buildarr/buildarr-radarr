@@ -43,8 +43,8 @@ class RadarrTagsSettings(RadarrConfigBase):
       settings:
         tags:
           definitions:
-            - "example1"
-            - "example2"
+            - movies
+            - anime-movies
     ```
 
     To be able to use those tags in Buildarr, they need to be defined
