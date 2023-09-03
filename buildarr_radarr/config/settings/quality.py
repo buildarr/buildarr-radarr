@@ -35,65 +35,84 @@ from ...api import radarr_api_client
 from ...secrets import RadarrSecrets
 from ..types import RadarrConfigBase
 
-QUALITYDEFINITION_MIN_MAX = 399
+QUALITYDEFINITION_MIN_MAX = 398
 QUALITYDEFINITION_PREFERRED_MAX = 399
 QUALITYDEFINITION_MAX = 400
 
 
 class QualityDefinition(RadarrConfigBase):
     """
-    Manually set quality definitions can have the following parameters.
+    If you would like to fine tune the parameters yourself, Buildarr
+    supports configuring all quality definitions attributes manually.
+
+    You can also combine this with a TRaSH-Guides profile using `trash_id`,
+    to override specific quality definitions when values different from the profile
+    are required.
+
+    ```yaml
+    radarr:
+      settings:
+        quality:
+          # trash_id: ...  # When set, the below definitions override the values in this profile.
+          definitions:
+            Bluray-480p:
+              min: 2
+              preferred: null  # Max preferred
+              max: null  # Unlimited
+            DVD:
+              title: DVD-480p
+              min: 2
+              preferred: 95
+              max: 100
+    ```
     """
 
     title: Optional[str] = None
     """
     The name of the quality in the GUI.
 
-    If unset, set to an empty string or `None`, it will always be set to the
+    If set to an empty string or `null`, it will always be set to the
     name of the quality itself. (e.g. For the `Bluray-480p` quality, the GUI title
     will also be `Bluray-480p`)
     """
 
     min: float = Field(..., ge=0, le=QUALITYDEFINITION_MIN_MAX)
     """
-    The minimum Megabytes per Minute (MB/min) a quality can have.
-    Must be set at least 1MB/min lower than `max`.
+    The minimum allowed bitrate for a quality level, in megabytes per minute (MB/min).
 
-    The minimum value is `0`, and the maximum value is `399`.
+    Must be set at least 1MB/min lower than `preferred`.
+    The minimum value is `0`, and the maximum value is `398`.
     """
 
     preferred: Optional[float] = Field(..., ge=0, le=QUALITYDEFINITION_PREFERRED_MAX)
-    """ """
+    """
+    The maximum allowed bitrate for a quality level, in megabytes per minute (MB/min).
+
+    Must be set at least 1MB/min higher than `min`, and 1MB/min lower than `max`.
+    If set to `null` or `399`, prefer the highest possible bitrate.
+    """
 
     max: Optional[float] = Field(..., ge=1, le=QUALITYDEFINITION_MAX)
     """
-    The maximum Megabytes per Minute (MB/min) a quality can have.
-    Must be set at least 1MB/min higher than `min`.
+    The maximum allowed bitrate for a quality level, in megabytes per minute (MB/min).
 
-    If set to `None` or `400`, the maximum bit rate will be unlimited.
-
-    If not set to `None`, the minimum value is `1`, and the maximum value is `400`.
+    Must be set at least 1MB/min higher than `preferred`.
+    If set to `null` or `400`, the maximum bit rate will be unlimited.
     """
 
     @validator("preferred")
-    def validate_preferred(cls, value: Optional[float]) -> Optional[float]:
-        if value is None or value >= QUALITYDEFINITION_PREFERRED_MAX:
-            return None
-        return value
-
-    @validator("max")
-    def validate_min_max(
+    def validate_preferred(
         cls,
         value: Optional[float],
         values: Mapping[str, Any],
     ) -> Optional[float]:
-        if value is None or value >= QUALITYDEFINITION_MAX:
+        if value is None or value >= QUALITYDEFINITION_PREFERRED_MAX:
             return None
         try:
             quality_min: float = values["min"]
             if (value - quality_min) < 1:
                 raise ValueError(
-                    f"'max' ({value}) is not " f"at least 1 greater than 'min' ({quality_min})",
+                    f"'preferred' ({value}) is not at least 1 greater than 'min' ({quality_min})",
                 )
         except KeyError:
             # `min` only doesn't exist when it failed type validation.
@@ -102,7 +121,7 @@ class QualityDefinition(RadarrConfigBase):
         return value
 
     @validator("max")
-    def validate_preferred_max(
+    def validate_max(
         cls,
         value: Optional[float],
         values: Mapping[str, Any],
@@ -127,35 +146,10 @@ class QualityDefinition(RadarrConfigBase):
 
 
 class RadarrQualitySettings(ConfigBase):
-    """
-    Quality definitions are used to set the permitted bit rates for each quality level.
+    # Quality definition settings configuration.
+    #
+    # For more information on how to configure this, refer to the plugin docs.
 
-    These can either be set manually within Buildarr, or pre-made profiles can be
-    imported from TRaSH-Guides.
-
-    ```yaml
-    radarr:
-      settings:
-        quality:
-          trash_id: "bef99584217af744e404ed44a33af589" # series
-          definitions:
-            Bluray-480p: # "Quality" column name (not "Title")
-              min: 2
-              preferred: 95
-              max: 100
-            # Add additional override quality definitions here
-    ```
-
-    Quality definition profiles retrieved from TRaSH-Guides are automatically
-    kept up to date by Buildarr, with the latest values being pushed to Radarr
-    on an update run.
-
-    For more information, refer to the guides from
-    [WikiArr](https://wiki.servarr.com/Radarr/settings#quality-1)
-    and [TRaSH-Guides](https://trash-guides.info/Radarr/Radarr-Quality-Settings-File-Size/).
-    """
-
-    # When defined, all explicitly defined quality definitions override the Trash version.
     trash_id: Optional[TrashID] = None
     """
     Trash ID of the TRaSH-Guides quality definition profile to load default values from.
