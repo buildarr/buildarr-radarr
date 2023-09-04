@@ -11,7 +11,7 @@ Radarr is a PVR application which downloads, renames and manages the lifecycle o
 When using Buildarr as a [standalone application](https://buildarr.github.io/installation/#standalone-application), the Radarr plugin can simply be installed using `pip`:
 
 ```bash
-$ pip install buildarr buildarr-radarr
+pip install buildarr buildarr-radarr
 ```
 
 When using Buildarr as a [Docker container](https://buildarr.github.io/installation/#docker), the Radarr plugin is bundled with the official container (`callum027/buildarr`), so there is no need to install it separately.

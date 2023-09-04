@@ -63,7 +63,7 @@ class TraktImportList(ImportList):
         shell command to retrieve the generated configuration.
 
         ```bash
-        $ curl -X "GET" "<radarr-url>/api/v3/notification" -H "X-Api-Key: <api-key>"
+        curl -X "GET" "<radarr-url>/api/v3/notification" -H "X-Api-Key: <api-key>"
         ```
 
     The following parameters are common to all Trakt import list types.
