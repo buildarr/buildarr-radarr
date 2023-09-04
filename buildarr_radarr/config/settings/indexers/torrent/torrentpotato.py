@@ -28,10 +28,8 @@ from pydantic import AnyHttpUrl
 from .base import TorrentIndexer
 
 
-class TorrentPotatoIndexer(TorrentIndexer):
-    """
-    Monitor for new releases using a legacy CouchPotato torrent API (TorrentPotato) indexer.
-    """
+class TorrentpotatoIndexer(TorrentIndexer):
+    # Monitor for new releases using a legacy CouchPotato-compatible torrent indexer.
 
     type: Literal["torrentpotato"] = "torrentpotato"
     """

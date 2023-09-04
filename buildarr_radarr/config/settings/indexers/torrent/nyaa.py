@@ -28,9 +28,7 @@ from .base import TorrentIndexer
 
 
 class NyaaIndexer(TorrentIndexer):
-    """
-    Monitor for new releases on the configured Nyaa domain.
-    """
+    # Monitor for new releases on the configured Nyaa domain.
 
     type: Literal["nyaa"] = "nyaa"
     """

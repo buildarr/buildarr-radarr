@@ -38,35 +38,7 @@ logger = getLogger(__name__)
 
 
 class Indexer(RadarrConfigBase):
-    """
-    Here is an example of an indexer being configured in the `indexers` configuration
-    block in Buildarr.
-
-    ```yaml
-    ...
-      indexers:
-        definitions:
-          Nyaa: # Indexer name
-            type: "nyaa" # Type of indexer
-            # Configuration common to all indexers
-            enable_rss: true
-            enable_automatic_search: true
-            enable_interactive_search: true
-            anime_standard_format_search: true
-            indexer_priority: 25
-            download_client: null
-            tags:
-              - "example"
-            # Nyaa-specific configuration
-            website_url: "https://example.com"
-          # Define more indexers here.
-    ```
-
-    There are configuration parameters common to all indexer types,
-    and parameters common to only specific types of indexers.
-
-    The following configuration attributes can be defined on all indexer types.
-    """
+    # Indexer configuration base class.
 
     enable_rss: bool = True
     """
@@ -84,19 +56,18 @@ class Indexer(RadarrConfigBase):
     If enabled, use this indexer for manual interactive searches.
     """
 
-    priority: int = Field(25, ge=1, le=50, alias="indexer_priority")
+    priority: int = Field(25, ge=1, le=50)
     """
     Priority of this indexer to prefer one indexer over another in release tiebreaker scenarios.
 
     1 is highest priority and 50 is lowest priority.
-
-    *Changed in version 0.4.1*: Renamed from `indexer_priority` to `priority`.
-    The original name is still available as an alias.
     """
 
     download_client: Optional[NonEmptyStr] = None
     """
     The name of the download client to use for grabs from this indexer.
+
+    If unset, use any compatible download client.
     """
 
     multi_languages: Set[NonEmptyStr] = set()
@@ -107,10 +78,11 @@ class Indexer(RadarrConfigBase):
     to include the original language of the media.
     """
 
-    tags: List[NonEmptyStr] = []
+    tags: Set[NonEmptyStr] = set()
     """
-    Only use this indexer for series with at least one matching tag.
-    Leave blank to use with all series.
+    Only monitor releases that match at least one of the defined tags.
+
+    If unset, monitor all releases using this indexer.
     """
 
     _implementation: str

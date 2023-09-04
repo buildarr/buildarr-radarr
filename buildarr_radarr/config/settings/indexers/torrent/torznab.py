@@ -30,9 +30,7 @@ from .base import TorrentIndexer
 
 
 class TorznabIndexer(TorrentIndexer):
-    """
-    Monitor and search for new releases on a Torznab-compliant torrent indexing site.
-    """
+    # Monitor and search for new releases on a Torznab-compliant torrent indexing site.
 
     type: Literal["torznab"] = "torznab"
     """

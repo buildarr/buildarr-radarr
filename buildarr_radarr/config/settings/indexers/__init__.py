@@ -36,9 +36,8 @@ from .torrent.hdbits import HdbitsIndexer
 from .torrent.iptorrents import IptorrentsIndexer
 from .torrent.nyaa import NyaaIndexer
 from .torrent.passthepopcorn import PassthepopcornIndexer
-from .torrent.rarbg import RarbgIndexer
 from .torrent.rss import TorrentRssIndexer
-from .torrent.torrentpotato import TorrentPotatoIndexer
+from .torrent.torrentpotato import TorrentpotatoIndexer
 from .torrent.torznab import TorznabIndexer
 from .usenet.newznab import NewznabIndexer
 
@@ -53,9 +52,8 @@ INDEXER_TYPE_MAP = {
         NewznabIndexer,
         NyaaIndexer,
         PassthepopcornIndexer,
-        RarbgIndexer,
         TorrentRssIndexer,
-        TorrentPotatoIndexer,
+        TorrentpotatoIndexer,
         TorznabIndexer,
     )
 }
@@ -67,9 +65,8 @@ IndexerType = Union[
     NewznabIndexer,
     NyaaIndexer,
     PassthepopcornIndexer,
-    RarbgIndexer,
     TorrentRssIndexer,
-    TorrentPotatoIndexer,
+    TorrentpotatoIndexer,
     TorznabIndexer,
 ]
 
@@ -81,7 +78,7 @@ class RadarrIndexersSettings(RadarrConfigBase):
 
         Instead of manually configuring indexers for each of your Radarr instances,
         it is highly recommended to setup a [Prowlarr](https://prowlarr.com)
-        indexer manager, and using Buildarr to manage it using the
+        indexer manager, and manage it using the
         [Prowlarr plugin for Buildarr](https://buildarr.github.io/plugins/prowlarr).
 
         This is particularly convenient when managing more than one Radarr instance.
@@ -101,26 +98,25 @@ class RadarrIndexersSettings(RadarrConfigBase):
           retention: 0
           maximum_size: 0
           rss_sync_interval: 15
-          delete_unmanaged: false # Better to leave off for the most part
+          delete_unmanaged: false  # Better to leave off for the most part.
           definitions:
             Nyaa:  # Indexer name
               type: nyaa  # Type of indexer
               enable_rss: true
               enable_automatic_search: true
               enable_interactive_search: true
-              anime_standard_format_search: true
               indexer_priority: 25
               download_client: null
+              website_url: https://example.com
               tags:
                 - anime-movies
-              website_url: https://example.com
     ```
 
     The following parameters are available for configuring indexers and
     how they are handled by Radarr.
 
-    For more information on how Radarr finds epsiodes, refer to the FAQ on
-    [WikiArr](https://wiki.servarr.com/radarr/faq#how-does-radarr-find-movies).
+    For more information on how Radarr finds movies, refer to the FAQ on
+    [WikiArr](https://wiki.servarr.com/radarr/faq#how-does-radarr-work).
     """
 
     minimum_age: int = Field(0, ge=0)  # minutes

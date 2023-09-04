@@ -28,14 +28,7 @@ from .base import TorrentIndexer
 
 
 class TorrentRssIndexer(TorrentIndexer):
-    """
-    Generic parser for monitoring a torrent RSS feed.
-
-    !!! note
-        This indexer does not support automatic searching.
-        It is recommended to use an indexer that natively communicates with
-        a tracker using an API.
-    """
+    # Generic parser for monitoring a torrent RSS feed.
 
     type: Literal[
         "torrent-rss",

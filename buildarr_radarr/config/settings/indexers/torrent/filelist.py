@@ -43,13 +43,19 @@ class FilelistCategory(BaseEnum):
 
 
 class FilelistIndexer(TorrentIndexer):
-    """
-    Monitor for new releases on FileList.io.
-    """
+    # Monitor for new releases on FileList.io.
 
     type: Literal["filelist"] = "filelist"
     """
     Type value associated with this kind of indexer.
+    """
+
+    base_url: AnyHttpUrl = "https://filelist.io"  # type: ignore[assignment]
+    """
+    FileList API URL.
+
+    Do not change this unless you know what you're doing,
+    as your API key will be sent to this host.
     """
 
     username: NonEmptyStr
@@ -60,14 +66,6 @@ class FilelistIndexer(TorrentIndexer):
     passkey: Password
     """
     FileList account API key.
-    """
-
-    api_url: AnyHttpUrl = "https://filelist.io"  # type: ignore[assignment]
-    """
-    FileList API URL.
-
-    Do not change this unless you know what you're doing,
-    as your API key will be sent to this host.
     """
 
     categories: Set[FilelistCategory] = {
@@ -96,8 +94,8 @@ class FilelistIndexer(TorrentIndexer):
 
     _implementation = "FileList"
     _remote_map: List[RemoteMapEntry] = [
+        ("base_url", "baseUrl", {"is_field": True}),
         ("username", "username", {"is_field": True}),
         ("passkey", "passKey", {"is_field": True}),
-        ("api_url", "apiUrl", {"is_field": True}),
         ("categories", "categories", {"is_field": True}),
     ]

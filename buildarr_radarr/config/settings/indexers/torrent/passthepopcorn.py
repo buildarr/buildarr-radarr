@@ -29,9 +29,7 @@ from .base import TorrentIndexer
 
 
 class PassthepopcornIndexer(TorrentIndexer):
-    """
-    Monitor for new releases on PassThePopcorn.
-    """
+    # Monitor for new releases on PassThePopcorn.
 
     type: Literal["passthepopcorn"] = "passthepopcorn"
     """

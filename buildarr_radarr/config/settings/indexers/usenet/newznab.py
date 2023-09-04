@@ -30,9 +30,7 @@ from .base import UsenetIndexer
 
 
 class NewznabIndexer(UsenetIndexer):
-    """
-    An indexer for monitoring a Newznab-compliant Usenet indexing site.
-    """
+    # Monitor for new releases using a Newznab-compatible Usenet indexer or site.
 
     type: Literal["newznab"] = "newznab"
     """

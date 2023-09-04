@@ -56,13 +56,19 @@ class HdbitsMedium(BaseEnum):
 
 
 class HdbitsIndexer(TorrentIndexer):
-    """
-    Monitor for new releases on HDBits.
-    """
+    # Monitor for new releases on HDBits.
 
     type: Literal["hdbits"] = "hdbits"
     """
     Type value associated with this kind of indexer.
+    """
+
+    base_url: AnyHttpUrl = "https://hdbits.org"  # type: ignore[assignment]
+    """
+    HDBits API URL.
+
+    Do not change this unless you know what you're doing,
+    as your API key will be sent to this host.
     """
 
     username: NonEmptyStr
@@ -73,14 +79,6 @@ class HdbitsIndexer(TorrentIndexer):
     api_key: Password
     """
     HDBits API key assigned to the account.
-    """
-
-    api_url: AnyHttpUrl = "https://hdbits.org"  # type: ignore[assignment]
-    """
-    HDBits API URL.
-
-    Do not change this unless you know what you're doing,
-    as your API key will be sent to this host.
     """
 
     categories: Set[HdbitsCategory] = {HdbitsCategory.MOVIE}
@@ -133,9 +131,9 @@ class HdbitsIndexer(TorrentIndexer):
 
     _implementation = "HDBits"
     _remote_map: List[RemoteMapEntry] = [
+        ("base_url", "baseUrl", {"is_field": True}),
         ("username", "username", {"is_field": True}),
         ("api_key", "apiKey", {"is_field": True}),
-        ("api_url", "apiUrl", {"is_field": True}),
         ("categories", "categories", {"is_field": True}),
         ("codecs", "codecs", {"is_field": True}),
         ("mediums", "mediums", {"is_field": True}),
