@@ -35,13 +35,12 @@ from .torrent.filelist import FilelistIndexer
 from .torrent.hdbits import HdbitsIndexer
 from .torrent.iptorrents import IptorrentsIndexer
 from .torrent.nyaa import NyaaIndexer
+from .torrent.passthepopcorn import PassthepopcornIndexer
 from .torrent.rarbg import RarbgIndexer
 from .torrent.rss import TorrentRssIndexer
+from .torrent.torrentpotato import TorrentPotatoIndexer
 from .torrent.torznab import TorznabIndexer
 from .usenet.newznab import NewznabIndexer
-
-# from .torrent.passthepopcorn import PassthepopornIndexer
-# from .torrent.torrentpotato import TorrentPotatoIndexer
 
 logger = getLogger(__name__)
 
@@ -53,10 +52,10 @@ INDEXER_TYPE_MAP = {
         IptorrentsIndexer,
         NewznabIndexer,
         NyaaIndexer,
-        # PassthepopornIndexer,
+        PassthepopcornIndexer,
         RarbgIndexer,
         TorrentRssIndexer,
-        # TorrentPotatoIndexer,
+        TorrentPotatoIndexer,
         TorznabIndexer,
     )
 }
@@ -67,10 +66,10 @@ IndexerType = Union[
     IptorrentsIndexer,
     NewznabIndexer,
     NyaaIndexer,
-    # PassthepopornIndexer,
+    PassthepopcornIndexer,
     RarbgIndexer,
     TorrentRssIndexer,
-    # TorrentPotatoIndexer,
+    TorrentPotatoIndexer,
     TorznabIndexer,
 ]
 

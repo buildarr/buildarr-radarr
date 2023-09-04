@@ -46,7 +46,7 @@ class TorznabIndexer(TorrentIndexer):
 
     api_path: NonEmptyStr = "/api"  # type: ignore[assignment]
     """
-    Tornab API endpoint. Usually `/api`.
+    Torznab API endpoint. Usually `/api`.
     """
 
     api_key: Password
@@ -78,6 +78,11 @@ class TorznabIndexer(TorrentIndexer):
     * `TV-Sports`
     * `TV-Anime`
     * `TV-Documentary`
+    """
+
+    remove_year: bool = False
+    """
+    When set to `true`, excludes the release year of the media when searching the indexer.
     """
 
     additional_parameters: Optional[str] = None

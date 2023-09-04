@@ -29,9 +29,7 @@ from .base import TorrentIndexer
 
 class NyaaIndexer(TorrentIndexer):
     """
-    Monitor for new anime releases on the configured Nyaa domain.
-
-    Nyaa only supports searching for Anime series type releases.
+    Monitor for new releases on the configured Nyaa domain.
     """
 
     type: Literal["nyaa"] = "nyaa"
@@ -39,14 +37,9 @@ class NyaaIndexer(TorrentIndexer):
     Type value associated with this kind of indexer.
     """
 
-    website_url: AnyHttpUrl
+    base_url: AnyHttpUrl
     """
-    HTTPS URL for accessing Nyaa.
-    """
-
-    anime_standard_format_search: bool = False
-    """
-    Also search for anime using the standard numbering. Only applies for Anime series types.
+    Base URL for accessing Nyaa.
     """
 
     additional_parameters: Optional[str] = "&cats=1_0&filter=1"
@@ -59,8 +52,7 @@ class NyaaIndexer(TorrentIndexer):
 
     _implementation = "Nyaa"
     _remote_map: List[RemoteMapEntry] = [
-        ("website_url", "websiteUrl", {"is_field": True}),
-        ("anime_standard_format_search", "animeStandardFormatSearch", {"is_field": True}),
+        ("base_url", "baseUrl", {"is_field": True}),
         (
             "additional_parameters",
             "additionalParameters",

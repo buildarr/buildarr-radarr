@@ -19,4 +19,46 @@ PassThePopcorn indexer configuration.
 
 from __future__ import annotations
 
-# TODO: PassThePopcorn
+from typing import List, Literal
+
+from buildarr.config import RemoteMapEntry
+from buildarr.types import NonEmptyStr, Password
+from pydantic import AnyHttpUrl
+
+from .base import TorrentIndexer
+
+
+class PassthepopcornIndexer(TorrentIndexer):
+    """
+    Monitor for new releases on PassThePopcorn.
+    """
+
+    type: Literal["passthepopcorn"] = "passthepopcorn"
+    """
+    Type value associated with this kind of indexer.
+    """
+
+    base_url: AnyHttpUrl = "https://passthepopcorn.me"  # type: ignore[assignment]
+    """
+    PassThePopcorn API URL.
+
+    Do not change this unless you know what you're doing,
+    as your API key will be sent to this host.
+    """
+
+    api_user: NonEmptyStr
+    """
+    The API user of the PassThePopcorn account, as shown in Edit Profile > Security.
+    """
+
+    api_key: Password
+    """
+    PassThePopcorn API key associated with the account.
+    """
+
+    _implementation = "Nyaa"
+    _remote_map: List[RemoteMapEntry] = [
+        ("base_url", "baseUrl", {"is_field": True}),
+        ("api_user", "aPIUser", {"is_field": True}),
+        ("api_key", "aPIKey", {"is_field": True}),
+    ]

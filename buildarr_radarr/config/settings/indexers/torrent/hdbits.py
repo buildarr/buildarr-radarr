@@ -19,13 +19,40 @@ HDBits indexer configuration.
 
 from __future__ import annotations
 
-from typing import List, Literal
+from typing import List, Literal, Set
 
 from buildarr.config import RemoteMapEntry
-from buildarr.types import NonEmptyStr, Password
+from buildarr.types import BaseEnum, NonEmptyStr, Password
 from pydantic import AnyHttpUrl
 
 from .base import TorrentIndexer
+
+
+class HdbitsCategory(BaseEnum):
+    MOVIE = "Movie"
+    TV = "Tv"
+    DOCUMENTARY = "Documentary"
+    MUSIC = "Music"
+    SPORT = "Sport"
+    AUDIO = "Audio"
+    XXX = "Xxx"
+    MISCDEMO = "MiscDemo"
+
+
+class HdbitsCodec(BaseEnum):
+    H264 = "H264"
+    MPEG2 = "MPEG2"
+    VC1 = "VC1"
+    XVID = "Xvid"
+    HEVC = "HEVC"
+
+
+class HdbitsMedium(BaseEnum):
+    BLURAY = "Bluray"
+    ENCODE = "Encode"
+    CAPTURE = "Capture"
+    REMUX = "Remux"
+    WEBDL = "WebDl"
 
 
 class HdbitsIndexer(TorrentIndexer):
@@ -56,9 +83,60 @@ class HdbitsIndexer(TorrentIndexer):
     as your API key will be sent to this host.
     """
 
+    categories: Set[HdbitsCategory] = {HdbitsCategory.MOVIE}
+    """
+    Categories to filter releases by in the indexer.
+
+    If defined as an empty list, search under all categories.
+
+    Values:
+
+    * `Movie`
+    * `TV`
+    * `Documentary`
+    * `Music`
+    * `Sport`
+    * `Audio`
+    * `XXX`
+    * `MiscDemo`
+    """
+
+    codecs: Set[HdbitsCodec] = set()
+    """
+    Only allow releases using the defined codecs.
+
+    If defined as an empty list, allow all codecs.
+
+    Values:
+
+    * `H264`
+    * `MPEG2`
+    * `VC1`
+    * `Xvid`
+    * `HEVC`
+    """
+
+    mediums: Set[HdbitsMedium] = set()
+    """
+    Only allow releases using the defined codecs.
+
+    If defined as an empty list, allow all codecs.
+
+    Values:
+
+    * `Bluray`
+    * `Encode`
+    * `Capture`
+    * `Remux`
+    * `WebDl`
+    """
+
     _implementation = "HDBits"
     _remote_map: List[RemoteMapEntry] = [
         ("username", "username", {"is_field": True}),
         ("api_key", "apiKey", {"is_field": True}),
         ("api_url", "apiUrl", {"is_field": True}),
+        ("categories", "categories", {"is_field": True}),
+        ("codecs", "codecs", {"is_field": True}),
+        ("mediums", "mediums", {"is_field": True}),
     ]

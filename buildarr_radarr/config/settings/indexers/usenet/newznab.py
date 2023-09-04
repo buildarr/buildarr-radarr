@@ -39,7 +39,7 @@ class NewznabIndexer(UsenetIndexer):
     Type value associated with this kind of indexer.
     """
 
-    url: AnyHttpUrl
+    base_url: AnyHttpUrl
     """
     URL of the Newznab-compatible indexing site.
     """
@@ -78,27 +78,9 @@ class NewznabIndexer(UsenetIndexer):
     * `Movies-3D`
     """
 
-    anime_categories: Set[NabCategory] = set()
+    remove_year: bool = False
     """
-    Categories to monitor for anime.
-    Define as empty to disable.
-
-    Values:
-
-    * `TV-WEBDL`
-    * `TV-Foreign`
-    * `TV-SD`
-    * `TV-HD`
-    * `TV-UHD`
-    * `TV-Other`
-    * `TV-Sports`
-    * `TV-Anime`
-    * `TV-Documentary`
-    """
-
-    anime_standard_format_search: bool = False
-    """
-    Also search for anime using the standard numbering. Only applies for Anime series types.
+    When set to `true`, excludes the release year of the media when searching the indexer.
     """
 
     additional_parameters: Optional[str] = None
@@ -110,7 +92,7 @@ class NewznabIndexer(UsenetIndexer):
 
     _implementation = "Newznab"
     _remote_map: List[RemoteMapEntry] = [
-        ("url", "baseUrl", {"is_field": True}),
+        ("base_url", "baseUrl", {"is_field": True}),
         ("api_path", "apiPath", {"is_field": True}),
         ("api_key", "apiKey", {"is_field": True}),
         (
@@ -118,12 +100,6 @@ class NewznabIndexer(UsenetIndexer):
             "categories",
             {"is_field": True, "encoder": lambda v: sorted(c.value for c in v)},
         ),
-        (
-            "anime_categories",
-            "animeCategories",
-            {"is_field": True, "encoder": lambda v: sorted(c.value for c in v)},
-        ),
-        ("anime_standard_format_search", "animeStandardFormatSearch", {"is_field": True}),
         (
             "additional_parameters",
             "additionalParameters",

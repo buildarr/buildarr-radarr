@@ -49,6 +49,4 @@ class IptorrentsIndexer(TorrentIndexer):
     """
 
     _implementation = "IPTorrents"
-    _remote_map: List[RemoteMapEntry] = [
-        ("feed_url", "feedUrl", {"is_field": True}),
-    ]
+    _remote_map: List[RemoteMapEntry] = [("feed_url", "baseUrl", {"is_field": True})]

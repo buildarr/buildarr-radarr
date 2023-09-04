@@ -49,12 +49,9 @@ class TorrentRssIndexer(TorrentIndexer):
     Type values associated with this kind of indexer.
     """
 
-    # NOTE: automatic_search and interactive_search are not supported
-    # by this indexer, therefore its value is ignored.
-
-    full_rss_feed_url: RssUrl
+    base_url: RssUrl
     """
-    RSS feed to monitor.
+    Full RSS feed URL to monitor.
     """
 
     cookie: Optional[str] = None

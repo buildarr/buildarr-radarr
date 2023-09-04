@@ -19,4 +19,43 @@ TorrentPotato indexer configuration.
 
 from __future__ import annotations
 
-# TODO: TorrentPotato
+from typing import List, Literal
+
+from buildarr.config import RemoteMapEntry
+from buildarr.types import NonEmptyStr, Password
+from pydantic import AnyHttpUrl
+
+from .base import TorrentIndexer
+
+
+class TorrentPotatoIndexer(TorrentIndexer):
+    """
+    Monitor for new releases using a legacy CouchPotato torrent API (TorrentPotato) indexer.
+    """
+
+    type: Literal["torrentpotato"] = "torrentpotato"
+    """
+    Type value associated with this kind of indexer.
+    """
+
+    base_url: AnyHttpUrl = "https://passthepopcorn.me"  # type: ignore[assignment]
+    """
+    TorrentPotato indexer API URL.
+    """
+
+    username: NonEmptyStr
+    """
+    TorrentPotato indexer username.
+    """
+
+    passkey: Password
+    """
+    Password for the TorrentPotato indexer user.
+    """
+
+    _implementation = "Nyaa"
+    _remote_map: List[RemoteMapEntry] = [
+        ("base_url", "baseUrl", {"is_field": True}),
+        ("username", "user", {"is_field": True}),
+        ("passkey", "passkey", {"is_field": True}),
+    ]
