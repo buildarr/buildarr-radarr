@@ -36,80 +36,97 @@ logger = getLogger(__name__)
 
 
 class NotificationTriggers(RadarrConfigBase):
+    # Notification trigger configuration.
+
+    on_grab: bool = False
     """
-    Notification connections are configured using the following syntax.
+    Notify when movies are available for download and have been sent to a download client.
+    """
 
-    ```yaml
-    radarr:
-      settings:
-        notifications:
-          delete_unmanaged: false # Optional
-          definitions:
-            Email: # Name of notification connection in Radarr.
-              type: "email" # Required
-              notification_triggers: # When to send notifications.
-                on_health_issue: true
-                include_health_warnings: false # Do not send on just warnings.
-                on_application_update: true
-              tags: # Tags can also be assigned to connections.
-                - "example"
-              # Connection-specific parameters.
-              server: "smtp.example.com"
-              port: 465
-              use_encryption: true
-              username: "radarr"
-              password: "fake-password"
-              from_address: "radarr@example.com"
-              recipient_addresses:
-                - "admin@example.com"
-            # Add additional connections here.
-    ```
+    on_import: bool = False
+    """
+    Notify when movies are successfully imported.
+    """
 
-    A `type` attribute must be defined so Buildarr knows what type of connection to make.
-    Each connection has a unique value for `type` documented below.
+    on_upgrade: bool = False
+    """
+    Notify when movies are upgraded to a better quality.
+    """
 
-    The triggers enabled on a connection are defined under `notification_triggers`.
-    Tags can be assigned to connections, to only allow notifications relating
-    to media under those tags.
+    on_rename: bool = False
+    """
+    Notify when movies are renamed.
+    """
 
-    The `delete_unmanaged` flag on the outer `connect` block can be set
-    to remove connections not defined in Buildarr.
-    Take care when using this option, as it can remove connections
-    automatically managed by other applications.
+    on_movie_added: bool = False
+    """
+    Notify when movies are added to Radarr's library to monitor.
+    """
 
-    The following notification triggers can be enabled.
-    Some connection types only allow a subset of these to be enabled,
-    check the documentation the specific connection type for more information.
+    on_movie_deleted: bool = False
+    """
+    Notify when movies are deleted.
+    """
+
+    on_movie_file_delete: bool = False
+    """
+    Notify when movie files are deleted.
+    """
+
+    on_movie_file_delete_for_upgrade: bool = False
+    """
+    Notify when movie files are deleted for upgrades.
     """
 
     on_health_issue: bool = False
     """
-    Be notified on health check failures.
+    Notify on health check failures.
     """
 
     include_health_warnings: bool = False
     """
-    Be notified on health warnings in addition to errors.
+    Notify for health check warnings in addition to errors.
 
     Requires `on_health_issue` to be enabled to have any effect.
     """
 
+    on_health_restored: bool = False
+    """
+    Notify when health check failures have been resolved.
+    """
+
     on_application_update: bool = False
     """
-    Be notified when Radarr gets updated to a new version.
+    Notify when Radarr gets updated to a new version.
+    """
+
+    on_manual_interaction_required: bool = False
+    """
+    Notify when manual interaction is required to resolve an issue.
     """
 
     _remote_map: List[RemoteMapEntry] = [
+        ("on_grab", "onGrab", {}),
+        ("on_import", "onImport", {}),
+        ("on_upgrade", "onUpgrade", {}),
+        ("on_rename", "onRename", {}),
+        ("on_movie_added", "onMovieAdd", {}),
+        ("on_movie_delete", "onMovieDelete", {}),
+        ("on_movie_file_delete", "onMovieFileDelete", {}),
+        ("on_movie_file_delete_for_upgrade", "onMovieFileDeleteForUpgrade", {}),
         ("on_health_issue", "onHealthIssue", {}),
         ("include_health_warnings", "includeHealthWarnings", {}),
+        ("on_health_restored", "onHealthRestored", {}),
+        ("on_manual_interaction_required", "onManualInteractionRequired", {}),
         ("on_application_update", "onApplicationUpdate", {}),
     ]
 
+    # TODO: Add a post_init_render to check if triggers are supported or not,
+    # and force to False (and log a warning) if not.
+
 
 class Notification(RadarrConfigBase):
-    """
-    Base class for a Radarr notification connection.
-    """
+    # Notification connection configuration base class.
 
     notification_triggers: NotificationTriggers = NotificationTriggers()
     """

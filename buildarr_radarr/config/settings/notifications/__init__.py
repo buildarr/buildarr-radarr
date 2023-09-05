@@ -46,7 +46,6 @@ from .pushover import PushoverNotification
 from .sendgrid import SendgridNotification
 from .slack import SlackNotification
 from .telegram import TelegramNotification
-from .twitter import TwitterNotification
 from .webhook import WebhookNotification
 
 logger = getLogger(__name__)
@@ -69,7 +68,6 @@ NotificationType = Union[
     SendgridNotification,
     SlackNotification,
     TelegramNotification,
-    TwitterNotification,
     WebhookNotification,
 ]
 
@@ -92,28 +90,27 @@ NOTIFICATION_TYPE_MAP = {
         SendgridNotification,
         SlackNotification,
         TelegramNotification,
-        TwitterNotification,
         WebhookNotification,
     )
 }
 
 
 class RadarrNotificationsSettings(RadarrConfigBase):
-    """
-    Manage notification connections in Radarr.
-    """
+    # Notification connection settings configuration.
 
     delete_unmanaged: bool = False
     """
     Automatically delete connections not configured in Buildarr.
 
-    Take care when enabling this option, as this can remove connections automatically
-    managed by other applications.
+    !!! warning
+
+        Some notification connection types are not supported by Buildarr, and must be
+        configured manually. **Do not enable this option when using such connections.**
     """
 
     definitions: Dict[str, Annotated[NotificationType, Field(discriminator="type")]] = {}
     """
-    Notification connections are defined here.
+    Define notification connections as a dictionary under this attribute.
     """
 
     @classmethod

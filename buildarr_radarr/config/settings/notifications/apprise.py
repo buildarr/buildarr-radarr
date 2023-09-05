@@ -29,9 +29,7 @@ from .base import Notification
 
 
 class AppriseNotification(Notification):
-    """
-    Receive media update and health alert push notifications via an Apprise server.
-    """
+    # Receive media update and health alert push notifications via an Apprise server.
 
     type: Literal["apprise"] = "apprise"
     """
