@@ -22,10 +22,18 @@ from __future__ import annotations
 from typing import List, Literal, Optional, Set
 
 from buildarr.config import RemoteMapEntry
-from buildarr.types import NonEmptyStr
+from buildarr.types import BaseEnum, NonEmptyStr
 from pydantic import AnyHttpUrl, SecretStr
 
 from .base import Notification
+
+
+class AppriseNotificationType(BaseEnum):
+    # TODO: Convert to use the schema.
+    INFO = "Info"
+    SUCCESS = "Success"
+    WARNING = "Warning"
+    FAILURE = "Failure"
 
 
 class AppriseNotification(Notification):
@@ -55,24 +63,36 @@ class AppriseNotification(Notification):
     Leave undefined or empty if Persistent Storage is used.
     """
 
+    notification_type: AppriseNotificationType = AppriseNotificationType.INFO
+    """
+    The Apprise notification type to classify notifications under.
+
+    Values:
+
+    * `Info` (default)
+    * `Success`
+    * `Warning`
+    * `Failure`
+    """
+
     apprise_tags: Set[NonEmptyStr] = set()
     """
     Optionally notify only targets with the defined tags.
     """
 
-    auth_username: Optional[str] = None
+    username: Optional[str] = None
     """
-    Username for authenticating with Apprise, if required.
+    Basic HTTP auth username for authenticating with Apprise, if required.
     """
 
-    auth_password: Optional[SecretStr] = None
+    password: Optional[SecretStr] = None
     """
-    Password for authenticating with Apprise, if required.
+    Basic HTTP auth password for authenticating with Apprise, if required.
     """
 
     _implementation: str = "Apprise"
     _remote_map: List[RemoteMapEntry] = [
-        ("base_url", "baseUrl", {"is_field": True}),
+        ("base_url", "serverUrl", {"is_field": True}),
         (
             "configuration_key",
             "configurationKey",
@@ -91,18 +111,19 @@ class AppriseNotification(Notification):
                 "encoder": lambda v: ",".join(sorted(str(url) for url in v)),
             },
         ),
+        ("notification_type", "notificationType", {"is_field": True}),
         (
             "apprise_tags",
             "tags",
             {"is_field": True, "encoder": lambda v: sorted(v)},
         ),
         (
-            "auth_username",
+            "username",
             "authUsername",
             {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
         ),
         (
-            "auth_password",
+            "password",
             "authPassword",
             {
                 "is_field": True,

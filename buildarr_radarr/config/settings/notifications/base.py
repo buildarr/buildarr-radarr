@@ -20,7 +20,7 @@ Notification connection configuration base class.
 from __future__ import annotations
 
 from logging import getLogger
-from typing import Any, Dict, List, Mapping
+from typing import Any, Dict, List, Mapping, Set
 
 import radarr
 
@@ -85,9 +85,7 @@ class NotificationTriggers(RadarrConfigBase):
 
     include_health_warnings: bool = False
     """
-    Notify for health check warnings in addition to errors.
-
-    Requires `on_health_issue` to be enabled to have any effect.
+    When `on_health_issue` is enabled, notify for health check warnings in addition to errors.
     """
 
     on_health_restored: bool = False
@@ -133,7 +131,7 @@ class Notification(RadarrConfigBase):
     Notification triggers to enable on this notification connection.
     """
 
-    tags: List[NonEmptyStr] = []
+    tags: Set[NonEmptyStr] = set()
     """
     Radarr tags to associate this notification connection with.
     """

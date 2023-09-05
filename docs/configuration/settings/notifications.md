@@ -63,32 +63,6 @@ definitions in Radarr.
         - definitions
 
 
-
-
-
-
-##### ::: buildarr_radarr.config.settings.notifications.base.NotificationTriggers
-    options:
-      members:
-        - on_grab
-        - on_import
-        - on_upgrade
-        - on_rename
-        - on_movie_added
-        - on_movie_delete
-        - on_movie_file_delete
-        - on_movie_file_delete_for_upgrade
-        - on_health_issue
-        - include_health_warnings
-        - on_health_restored
-        - on_application_update
-        - on_manual_interaction_required
-
-
-
-
-
-
 ## Apprise
 
 Receive media update and health alert push notifications via an Apprise server.
@@ -100,9 +74,15 @@ Receive media update and health alert push notifications via an Apprise server.
         - base_url
         - configuration_key
         - stateless_urls
+        - notification_type
         - apprise_tags
-        - auth_username
-        - auth_password
+        - username
+        - password
+
+##### ::: buildarr_radarr.config.settings.notifications.base.Notification
+    options:
+      members:
+        - tags
 
 ##### Supported Notification Triggers
 
@@ -131,6 +111,11 @@ Receive media update and health alert push notifications via an Apprise server.
         - type
         - access_token
 
+##### ::: buildarr_radarr.config.settings.notifications.base.Notification
+    options:
+      members:
+        - tags
+
 ##### Supported Notification Triggers
 
 ##### ::: buildarr_radarr.config.settings.notifications.base.NotificationTriggers
@@ -157,6 +142,11 @@ Receive media update and health alert push notifications via an Apprise server.
       members:
         - type
         - path
+
+##### ::: buildarr_radarr.config.settings.notifications.base.Notification
+    options:
+      members:
+        - tags
 
 ##### Supported Notification Triggers
 
@@ -190,6 +180,11 @@ Receive media update and health alert push notifications via an Apprise server.
         - host
         - on_grab_fields
         - on_import_fields
+
+##### ::: buildarr_radarr.config.settings.notifications.base.Notification
+    options:
+      members:
+        - tags
 
 ##### Supported Notification Triggers
 
@@ -226,6 +221,11 @@ Receive media update and health alert push notifications via an Apprise server.
         - recipient_addresses
         - cc_addresses
         - bcc_addresses
+
+##### ::: buildarr_radarr.config.settings.notifications.base.Notification
+    options:
+      members:
+        - tags
 
 ##### Supported Notification Triggers
 
@@ -276,6 +276,11 @@ Receive media update and health alert push notifications via an Apprise server.
         - app_token
         - priority
 
+##### ::: buildarr_radarr.config.settings.notifications.base.Notification
+    options:
+      members:
+        - tags
+
 ##### Supported Notification Triggers
 
 ##### ::: buildarr_radarr.config.settings.notifications.base.NotificationTriggers
@@ -304,6 +309,11 @@ Receive media update and health alert push notifications via an Apprise server.
         - api_key
         - device_names
         - priority
+
+##### ::: buildarr_radarr.config.settings.notifications.base.Notification
+    options:
+      members:
+        - tags
 
 ##### Supported Notification Triggers
 
@@ -357,6 +367,11 @@ Receive media update and health alert push notifications via an Apprise server.
         - sender_domain
         - recipient_addresses
 
+##### ::: buildarr_radarr.config.settings.notifications.base.Notification
+    options:
+      members:
+        - tags
+
 ##### Supported Notification Triggers
 
 ##### ::: buildarr_radarr.config.settings.notifications.base.NotificationTriggers
@@ -384,6 +399,11 @@ Receive media update and health alert push notifications via an Apprise server.
       members:
         - type
         - api_key
+
+##### ::: buildarr_radarr.config.settings.notifications.base.Notification
+    options:
+      members:
+        - tags
 
 ##### Supported Notification Triggers
 
@@ -418,6 +438,11 @@ Receive media update and health alert push notifications via an Apprise server.
         - topics
         - ntfy_tags
         - click_url
+
+##### ::: buildarr_radarr.config.settings.notifications.base.Notification
+    options:
+      members:
+        - tags
 
 ##### Supported Notification Triggers
 
@@ -458,6 +483,11 @@ Please add the Plex Media Server notification connection manually in the Radarr 
         - api_key
         - priority
 
+##### ::: buildarr_radarr.config.settings.notifications.base.Notification
+    options:
+      members:
+        - tags
+
 ##### Supported Notification Triggers
 
 ##### ::: buildarr_radarr.config.settings.notifications.base.NotificationTriggers
@@ -487,6 +517,11 @@ Please add the Plex Media Server notification connection manually in the Radarr 
         - device_ids
         - channel_tags
         - sender_id
+
+##### ::: buildarr_radarr.config.settings.notifications.base.Notification
+    options:
+      members:
+        - tags
 
 ##### Supported Notification Triggers
 
@@ -520,6 +555,11 @@ Please add the Plex Media Server notification connection manually in the Radarr 
         - retry
         - expire
         - sound
+
+##### ::: buildarr_radarr.config.settings.notifications.base.Notification
+    options:
+      members:
+        - tags
 
 ##### Supported Notification Triggers
 
@@ -571,6 +611,11 @@ Please add the Plex Media Server notification connection manually in the Radarr 
         - api_key
         - from_address
         - recipient_addresses
+
+##### ::: buildarr_radarr.config.settings.notifications.base.Notification
+    options:
+      members:
+        - tags
 
 ##### Supported Notification Triggers
 
@@ -644,6 +689,11 @@ Please add the Plex Media Server notification connection manually in the Radarr 
         - icon
         - channel
 
+##### ::: buildarr_radarr.config.settings.notifications.base.Notification
+    options:
+      members:
+        - tags
+
 ##### Supported Notification Triggers
 
 ##### ::: buildarr_radarr.config.settings.notifications.base.NotificationTriggers
@@ -672,6 +722,11 @@ Please add the Plex Media Server notification connection manually in the Radarr 
         - bot_token
         - chat_id
         - send_silently
+
+##### ::: buildarr_radarr.config.settings.notifications.base.Notification
+    options:
+      members:
+        - tags
 
 ##### Supported Notification Triggers
 
@@ -724,6 +779,11 @@ Please add the Twitter notification connection manually in the Radarr UI.
         - method
         - username
         - password
+
+##### ::: buildarr_radarr.config.settings.notifications.base.Notification
+    options:
+      members:
+        - tags
 
 ##### Supported Notification Triggers
 
