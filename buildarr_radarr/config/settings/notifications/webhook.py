@@ -19,11 +19,11 @@ Webhook notification connection configuration.
 
 from __future__ import annotations
 
-from typing import List, Literal
+from typing import List, Literal, Optional
 
 from buildarr.config import RemoteMapEntry
-from buildarr.types import BaseEnum, NonEmptyStr, Password
-from pydantic import AnyHttpUrl
+from buildarr.types import BaseEnum
+from pydantic import AnyHttpUrl, SecretStr
 
 from .base import Notification
 
@@ -62,20 +62,32 @@ class WebhookNotification(Notification):
     * `PUT`
     """
 
-    username: NonEmptyStr
+    username: Optional[str] = None
     """
-    Webhook API username.
+    Webhook API username, if required.
     """
 
-    password: Password
+    password: Optional[SecretStr] = None
     """
-    Webhook API password.
+    Webhook API password, if required.
     """
 
     _implementation: str = "Webhook"
     _remote_map: List[RemoteMapEntry] = [
         ("url", "url", {"is_field": True}),
         ("method", "method", {"is_field": True}),
-        ("username", "username", {"is_field": True}),
-        ("password", "password", {"is_field": True}),
+        (
+            "username",
+            "username",
+            {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
+        ),
+        (
+            "password",
+            "password",
+            {
+                "is_field": True,
+                "decoder": lambda v: SecretStr(v) if v else None,
+                "encoder": lambda v: v.get_secret_value() if v else "",
+            },
+        ),
     ]

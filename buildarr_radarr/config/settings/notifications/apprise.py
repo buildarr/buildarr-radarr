@@ -30,10 +30,10 @@ from .base import Notification
 
 class AppriseNotificationType(BaseEnum):
     # TODO: Convert to use the schema.
-    INFO = "Info"
-    SUCCESS = "Success"
-    WARNING = "Warning"
-    FAILURE = "Failure"
+    INFO = 0
+    SUCCESS = 1
+    WARNING = 2
+    FAILURE = 3
 
 
 class AppriseNotification(Notification):

@@ -69,7 +69,7 @@ class MailgunNotification(Notification):
     At least one recipient address is required.
     """
 
-    _implementation: str = "Mailgun"
+    _implementation: str = "MailGun"
     _remote_map: List[RemoteMapEntry] = [
         ("api_key", "apiKey", {"is_field": True}),
         ("use_eu_endpoint", "useEuEndpoint", {"is_field": True}),

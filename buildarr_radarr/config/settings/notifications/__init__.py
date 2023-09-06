@@ -35,16 +35,22 @@ from .boxcar import BoxcarNotification
 from .custom_script import CustomScriptNotification
 from .discord import DiscordNotification
 from .email import EmailNotification
+from .emby_jellyfin import EmbyJellyfinNotification
 from .gotify import GotifyNotification
 from .join import JoinNotification
+from .kodi import KodiNotification
 from .mailgun import MailgunNotification
 from .notifiarr import NotifiarrNotification
 from .ntfy import NtfyNotification
 from .prowl import ProwlNotification
 from .pushbullet import PushbulletNotification
 from .pushover import PushoverNotification
+from .pushsafer import PushsaferNotification
 from .sendgrid import SendgridNotification
+from .signal import SignalNotification
+from .simplepush import SimplepushNotification
 from .slack import SlackNotification
+from .synology_indexer import SynologyIndexerNotification
 from .telegram import TelegramNotification
 from .webhook import WebhookNotification
 
@@ -57,16 +63,22 @@ NotificationType = Union[
     CustomScriptNotification,
     DiscordNotification,
     EmailNotification,
+    EmbyJellyfinNotification,
     GotifyNotification,
     JoinNotification,
+    KodiNotification,
     MailgunNotification,
     NotifiarrNotification,
     NtfyNotification,
     ProwlNotification,
     PushbulletNotification,
     PushoverNotification,
+    PushsaferNotification,
+    SignalNotification,
+    SimplepushNotification,
     SendgridNotification,
     SlackNotification,
+    SynologyIndexerNotification,
     TelegramNotification,
     WebhookNotification,
 ]
@@ -79,16 +91,22 @@ NOTIFICATION_TYPE_MAP = {
         CustomScriptNotification,
         DiscordNotification,
         EmailNotification,
+        EmbyJellyfinNotification,
         GotifyNotification,
         JoinNotification,
+        KodiNotification,
         MailgunNotification,
         NotifiarrNotification,
         NtfyNotification,
         ProwlNotification,
         PushbulletNotification,
         PushoverNotification,
+        PushsaferNotification,
+        SignalNotification,
+        SimplepushNotification,
         SendgridNotification,
         SlackNotification,
+        SynologyIndexerNotification,
         TelegramNotification,
         WebhookNotification,
     )

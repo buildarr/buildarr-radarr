@@ -47,11 +47,18 @@ class NtfyNotification(Notification):
     Type value associated with this kind of connection.
     """
 
-    server_url: Optional[AnyHttpUrl] = None
+    base_url: Optional[AnyHttpUrl] = None
     """
     Custom ntfy server URL.
 
     Leave blank, set to `null` or undefined to use the public server (`https://ntfy.sh`).
+    """
+
+    access_token: Optional[SecretStr] = None
+    """
+    Optional token-based authorisation.
+
+    When both are defined, access token takes priority over username/password.
     """
 
     username: Optional[str] = None
@@ -99,6 +106,15 @@ class NtfyNotification(Notification):
                 "is_field": True,
                 "decoder": lambda v: v or None,
                 "encoder": lambda v: str(v) if v else "",
+            },
+        ),
+        (
+            "access_token",
+            "accessToken",
+            {
+                "is_field": True,
+                "decoder": lambda v: SecretStr(v) if v else None,
+                "encoder": lambda v: v.get_secret_value() if v else "",
             },
         ),
         (

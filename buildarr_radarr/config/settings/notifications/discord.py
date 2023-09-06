@@ -39,6 +39,9 @@ class OnGrabField(BaseEnum):
     release = 7
     poster = 8
     fanart = 9
+    indexer = 10
+    custom_formats = 11
+    custom_format_score = 12
 
 
 class OnImportField(BaseEnum):
@@ -55,6 +58,19 @@ class OnImportField(BaseEnum):
     release = 10
     poster = 11
     fanart = 12
+
+
+class OnManualInteractionField(BaseEnum):
+    overview = 0
+    rating = 1
+    genres = 2
+    quality = 3
+    group = 4
+    size = 5
+    links = 6
+    download_title = 7
+    poster = 8
+    fanart = 9
 
 
 class DiscordNotification(Notification):
@@ -99,11 +115,15 @@ class DiscordNotification(Notification):
         OnGrabField.rating,
         OnGrabField.genres,
         OnGrabField.quality,
+        OnGrabField.group,
         OnGrabField.size,
         OnGrabField.links,
         OnGrabField.release,
         OnGrabField.poster,
         OnGrabField.fanart,
+        OnGrabField.indexer,
+        OnGrabField.custom_formats,
+        OnGrabField.custom_format_score,
     }
     """
     Set the fields that are passed in for this 'on grab' notification.
@@ -121,20 +141,23 @@ class DiscordNotification(Notification):
     * `release`
     * `poster`
     * `fanart`
+    * `indexer`
+    * `custom-formats`
+    * `custom-format-score`
 
     Example:
 
     ```yaml
     ...
-      connect:
+      notifications:
         definitions:
           Discord:
-            type: "discord"
+            type: discord
             webhook_url: "https://..."
             on_grab_fields:
-              - "overview"
-              - "quality"
-              - "release"
+              - overview
+              - quality
+              - release
     ```
     """
 
@@ -177,17 +200,30 @@ class DiscordNotification(Notification):
 
     ```yaml
     ...
-      connect:
+      notifications:
         definitions:
           Discord:
-            type: "discord"
-            webhook_url: "https://..."
+            type: discord
+            webhook_url: https://...
             on_import_fields:
-              - "overview"
-              - "quality"
-              - "release"
+              - overview
+              - quality
+              - release
     ```
     """
+
+    on_manual_interaction_fields: Set[OnManualInteractionField] = {
+        OnManualInteractionField.overview,
+        OnManualInteractionField.rating,
+        OnManualInteractionField.genres,
+        OnManualInteractionField.quality,
+        OnManualInteractionField.group,
+        OnManualInteractionField.size,
+        OnManualInteractionField.links,
+        OnManualInteractionField.download_title,
+        OnManualInteractionField.poster,
+        OnManualInteractionField.fanart,
+    }
 
     _implementation: str = "Discord"
     _remote_map: List[RemoteMapEntry] = [
@@ -204,7 +240,7 @@ class DiscordNotification(Notification):
         ),
         (
             "host",
-            "host",
+            "author",
             {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
         ),
         (
@@ -215,6 +251,11 @@ class DiscordNotification(Notification):
         (
             "on_import_fields",
             "importFields",
+            {"is_field": True, "encoder": lambda v: sorted(f.value for f in v)},
+        ),
+        (
+            "on_manual_interaction_fields",
+            "manualInteractionFields",
             {"is_field": True, "encoder": lambda v: sorted(f.value for f in v)},
         ),
     ]

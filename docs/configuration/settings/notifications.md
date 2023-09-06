@@ -142,6 +142,7 @@ Receive media update and health alert push notifications via an Apprise server.
       members:
         - type
         - path
+        - arguments
 
 ##### ::: buildarr_radarr.config.settings.notifications.base.Notification
     options:
@@ -180,6 +181,7 @@ Receive media update and health alert push notifications via an Apprise server.
         - host
         - on_grab_fields
         - on_import_fields
+        - on_manual_interaction_fields
 
 ##### ::: buildarr_radarr.config.settings.notifications.base.Notification
     options:
@@ -248,6 +250,22 @@ Receive media update and health alert push notifications via an Apprise server.
 
 ## Emby / Jellyfin
 
+##### ::: buildarr_radarr.config.settings.notifications.emby_jellyfin.EmbyJellyfinNotification
+    options:
+      members:
+        - type
+        - hostname
+        - port
+        - use_ssl
+        - api_key
+        - send_notifications
+        - update_library
+
+##### ::: buildarr_radarr.config.settings.notifications.base.Notification
+    options:
+      members:
+        - tags
+
 ##### Supported Notification Triggers
 
 ##### ::: buildarr_radarr.config.settings.notifications.base.NotificationTriggers
@@ -275,6 +293,7 @@ Receive media update and health alert push notifications via an Apprise server.
         - server
         - app_token
         - priority
+        - include_movie_poster
 
 ##### ::: buildarr_radarr.config.settings.notifications.base.Notification
     options:
@@ -335,6 +354,25 @@ Receive media update and health alert push notifications via an Apprise server.
 
 
 ## Kodi (XBMC)
+
+##### ::: buildarr_radarr.config.settings.notifications.kodi.KodiNotification
+    options:
+      members:
+        - type
+        - hostname
+        - port
+        - use_ssl
+        - username
+        - password
+        - display_notification
+        - display_time
+        - clean_library
+        - always_update
+
+##### ::: buildarr_radarr.config.settings.notifications.base.Notification
+    options:
+      members:
+        - tags
 
 ##### Supported Notification Triggers
 
@@ -431,7 +469,8 @@ Receive media update and health alert push notifications via an Apprise server.
     options:
       members:
         - type
-        - server_url
+        - base_url
+        - access_token
         - username
         - password
         - priority
@@ -582,6 +621,25 @@ Please add the Plex Media Server notification connection manually in the Radarr 
 
 ## Pushsafer
 
+##### ::: buildarr_radarr.config.settings.notifications.pushsafer.PushsaferNotification
+    options:
+      members:
+        - type
+        - api_key
+        - device_ids
+        - priority
+        - retry
+        - expire
+        - sound
+        - vibration
+        - icon
+        - icon_color
+
+##### ::: buildarr_radarr.config.settings.notifications.base.Notification
+    options:
+      members:
+        - tags
+
 ##### Supported Notification Triggers
 
 ##### ::: buildarr_radarr.config.settings.notifications.base.NotificationTriggers
@@ -638,6 +696,23 @@ Please add the Plex Media Server notification connection manually in the Radarr 
 
 ## Signal
 
+##### ::: buildarr_radarr.config.settings.notifications.signal.SignalNotification
+    options:
+      members:
+        - type
+        - hostname
+        - port
+        - use_ssl
+        - sender_number
+        - receiver_id
+        - username
+        - password
+
+##### ::: buildarr_radarr.config.settings.notifications.base.Notification
+    options:
+      members:
+        - tags
+
 ##### Supported Notification Triggers
 
 ##### ::: buildarr_radarr.config.settings.notifications.base.NotificationTriggers
@@ -658,6 +733,18 @@ Please add the Plex Media Server notification connection manually in the Radarr 
 
 
 ## Simplepush
+
+##### ::: buildarr_radarr.config.settings.notifications.simplepush.SimplepushNotification
+    options:
+      members:
+        - type
+        - api_key
+        - event
+
+##### ::: buildarr_radarr.config.settings.notifications.base.Notification
+    options:
+      members:
+        - tags
 
 ##### Supported Notification Triggers
 
@@ -711,6 +798,32 @@ Please add the Plex Media Server notification connection manually in the Radarr 
         - on_health_restored
         - on_application_update
         - on_manual_interaction_required
+
+
+## Synology Indexer
+
+##### ::: buildarr_radarr.config.settings.notifications.synology_indexer.SynologyIndexerNotification
+    options:
+      members:
+        - type
+        - update_library
+
+##### ::: buildarr_radarr.config.settings.notifications.base.Notification
+    options:
+      members:
+        - tags
+
+##### Supported Notification Triggers
+
+##### ::: buildarr_radarr.config.settings.notifications.base.NotificationTriggers
+    options:
+      members:
+        - on_import
+        - on_upgrade
+        - on_rename
+        - on_movie_delete
+        - on_movie_file_delete
+        - on_movie_file_delete_for_upgrade
 
 
 ## Telegram

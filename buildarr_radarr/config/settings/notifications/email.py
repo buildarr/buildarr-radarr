@@ -51,14 +51,14 @@ class EmailNotification(Notification):
     The default is to use STARTTLS on the standard SMTP submission port.
     """
 
-    use_encryption: bool = True
+    use_encryption: bool = False
     """
     Whether or not to use encryption when sending mail to the SMTP server.
 
     If the port number is set to 465, SMTPS (implicit TLS) will be used.
     Any other port number will result in STARTTLS being used.
 
-    The default is to enable encryption.
+    The default is to not require encryption.
     """
 
     username: NonEmptyStr

@@ -13,13 +13,13 @@
 
 
 """
-Notifiarr notification connection configuration.
+Simplepush notification connection configuration.
 """
 
 
 from __future__ import annotations
 
-from typing import List, Literal
+from typing import List, Literal, Optional
 
 from buildarr.config import RemoteMapEntry
 from buildarr.types import Password
@@ -27,20 +27,32 @@ from buildarr.types import Password
 from .base import Notification
 
 
-class NotifiarrNotification(Notification):
+class SimplepushNotification(Notification):
     """
-    Send media update and health alert emails via the Notifiarr notification service.
+    Send media update and health alert messages to Simplepush.
     """
 
-    type: Literal["notifiarr"] = "notifiarr"
+    type: Literal["simplepush"] = "simplepush"
     """
     Type value associated with this kind of connection.
     """
 
     api_key: Password
     """
-    API key to use to authenticate with Notifiarr.
+    Simplepush API key.
     """
 
-    _implementation: str = "Notifiarr"
-    _remote_map: List[RemoteMapEntry] = [("api_key", "aPIKey", {"is_field": True})]
+    event: Optional[str] = None
+    """
+    Customise the behaviour of push notification.
+    """
+
+    _implementation: str = "Simplepush"
+    _remote_map: List[RemoteMapEntry] = [
+        ("api_key", "key", {"is_field": True}),
+        (
+            "event",
+            "event",
+            {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
+        ),
+    ]

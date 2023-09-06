@@ -49,7 +49,7 @@ class GotifyNotification(Notification):
     Type value associated with this kind of connection.
     """
 
-    server: AnyHttpUrl
+    base_url: AnyHttpUrl
     """
     Gotify server URL. (e.g. `http://gotify.example.com:1234`)
     """
@@ -71,9 +71,15 @@ class GotifyNotification(Notification):
     * `high`
     """
 
+    include_movie_poster: bool = False
+    """
+    Include movie posters of the relevant media in messages.
+    """
+
     _implementation: str = "Gotify"
     _remote_map: List[RemoteMapEntry] = [
-        ("server", "server", {"is_field": True}),
+        ("base_url", "server", {"is_field": True}),
         ("app_token", "appToken", {"is_field": True}),
         ("priority", "priority", {"is_field": True}),
+        ("include_movie_poster", "includeMoviePoster", {"is_field": True}),
     ]

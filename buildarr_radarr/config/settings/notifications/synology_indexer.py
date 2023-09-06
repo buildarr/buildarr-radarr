@@ -13,7 +13,7 @@
 
 
 """
-Notifiarr notification connection configuration.
+SynologyIndexer notification connection configuration.
 """
 
 
@@ -22,25 +22,24 @@ from __future__ import annotations
 from typing import List, Literal
 
 from buildarr.config import RemoteMapEntry
-from buildarr.types import Password
 
 from .base import Notification
 
 
-class NotifiarrNotification(Notification):
+class SynologyIndexerNotification(Notification):
     """
-    Send media update and health alert emails via the Notifiarr notification service.
-    """
-
-    type: Literal["notifiarr"] = "notifiarr"
-    """
-    Type value associated with this kind of connection.
+    Send media update and health alert push notifications to a Synology Indexer.
     """
 
-    api_key: Password
+    type: Literal["synology-indexer", "synology"] = "synology-indexer"
     """
-    API key to use to authenticate with Notifiarr.
+    Type values associated with this kind of connection.
     """
 
-    _implementation: str = "Notifiarr"
-    _remote_map: List[RemoteMapEntry] = [("api_key", "aPIKey", {"is_field": True})]
+    update_library: bool = False
+    """
+    Call `synoindex` on `localhost` to update library files.
+    """
+
+    _implementation: str = "MediaBrowser"
+    _remote_map: List[RemoteMapEntry] = [("update_library", "updateLibrary", {"is_field": True})]

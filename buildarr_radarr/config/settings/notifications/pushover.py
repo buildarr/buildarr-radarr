@@ -19,21 +19,21 @@ Pushover notification connection configuration.
 
 from __future__ import annotations
 
-from typing import List, Literal, Optional, Set, Union
+from typing import Any, List, Literal, Mapping, Optional, Set, Union
 
 from buildarr.config import RemoteMapEntry
 from buildarr.types import BaseEnum, NonEmptyStr
-from pydantic import ConstrainedInt, Field, SecretStr
-from typing_extensions import Annotated
+from pydantic import ConstrainedInt, Field, SecretStr, validator
 
 from .base import Notification
 
 
-class PushoverPriority(BaseEnum):
-    """
-    Pushover notification priority.
-    """
+class PushoverApiKey(SecretStr):
+    min_length = 30
+    max_length = 30
 
+
+class PushoverPriority(BaseEnum):
     silent = -2
     quiet = -1
     normal = 0
@@ -42,16 +42,12 @@ class PushoverPriority(BaseEnum):
 
 
 class PushoverRetry(ConstrainedInt):
-    """
-    Constrained integer type to enforce Pushover retry field limits.
-    """
-
     ge = 30
 
 
 class PushoverNotification(Notification):
     """
-    Send media update and health alert push notifications to 1 or more Pushover devices.
+    Send media update and health alert push notifications to Pushover devices.
     """
 
     type: Literal["pushover"] = "pushover"
@@ -59,12 +55,12 @@ class PushoverNotification(Notification):
     Type value associated with this kind of connection.
     """
 
-    user_key: Annotated[SecretStr, Field(min_length=30, max_length=30)]
+    user_key: PushoverApiKey
     """
     User key to use to authenticate with your Pushover account.
     """
 
-    api_key: Annotated[SecretStr, Field(min_length=30, max_length=30)]
+    api_key: PushoverApiKey
     """
     API key assigned to this application in Pushover.
     """
@@ -96,7 +92,6 @@ class PushoverNotification(Notification):
     Minimum 30 seconds. Set to 0 to disable retrying emergency alerts.
     """
 
-    # TODO: Enforce "expire > retry if retry > 0" constraint
     expire: int = Field(0, ge=0, le=86400)
     """
     Threshold for retrying emergency alerts, in seconds.
@@ -109,8 +104,20 @@ class PushoverNotification(Notification):
     """
     Notification sound to use on devices.
 
-    Leave unset, blank or set to `None` to use the default.
+    Leave unset, blank or set to `null` to use the default.
     """
+
+    @validator("expire")
+    def validate_expire(self, value: int, values: Mapping[str, Any]) -> int:
+        try:
+            retry = values["retry"]
+        except KeyError:
+            return value
+        if retry and value < retry:
+            raise ValueError(
+                f"'expire' ({value}) is shorter than 'retry' ({retry})",
+            )
+        return value
 
     _implementation: str = "Pushover"
     _remote_map: List[RemoteMapEntry] = [
