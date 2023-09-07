@@ -108,7 +108,7 @@ class PushoverNotification(Notification):
     """
 
     @validator("expire")
-    def validate_expire(self, value: int, values: Mapping[str, Any]) -> int:
+    def validate_expire(cls, value: int, values: Mapping[str, Any]) -> int:
         try:
             retry = values["retry"]
         except KeyError:

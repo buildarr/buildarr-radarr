@@ -84,9 +84,9 @@ class TorrentIndexer(Indexer):
         #   2. G_FREELEECH -> g-freeleech
         return value.lower().replace("_", "-").replace(" ", "-")
 
-    @validator("flag")
-    def validate_flag(cls, value: str) -> str:
-        return cls._flag_parse(value)
+    @validator("required_flags")
+    def validate_flag(cls, value: Set[str]) -> Set[str]:
+        return set(cls._flag_parse(flag) for flag in value)
 
     @classmethod
     def _get_base_remote_map(
@@ -103,8 +103,8 @@ class TorrentIndexer(Indexer):
             ),
             ("minimum_seeders", "minimumSeeders", {"is_field": True, "field_default": None}),
             (
-                "indexer_flags",
-                "indexerFlags",
+                "required_flags",
+                "requiredFlags",
                 {
                     "decoder": lambda v: set(cls._flag_decode(api_schema, f) for f in v),
                     "encoder": lambda v: sorted(cls._flag_encode(api_schema, f) for f in v),
