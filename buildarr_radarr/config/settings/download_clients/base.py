@@ -37,40 +37,21 @@ logger = getLogger(__name__)
 
 
 class DownloadClient(RadarrConfigBase):
-    """
-    Download clients are defined using the following format.
-    Here is an example of a Transmission download client being configured.
-
-    ```yaml
-    ---
-
-    radarr:
-      settings:
-        download_clients:
-          definitions:
-            Transmission: # Name of the download client
-              type: "transmission" # Type of download client
-              enable: true # Enable the download client in Radarr
-              host: "transmission"
-              port: 9091
-              category: "radarr"
-              # Define any other type-specific or global
-              # download client attributes as needed.
-    ```
-
-    Every download client definition must have the correct `type` value defined,
-    to tell Buildarr what type of download client to configure.
-    The name of the download client definition is just a name, and has no meaning.
-
-    `enable` can be set to `False` to keep the download client configured on Radarr,
-    but disabled so that it is inactive.
-
-    The below attributes can be defined on any type of download client.
-    """
+    # Download client configuration base class.
 
     enable: bool = True
     """
     When `True`, this download client is active and Radarr is able to send requests to it.
+    """
+
+    remove_completed_downloads: bool = True
+    """
+    When set to `true`, remove completed downloads from the download client history.
+    """
+
+    remove_failed_downloads: bool = True
+    """
+    When set to `true`, remove failed downloads from the download client history.
     """
 
     priority: PositiveInt = 1
@@ -80,10 +61,6 @@ class DownloadClient(RadarrConfigBase):
     Clients with a lower value are prioritised.
     Round-robin is used for clients with the same priority.
     """
-
-    # removeCompletedDownloads
-    remove_completed: bool = True
-    """ """
 
     tags: Set[NonEmptyStr] = set()
     """
@@ -100,7 +77,8 @@ class DownloadClient(RadarrConfigBase):
     def _get_base_remote_map(cls, tag_ids: Mapping[str, int]) -> List[RemoteMapEntry]:
         return [
             ("enable", "enable", {}),
-            ("priority", "priority", {}),
+            ("remove_completed_downloads", "removeCompletedDownloads", {}),
+            ("remove_failed_downloads", "removeFailedDownloads", {}),
             (
                 "tags",
                 "tags",

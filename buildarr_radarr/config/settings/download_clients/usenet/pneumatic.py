@@ -28,9 +28,7 @@ from .base import UsenetDownloadClient
 
 
 class PneumaticDownloadClient(UsenetDownloadClient):
-    """
-    Download client for the Pneumatic NZB add-on for Kodi/XMBC.
-    """
+    # Download client for the Pneumatic NZB add-on for Kodi/XMBC.
 
     type: Literal["pneumatic"] = "pneumatic"
     """

@@ -28,46 +28,25 @@ from .base import TorrentDownloadClient
 
 
 class QbittorrentPriority(BaseEnum):
-    """
-    qBittorrent queue priority.
-
-    Values:
-
-    * `last` (Last)
-    * `first` (First)
-    """
-
     last = 0
     first = 1
 
 
 class QbittorrentState(BaseEnum):
-    """
-    qBittorrent initial state.
-
-    Values:
-
-    * `start` (Start)
-    * `force-start` (Force Start)
-    * `pause` (Pause)
-    """
-
     start = 0
     force_start = 1
     pause = 2
 
 
 class QbittorrentDownloadClient(TorrentDownloadClient):
-    """
-    qBittorrent download client.
-    """
+    # qBittorrent download client.
 
     type: Literal["qbittorrent"] = "qbittorrent"
     """
     Type value associated with this kind of download client.
     """
 
-    host: NonEmptyStr
+    hostname: NonEmptyStr
     """
     qBittorrent host name.
     """
@@ -105,9 +84,27 @@ class QbittorrentDownloadClient(TorrentDownloadClient):
     Using a category is optional, but strongly recommended.
     """
 
-    client_priority: QbittorrentPriority = QbittorrentPriority.last
+    postimport_category: Optional[str] = None
     """
-    Priority to use when grabbing releases.
+    Category for Radarr to set after it has imported the download.
+    Radarr will not remove the torrent if seeding has finished.
+
+    Leave blank to keep the same category as set in `category`.
+    """
+
+    recent_priority: QbittorrentPriority = QbittorrentPriority.last
+    """
+    Priority to use when grabbing media that released within the last 14 days.
+
+    Values:
+
+    * `last`
+    * `first`
+    """
+
+    older_priority: QbittorrentPriority = QbittorrentPriority.last
+    """
+    Priority to use when grabbing media that released over 14 days ago.
 
     Values:
 
@@ -122,9 +119,23 @@ class QbittorrentDownloadClient(TorrentDownloadClient):
     Note that forced torrents do not abide by seed restrictions.
     """
 
+    sequential_order: bool = False
+    """
+    When set to `true`, download pieces in sequential order.
+
+    Requires qBittorrent v4.1.0 or later.
+    """
+
+    first_and_last_first: bool = False
+    """
+    When set to `true`, download the first and last pieces first.
+
+    Requires qBittorrent v4.1.0 or later.
+    """
+
     _implementation: str = "QBittorrent"
     _base_remote_map: List[RemoteMapEntry] = [
-        ("host", "host", {"is_field": True}),
+        ("hostname", "host", {"is_field": True}),
         ("port", "port", {"is_field": True}),
         ("use_ssl", "useSsl", {"is_field": True}),
         (
@@ -139,6 +150,14 @@ class QbittorrentDownloadClient(TorrentDownloadClient):
             "movieCategory",
             {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
         ),
-        ("client_priority", "priority", {"is_field": True}),
+        (
+            "postimport_category",
+            "movieImportedCategory",
+            {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
+        ),
+        ("recent_priority", "recentMoviePriority", {"is_field": True}),
+        ("older_priority", "olderMoviePriority", {"is_field": True}),
         ("initial_state", "initialState", {"is_field": True}),
+        ("sequential_order", "sequentialOrder", {"is_field": True}),
+        ("first_and_last_first", "firstAndLast", {"is_field": True}),
     ]

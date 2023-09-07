@@ -28,16 +28,14 @@ from .base import TorrentDownloadClient
 
 
 class HadoukenDownloadClient(TorrentDownloadClient):
-    """
-    Hadouken download client.
-    """
+    # Hadouken download client.
 
     type: Literal["hadouken"] = "hadouken"
     """
     Type value associated with this kind of download client.
     """
 
-    host: NonEmptyStr
+    hostname: NonEmptyStr
     """
     Hadouken host name.
     """
@@ -77,7 +75,7 @@ class HadoukenDownloadClient(TorrentDownloadClient):
 
     _implementation: str = "Hadouken"
     _base_remote_map: List[RemoteMapEntry] = [
-        ("host", "host", {"is_field": True}),
+        ("hostname", "host", {"is_field": True}),
         ("port", "port", {"is_field": True}),
         ("use_ssl", "useSsl", {"is_field": True}),
         (
@@ -87,5 +85,5 @@ class HadoukenDownloadClient(TorrentDownloadClient):
         ),
         ("username", "username", {"is_field": True}),
         ("password", "password", {"is_field": True}),
-        ("category", "movieCategory", {"is_field": True}),
+        ("category", "category", {"is_field": True}),
     ]

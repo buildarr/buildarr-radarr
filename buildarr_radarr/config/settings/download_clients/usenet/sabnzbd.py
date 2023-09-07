@@ -38,16 +38,14 @@ class SabnzbdPriority(BaseEnum):
 
 
 class SabnzbdDownloadClient(UsenetDownloadClient):
-    """
-    SABnzbd download client.
-    """
+    # SABnzbd download client.
 
     type: Literal["sabnzbd"] = "sabnzbd"
     """
     Type value associated with this kind of download client.
     """
 
-    host: NonEmptyStr
+    hostname: NonEmptyStr
     """
     SABnzbd host name.
     """
@@ -90,9 +88,23 @@ class SabnzbdDownloadClient(UsenetDownloadClient):
     Using a category is optional, but strongly recommended.
     """
 
-    client_priority: SabnzbdPriority = SabnzbdPriority.default
+    recent_priority: SabnzbdPriority = SabnzbdPriority.default
     """
-    Priority to use when grabbing releases.
+    Priority to use when grabbing media that releases within the last 21 days.
+
+    Values:
+
+    * `default`
+    * `paused`
+    * `low`
+    * `normal`
+    * `high`
+    * `force`
+    """
+
+    older_priority: SabnzbdPriority = SabnzbdPriority.default
+    """
+    Priority to use when grabbing media that releases over 21 days ago.
 
     Values:
 
@@ -106,7 +118,7 @@ class SabnzbdDownloadClient(UsenetDownloadClient):
 
     _implementation: str = "Sabnzbd"
     _base_remote_map: List[RemoteMapEntry] = [
-        ("host", "host", {"is_field": True}),
+        ("hostname", "host", {"is_field": True}),
         ("port", "port", {"is_field": True}),
         ("use_ssl", "useSsl", {"is_field": True}),
         (
@@ -139,8 +151,9 @@ class SabnzbdDownloadClient(UsenetDownloadClient):
         ),
         (
             "category",
-            "category",
+            "movieCategory",
             {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
         ),
-        ("client_priority", "priority", {"is_field": True}),
+        ("recent_priority", "recentMoviePriority", {"is_field": True}),
+        ("older_priority", "olderMoviePriority", {"is_field": True}),
     ]

@@ -28,30 +28,19 @@ from .base import TorrentDownloadClient
 
 
 class DelugePriority(BaseEnum):
-    """
-    Deluge queue priority.
-
-    Values:
-
-    * `last` (Last)
-    * `first` (First)
-    """
-
     last = 0
     first = 1
 
 
 class DelugeDownloadClient(TorrentDownloadClient):
-    """
-    Deluge download client.
-    """
+    # Deluge download client.
 
     type: Literal["deluge"] = "deluge"
     """
     Type value associated with this kind of download client.
     """
 
-    host: NonEmptyStr
+    hostname: NonEmptyStr
     """
     Deluge host name.
     """
@@ -84,9 +73,9 @@ class DelugeDownloadClient(TorrentDownloadClient):
     Using a category is optional, but strongly recommended.
     """
 
-    client_priority: DelugePriority = DelugePriority.last
+    recent_priority: DelugePriority = DelugePriority.last
     """
-    Priority to use when grabbing releases.
+    Priority to use when grabbing media that released within the last 14 days.
 
     Values:
 
@@ -94,9 +83,24 @@ class DelugeDownloadClient(TorrentDownloadClient):
     * `first`
     """
 
+    older_priority: DelugePriority = DelugePriority.last
+    """
+    Priority to use when grabbing media that released within over 14 days ago.
+
+    Values:
+
+    * `last`
+    * `first`
+    """
+
+    add_paused: bool = False
+    """
+    When set to `true`, add releases to the download client in paused state.
+    """
+
     _implementation: str = "Deluge"
     _remote_map: List[RemoteMapEntry] = [
-        ("host", "host", {"is_field": True}),
+        ("hostname", "host", {"is_field": True}),
         ("port", "port", {"is_field": True}),
         ("use_ssl", "useSsl", {"is_field": True}),
         (
@@ -110,5 +114,7 @@ class DelugeDownloadClient(TorrentDownloadClient):
             "movieCategory",
             {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
         ),
-        ("client_priority", "priority", {"is_field": True}),
+        ("recent_priority", "recentMoviePriority", {"is_field": True}),
+        ("older_priority", "olderMoviePriority", {"is_field": True}),
+        ("add_paused", "addPaused", {"is_field": True}),
     ]

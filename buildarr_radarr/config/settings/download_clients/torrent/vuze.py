@@ -25,9 +25,7 @@ from .transmission import TransmissionDownloadClientBase
 
 
 class VuzeDownloadClient(TransmissionDownloadClientBase):
-    """
-    Vuze download client.
-    """
+    # Vuze download client.
 
     type: Literal["vuze"] = "vuze"
     """

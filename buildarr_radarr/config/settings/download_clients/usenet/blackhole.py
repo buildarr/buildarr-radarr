@@ -28,9 +28,7 @@ from .base import UsenetDownloadClient
 
 
 class UsenetBlackholeDownloadClient(UsenetDownloadClient):
-    """
-    Usenet Blackhole download client.
-    """
+    # Usenet Blackhole download client.
 
     type: Literal["usenet-blackhole"] = "usenet-blackhole"
     """
@@ -42,5 +40,13 @@ class UsenetBlackholeDownloadClient(UsenetDownloadClient):
     Folder in which Radarr will store `.nzb` files.
     """
 
+    watch_folder: NonEmptyStr
+    """
+    Folder from which Radarr should import completed downloads.
+    """
+
     _implementation: str = "UsenetBlackhole"
-    _remote_map: List[RemoteMapEntry] = [("nzb_folder", "nzbFolder", {"is_field": True})]
+    _remote_map: List[RemoteMapEntry] = [
+        ("nzb_folder", "nzbFolder", {"is_field": True}),
+        ("watch_folder", "watchFolder", {"is_field": True}),
+    ]

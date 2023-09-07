@@ -28,34 +28,21 @@ from .base import TorrentDownloadClient
 
 
 class RtorrentPriority(BaseEnum):
-    """
-    RTorrent media priority.
-
-    Values:
-
-    * `verylow` (Very Low)
-    * `low` (Low)
-    * `normal` (Normal)
-    * `high` (High)
-    """
-
-    verylow = 0
+    do_not_download = 0
     low = 1
     normal = 2
     high = 3
 
 
 class RtorrentDownloadClient(TorrentDownloadClient):
-    """
-    RTorrent (ruTorrent) download client.
-    """
+    # RTorrent (ruTorrent) download client.
 
     type: Literal["rtorrent", "rutorrent"] = "rtorrent"
     """
     Type value associated with this kind of download client.
     """
 
-    host: NonEmptyStr
+    hostname: NonEmptyStr
     """
     RTorrent host name.
     """
@@ -95,6 +82,14 @@ class RtorrentDownloadClient(TorrentDownloadClient):
     Using a category is optional, but strongly recommended.
     """
 
+    postimport_category: Optional[str] = None
+    """
+    Category for Radarr to set after it has imported the download.
+    Radarr will not remove the torrent if seeding has finished.
+
+    Leave blank to keep the same category as set in `category`.
+    """
+
     directory: Optional[str] = None
     """
     Optional shared folder to put downloads into.
@@ -102,13 +97,25 @@ class RtorrentDownloadClient(TorrentDownloadClient):
     Leave blank, set to `null` or undefined to use the default download client location.
     """
 
-    client_priority: RtorrentPriority = RtorrentPriority.normal
+    recent_priority: RtorrentPriority = RtorrentPriority.normal
     """
-    Priority to use when grabbing releases.
+    Priority to use when grabbing media that released within the last 14 days.
 
     Values:
 
-    * `verylow`
+    * `do-not-download`
+    * `low`
+    * `normal`
+    * `high`
+    """
+
+    older_priority: RtorrentPriority = RtorrentPriority.normal
+    """
+    Priority to use when grabbing media that released over 14 days ago.
+
+    Values:
+
+    * `do-not-download`
     * `low`
     * `normal`
     * `high`
@@ -123,7 +130,7 @@ class RtorrentDownloadClient(TorrentDownloadClient):
 
     _implementation: str = "RTorrent"
     _base_remote_map: List[RemoteMapEntry] = [
-        ("host", "host", {"is_field": True}),
+        ("hostname", "host", {"is_field": True}),
         ("port", "port", {"is_field": True}),
         ("use_ssl", "useSsl", {"is_field": True}),
         ("url_base", "urlBase", {"is_field": True}),
@@ -135,10 +142,16 @@ class RtorrentDownloadClient(TorrentDownloadClient):
             {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
         ),
         (
+            "postimport_category",
+            "movieImportedCategory",
+            {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
+        ),
+        (
             "directory",
             "movieDirectory",
             {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
         ),
-        ("client_priority", "recentMoviePriority", {"is_field": True}),
+        ("recent_priority", "recentMoviePriority", {"is_field": True}),
+        ("older_priority", "olderMoviePriority", {"is_field": True}),
         ("add_stopped", "addStopped", {"is_field": True}),
     ]

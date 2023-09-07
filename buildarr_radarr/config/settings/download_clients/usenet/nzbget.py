@@ -40,16 +40,14 @@ class NzbgetPriority(BaseEnum):
 
 
 class NzbgetDownloadClient(UsenetDownloadClient):
-    """
-    NZBGet download client.
-    """
+    # NZBGet download client.
 
     type: Literal["nzbget"] = "nzbget"
     """
     Type value associated with this kind of download client.
     """
 
-    host: NonEmptyStr
+    hostname: NonEmptyStr
     """
     NZBGet host name.
     """
@@ -87,9 +85,23 @@ class NzbgetDownloadClient(UsenetDownloadClient):
     Using a category is optional, but strongly recommended.
     """
 
-    client_priority: NzbgetPriority = NzbgetPriority.normal
+    recent_priority: NzbgetPriority = NzbgetPriority.normal
     """
-    Priority to use when grabbing releases.
+    Priority to use when grabbing media that released within the last 21 days.
+
+    Values:
+
+    * `verylow`
+    * `low`
+    * `normal`
+    * `high`
+    * `veryhigh`
+    * `force`
+    """
+
+    older_priority: NzbgetPriority = NzbgetPriority.normal
+    """
+    Priority to use when grabbing media that released over 21 days ago.
 
     Values:
 
@@ -110,7 +122,7 @@ class NzbgetDownloadClient(UsenetDownloadClient):
 
     _implementation: str = "Nzbget"
     _base_remote_map: List[RemoteMapEntry] = [
-        ("host", "host", {"is_field": True}),
+        ("hostname", "host", {"is_field": True}),
         ("port", "port", {"is_field": True}),
         ("use_ssl", "useSsl", {"is_field": True}),
         (
@@ -122,9 +134,10 @@ class NzbgetDownloadClient(UsenetDownloadClient):
         ("password", "password", {"is_field": True}),
         (
             "category",
-            "category",
+            "movieCategory",
             {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
         ),
-        ("client_priority", "priority", {"is_field": True}),
+        ("recent_priority", "recentMoviePriority", {"is_field": True}),
+        ("older_priority", "olderMoviePriority", {"is_field": True}),
         ("add_paused", "addPaused", {"is_field": True}),
     ]

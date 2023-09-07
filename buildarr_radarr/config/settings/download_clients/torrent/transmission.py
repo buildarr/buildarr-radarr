@@ -29,27 +29,16 @@ from .base import TorrentDownloadClient
 
 
 class TransmissionPriority(BaseEnum):
-    """
-    Transmission queue priority.
-
-    Values:
-
-    * `last` (Last)
-    * `first` (First)
-    """
-
     last = 0
     first = 1
 
 
 class TransmissionDownloadClientBase(TorrentDownloadClient):
-    """
-    Configuration options common to both Transmission and Vuze download clients:
-    """
+    # Configuration options common to both Transmission and Vuze download clients.
 
-    host: NonEmptyStr
+    hostname: NonEmptyStr
     """
-    Transmission/Vuze host name.
+    Download client host name.
     """
 
     port: Port = 9091  # type: ignore[assignment]
@@ -64,7 +53,7 @@ class TransmissionDownloadClientBase(TorrentDownloadClient):
 
     url_base: NonEmptyStr = "/transmission/"  # type: ignore[assignment]
     """
-    Adds a prefix to the Transmission/Vuze RPC url, e.g.`http://[host]:[port][url_base]rpc`.
+    Adds a prefix to the API RPC url, e.g.`http://[host]:[port][url_base]rpc`.
 
     This is set by default in most clients to `/transmission/`.
     """
@@ -97,7 +86,7 @@ class TransmissionDownloadClientBase(TorrentDownloadClient):
 
     recent_priority: TransmissionPriority = TransmissionPriority.last
     """
-    Priority to use when grabbing recent releases.
+    Priority to use when grabbing media that released within the last 21 days.
 
     Values:
 
@@ -107,7 +96,7 @@ class TransmissionDownloadClientBase(TorrentDownloadClient):
 
     older_priority: TransmissionPriority = TransmissionPriority.last
     """
-    Priority to use when grabbing older releases.
+    Priority to use when grabbing media that released over 21 days ago.
 
     Values:
 
@@ -121,7 +110,7 @@ class TransmissionDownloadClientBase(TorrentDownloadClient):
     """
 
     _remote_map: List[RemoteMapEntry] = [
-        ("host", "host", {"is_field": True}),
+        ("hostname", "host", {"is_field": True}),
         ("port", "port", {"is_field": True}),
         ("use_ssl", "useSsl", {"is_field": True}),
         ("url_base", "urlBase", {"is_field": True}),
@@ -163,9 +152,7 @@ class TransmissionDownloadClientBase(TorrentDownloadClient):
 
 
 class TransmissionDownloadClient(TransmissionDownloadClientBase):
-    """
-    Tramsmission download client.
-    """
+    # Transmission download client.
 
     type: Literal["transmission"] = "transmission"
     """
@@ -173,16 +160,3 @@ class TransmissionDownloadClient(TransmissionDownloadClientBase):
     """
 
     _implementation: str = "Transmission"
-
-
-class VuzeDownloadClient(TransmissionDownloadClientBase):
-    """
-    Vuze download client.
-    """
-
-    type: Literal["vuze"] = "vuze"
-    """
-    Type value associated with this kind of download client.
-    """
-
-    _implementation: str = "Vuze"

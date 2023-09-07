@@ -28,16 +28,14 @@ from .base import TorrentDownloadClient
 
 
 class Aria2DownloadClient(TorrentDownloadClient):
-    """
-    Aria2 download client.
-    """
+    # Aria2 download client.
 
     type: Literal["aria2"] = "aria2"
     """
     Type value associated with this kind of download client.
     """
 
-    host: NonEmptyStr
+    hostname: NonEmptyStr
     """
     Aria2 host name.
     """
@@ -64,7 +62,7 @@ class Aria2DownloadClient(TorrentDownloadClient):
 
     _implementation: str = "Aria2"
     _remote_map: List[RemoteMapEntry] = [
-        ("host", "host", {"is_field": True}),
+        ("hostname", "host", {"is_field": True}),
         ("port", "port", {"is_field": True}),
         ("use_ssl", "useSsl", {"is_field": True}),
         ("rpc_path", "rpcPath", {"is_field": True}),

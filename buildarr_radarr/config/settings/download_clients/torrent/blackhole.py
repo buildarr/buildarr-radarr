@@ -28,9 +28,7 @@ from .base import TorrentDownloadClient
 
 
 class TorrentBlackholeDownloadClient(TorrentDownloadClient):
-    """
-    Torrent Blackhole download client.
-    """
+    # Torrent Blackhole download client.
 
     type: Literal["torrent-blackhole"] = "torrent-blackhole"
     """
@@ -40,6 +38,11 @@ class TorrentBlackholeDownloadClient(TorrentDownloadClient):
     torrent_folder: NonEmptyStr
     """
     Folder in which Radarr will store `.torrent` files.
+    """
+
+    watch_folder: NonEmptyStr
+    """
+    Folder from which Radarr should import completed downloads.
     """
 
     save_magnet_files: bool = False
@@ -54,9 +57,19 @@ class TorrentBlackholeDownloadClient(TorrentDownloadClient):
     Extension to use for magnet links.
     """
 
+    read_only: bool = True
+    """
+    When set to `true`, this instructs Radarr to copy or hard link
+    completed downloads to their final directory, instead of moving them.
+
+    To allow torrents to continue seeding after download, this should be enabled.
+    """
+
     _implementation: str = "TorrentBlackhole"
     _remote_map: List[RemoteMapEntry] = [
         ("torrent_folder", "torrentFolder", {"is_field": True}),
+        ("watch_folder", "watchFolder", {"is_field": True}),
         ("save_magnet_files", "saveMagnetFiles", {"is_field": True}),
         ("magnet_file_extension", "magnetFileExtension", {"is_field": True}),
+        ("read_only", "readOnly", {"is_field": True}),
     ]

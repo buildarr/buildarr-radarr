@@ -28,31 +28,11 @@ from .base import TorrentDownloadClient
 
 
 class UtorrentPriority(BaseEnum):
-    """
-    uTorrent queue priority.
-
-    Values:
-
-    * `last` (Last)
-    * `first` (First)
-    """
-
     last = 0
     first = 1
 
 
 class UtorrentState(BaseEnum):
-    """
-    uTorrent initial state.
-
-    Values:
-
-    * `start` (Start)
-    * `force-start` (Force Start)
-    * `pause` (Pause)
-    * `stop` (Stop)
-    """
-
     start = 0
     force_start = 1
     pause = 2
@@ -60,16 +40,14 @@ class UtorrentState(BaseEnum):
 
 
 class UtorrentDownloadClient(TorrentDownloadClient):
-    """
-    uTorrent download client.
-    """
+    # uTorrent download client.
 
     type: Literal["utorrent"] = "utorrent"
     """
     Type value associated with this kind of download client.
     """
 
-    host: NonEmptyStr
+    hostname: NonEmptyStr
     """
     uTorrent host name.
     """
@@ -107,9 +85,27 @@ class UtorrentDownloadClient(TorrentDownloadClient):
     Using a category is optional, but strongly recommended.
     """
 
-    client_priority: UtorrentPriority = UtorrentPriority.last
+    postimport_category: Optional[str] = "radarr"
     """
-    Priority to use when grabbing releases.
+    Category for Radarr to set after it has imported the download.
+    Radarr will not remove the torrent if seeding has finished.
+
+    Leave blank to keep the same category as set in `category`.
+    """
+
+    recent_priority: UtorrentPriority = UtorrentPriority.last
+    """
+    Priority to use when grabbing media that released within the last 21 days.
+
+    Values:
+
+    * `last`
+    * `first`
+    """
+
+    older_priority: UtorrentPriority = UtorrentPriority.last
+    """
+    Priority to use when grabbing media that released over 21 days ago.
 
     Values:
 
@@ -124,7 +120,7 @@ class UtorrentDownloadClient(TorrentDownloadClient):
 
     _implementation: str = "UTorrent"
     _base_remote_map: List[RemoteMapEntry] = [
-        ("host", "host", {"is_field": True}),
+        ("hostname", "host", {"is_field": True}),
         ("port", "port", {"is_field": True}),
         ("use_ssl", "useSsl", {"is_field": True}),
         (
@@ -139,6 +135,12 @@ class UtorrentDownloadClient(TorrentDownloadClient):
             "movieCategory",
             {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
         ),
-        ("client_priority", "priority", {"is_field": True}),
+        (
+            "postimport_category",
+            "movieImportedCategory",
+            {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
+        ),
+        ("recent_priority", "recentMoviePriority", {"is_field": True}),
+        ("older_priority", "olderMoviePriority", {"is_field": True}),
         ("initial_state", "initialState", {"is_field": True}),
     ]

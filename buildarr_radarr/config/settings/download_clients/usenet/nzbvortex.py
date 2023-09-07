@@ -34,16 +34,14 @@ class NzbvortexPriority(BaseEnum):
 
 
 class NzbvortexDownloadClient(UsenetDownloadClient):
-    """
-    NZBVortex download client.
-    """
+    # NZBVortex download client.
 
     type: Literal["nzbvortex"] = "nzbvortex"
     """
     Type value associated with this kind of download client.
     """
 
-    host: NonEmptyStr
+    hostname: NonEmptyStr
     """
     NZBVortex host name.
     """
@@ -71,9 +69,20 @@ class NzbvortexDownloadClient(UsenetDownloadClient):
     Using a category is optional, but strongly recommended.
     """
 
-    client_priority: NzbvortexPriority = NzbvortexPriority.normal
+    recent_priority: NzbvortexPriority = NzbvortexPriority.normal
     """
-    Priority to use when grabbing releases.
+    Priority to use when grabbing media that released within the last 21 days.
+
+    Values:
+
+    * `low`
+    * `normal`
+    * `high`
+    """
+
+    older_priority: NzbvortexPriority = NzbvortexPriority.normal
+    """
+    Priority to use when grabbing media that released over 21 days ago.
 
     Values:
 
@@ -84,7 +93,7 @@ class NzbvortexDownloadClient(UsenetDownloadClient):
 
     _implementation: str = "NzbVortex"
     _base_remote_map: List[RemoteMapEntry] = [
-        ("host", "host", {"is_field": True}),
+        ("hostname", "host", {"is_field": True}),
         ("port", "port", {"is_field": True}),
         (
             "url_base",
@@ -94,8 +103,9 @@ class NzbvortexDownloadClient(UsenetDownloadClient):
         ("api_key", "apiKey", {"is_field": True}),
         (
             "category",
-            "category",
+            "tvCategory",  # Yes, it is supposed to be `tvCategory`.
             {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
         ),
-        ("client_priority", "priority", {"is_field": True}),
+        ("recent_priority", "recentMoviePriority", {"is_field": True}),
+        ("older_priority", "olderMoviePriority", {"is_field": True}),
     ]

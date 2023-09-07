@@ -28,13 +28,13 @@ from .base import TorrentDownloadClient
 
 
 class FloodMediaTag(BaseEnum):
-    title_slug = 0
+    collection = 0
     quality = 1
-    language = 2
+    languages = 2
     release_group = 3
     year = 4
     indexer = 5
-    network = 6
+    studio = 6
 
 
 class FloodDownloadClient(TorrentDownloadClient):
@@ -47,7 +47,7 @@ class FloodDownloadClient(TorrentDownloadClient):
     Type value associated with this kind of download client.
     """
 
-    host: NonEmptyStr
+    hostname: NonEmptyStr
     """
     Flood host name.
     """
@@ -98,13 +98,13 @@ class FloodDownloadClient(TorrentDownloadClient):
 
     Values:
 
-    * `title-slug` (Title Slug)
-    * `quality` (Quality)
-    * `language` (Language)
-    * `release-group` (Release Group)
-    * `year` (Year)
-    * `indexer` (Indexer)
-    * `network` (Network)
+    * `collection`
+    * `quality`
+    * `languages`
+    * `release-group`
+    * `year`
+    * `indexer`
+    * `studio`
     """
 
     add_paused: bool = False
@@ -114,7 +114,7 @@ class FloodDownloadClient(TorrentDownloadClient):
 
     _implementation: str = "Flood"
     _remote_map: List[RemoteMapEntry] = [
-        ("host", "host", {"is_field": True}),
+        ("hostname", "host", {"is_field": True}),
         ("port", "port", {"is_field": True}),
         ("use_ssl", "useSsl", {"is_field": True}),
         (

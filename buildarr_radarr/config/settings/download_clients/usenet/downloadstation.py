@@ -28,16 +28,14 @@ from .base import UsenetDownloadClient
 
 
 class DownloadstationUsenetDownloadClient(UsenetDownloadClient):
-    """
-    Download client which uses Usenet via Download Station.
-    """
+    # Download client which uses Usenet via Download Station.
 
     type: Literal["downloadstation-usenet"] = "downloadstation-usenet"
     """
     Type value associated with this kind of download client.
     """
 
-    host: NonEmptyStr
+    hostname: NonEmptyStr
     """
     Download Station host name.
     """
@@ -80,19 +78,19 @@ class DownloadstationUsenetDownloadClient(UsenetDownloadClient):
 
     _implementation: str = "UsenetDownloadStation"
     _remote_map: List[RemoteMapEntry] = [
-        ("host", "host", {"is_field": True}),
+        ("hostname", "host", {"is_field": True}),
         ("port", "port", {"is_field": True}),
         ("use_ssl", "useSsl", {"is_field": True}),
         ("username", "username", {"is_field": True}),
         ("password", "password", {"is_field": True}),
         (
             "category",
-            "category",
+            "tvCategory",  # Yes, this is supposed to be `tvCategory`.
             {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
         ),
         (
             "category",
-            "tvDirectory",
+            "tvDirectory",  # Yes, this is supposed to be `tvDirectory`.
             {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
         ),
     ]

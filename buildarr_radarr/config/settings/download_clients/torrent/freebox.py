@@ -33,16 +33,14 @@ class FreeboxPriority(BaseEnum):
 
 
 class FreeboxDownloadClient(TorrentDownloadClient):
-    """
-    Download client for connecting to a Freebox instance.
-    """
+    # Download client for connecting to a Freebox instance.
 
     type: Literal["freebox"] = "freebox"
     """
     Type value associated with this kind of download client.
     """
 
-    host: NonEmptyStr = "mafreebox.freebox.fr"  # type: ignore[assignment]
+    hostname: NonEmptyStr = "mafreebox.freebox.fr"  # type: ignore[assignment]
     """
     Hostname or host IP address of the Freebox.
 
@@ -91,9 +89,14 @@ class FreeboxDownloadClient(TorrentDownloadClient):
     Adding a category specific to Radarr avoids conflicts with unrelated non-Radarr downloads.
     """
 
-    client_priority: FreeboxPriority = FreeboxPriority.last
+    recent_priority: FreeboxPriority = FreeboxPriority.last
     """
-    Priority to use when adding a download to the client.
+    Priority to use when grabbing media that released within the last 14 days.
+    """
+
+    older_priority: FreeboxPriority = FreeboxPriority.last
+    """
+    Priority to use when grabbing media that released over 14 days ago.
     """
 
     add_paused: bool = False
@@ -103,7 +106,7 @@ class FreeboxDownloadClient(TorrentDownloadClient):
 
     _implementation: str = "TorrentFreeboxDownload"
     _base_remote_map: List[RemoteMapEntry] = [
-        ("host", "host", {"is_field": True}),
+        ("hostname", "host", {"is_field": True}),
         ("port", "port", {"is_field": True}),
         ("use_ssl", "useSsl", {"is_field": True}),
         ("api_url", "apiUrl", {"is_field": True}),
@@ -116,9 +119,10 @@ class FreeboxDownloadClient(TorrentDownloadClient):
         ),
         (
             "category",
-            "movieCategory",
+            "category",
             {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
         ),
-        ("client_priority", "priority", {"is_field": True}),
+        ("recent_priority", "recentPriority", {"is_field": True}),
+        ("older_priority", "olderPriority", {"is_field": True}),
         ("add_paused", "addPaused", {"is_field": True}),
     ]
