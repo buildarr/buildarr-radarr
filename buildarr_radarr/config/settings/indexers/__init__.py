@@ -94,10 +94,10 @@ class RadarrIndexersSettings(RadarrConfigBase):
     radarr:
       settings:
         indexers:
-          minimum_age: 0
-          retention: 0
-          maximum_size: 0
-          rss_sync_interval: 15
+          minimum_age: 0  # minutes
+          retention: 0  # days
+          maximum_size: 0  # MB
+          rss_sync_interval: 15  # minutes
           delete_unmanaged: false  # Better to leave off for the most part.
           definitions:
             Nyaa:  # Indexer name
@@ -121,14 +121,14 @@ class RadarrIndexersSettings(RadarrConfigBase):
 
     minimum_age: int = Field(0, ge=0)  # minutes
     """
-    Minimum age (in minutes) of NZBs before they are grabbed. (Usenet only)
+    Minimum age (in minutes) of NZBs before they are grabbed. Applies to Usenet only.
 
     Use this to give new releases time to propagate to your Usenet provider.
     """
 
     retention: int = Field(0, ge=0)  # days
     """
-    Retention of releases. (Usenet only)
+    Retention of releases (in days). Applies to Usenet only.
 
     Set to `0` for unlimited retention.
     """
@@ -145,7 +145,7 @@ class RadarrIndexersSettings(RadarrConfigBase):
     """
     Interval (in minutes) to sync RSS feeds with indexers.
 
-    Set to `0` to disable syncing. This also disables automatic release grabbing.
+    Set to `0` to disable syncing. **WARNING: This also disables automatic release grabbing.**
     """
 
     delete_unmanaged: bool = False
