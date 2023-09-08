@@ -27,9 +27,7 @@ from .base import Condition
 
 
 class ReleaseTitleCondition(Condition):
-    """
-    Custom format condition for matching based on release title contents.
-    """
+    # Custom format condition for matching based on release title contents.
 
     type: Literal["release-title", "release_title", "releasetitle"] = "release-title"
     """

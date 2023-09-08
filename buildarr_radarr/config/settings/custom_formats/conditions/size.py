@@ -28,9 +28,7 @@ from .base import Condition
 
 
 class SizeCondition(Condition):
-    """
-    Custom format condition for matching based on media file size.
-    """
+    # Custom format condition for matching based on media file size.
 
     type: Literal["size"] = "size"
     """

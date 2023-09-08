@@ -30,9 +30,7 @@ from .base import Condition
 
 
 class LanguageCondition(Condition):
-    """
-    Custom format condition for matching based on media language.
-    """
+    # Custom format condition for matching based on media language.
 
     type: Literal["language"] = "language"
     """

@@ -28,9 +28,7 @@ from .base import Condition
 
 
 class SourceCondition(Condition):
-    """
-    Custom format condition for matching based on media source type.
-    """
+    # Custom format condition for matching based on media source type.
 
     type: Literal["source"] = "source"
     """
@@ -38,7 +36,23 @@ class SourceCondition(Condition):
     """
 
     source: UpperCaseNonEmptyStr
-    """Evaluate against available sources in Radarr API."""
+    """
+    The source type to match against.
+
+    All values supported by your Radarr instance version can be defined.
+    As of Radarr v4.7.5, the following source types are available:
+
+    * `UNKNOWN`
+    * `CAM`
+    * `TELESYNC`
+    * `TELECINE`
+    * `WORKPRINT`
+    * `DVD`
+    * `TV`
+    * `WEBDL`
+    * `WEBRIP`
+    * `BLURAY`
+    """
 
     _implementation: Literal["SourceSpecification"] = "SourceSpecification"
 

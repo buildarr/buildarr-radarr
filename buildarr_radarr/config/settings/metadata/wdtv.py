@@ -27,19 +27,7 @@ from .base import Metadata
 
 
 class WdtvMetadata(Metadata):
-    """
-    Output metadata files in a format suitable for WDTV.
-
-    ```yaml
-    radarr:
-      settings:
-        metadata:
-          wdtv:
-            enable: true
-            movie_metadata: true
-            movie_images: true
-    ```
-    """
+    # Output metadata files in a format suitable for WDTV.
 
     movie_metadata: bool = True
     """

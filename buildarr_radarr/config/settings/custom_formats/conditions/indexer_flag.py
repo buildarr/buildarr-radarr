@@ -29,9 +29,7 @@ from .base import Condition
 
 
 class IndexerFlagCondition(Condition):
-    """
-    Custom format condition for matching based on indexer flags.
-    """
+    # Custom format condition for matching based on indexer flags.
 
     type: Literal["indexer-flag", "indexer_flag", "indexerflag"] = "indexer-flag"
     """

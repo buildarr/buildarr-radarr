@@ -30,8 +30,8 @@ radarr:
             on_health_issue: true
             include_health_warnings: true
             on_health_restored: true
-            on_application_update: true
             on_manual_interaction_required: true
+            on_application_update: true
           # Connection-specific parameters.
           server: smtp.example.com
           port: 465
@@ -99,8 +99,8 @@ Receive media update and health alert push notifications via an Apprise server.
         - on_health_issue
         - include_health_warnings
         - on_health_restored
-        - on_application_update
         - on_manual_interaction_required
+        - on_application_update
 
 
 ## Boxcar
@@ -131,8 +131,8 @@ Receive media update and health alert push notifications via an Apprise server.
         - on_health_issue
         - include_health_warnings
         - on_health_restored
-        - on_application_update
         - on_manual_interaction_required
+        - on_application_update
 
 
 ## Custom Script
@@ -165,8 +165,8 @@ Receive media update and health alert push notifications via an Apprise server.
         - on_health_issue
         - include_health_warnings
         - on_health_restored
-        - on_application_update
         - on_manual_interaction_required
+        - on_application_update
 
 
 ## Discord
@@ -204,8 +204,8 @@ Receive media update and health alert push notifications via an Apprise server.
         - on_health_issue
         - include_health_warnings
         - on_health_restored
-        - on_application_update
         - on_manual_interaction_required
+        - on_application_update
 
 
 ## Email
@@ -244,8 +244,8 @@ Receive media update and health alert push notifications via an Apprise server.
         - on_health_issue
         - include_health_warnings
         - on_health_restored
-        - on_application_update
         - on_manual_interaction_required
+        - on_application_update
 
 
 ## Emby / Jellyfin
@@ -315,8 +315,8 @@ Receive media update and health alert push notifications via an Apprise server.
         - on_health_issue
         - include_health_warnings
         - on_health_restored
-        - on_application_update
         - on_manual_interaction_required
+        - on_application_update
 
 
 ## Join
@@ -349,8 +349,8 @@ Receive media update and health alert push notifications via an Apprise server.
         - on_health_issue
         - include_health_warnings
         - on_health_restored
-        - on_application_update
         - on_manual_interaction_required
+        - on_application_update
 
 
 ## Kodi (XBMC)
@@ -389,8 +389,8 @@ Receive media update and health alert push notifications via an Apprise server.
         - on_health_issue
         - include_health_warnings
         - on_health_restored
-        - on_application_update
         - on_manual_interaction_required
+        - on_application_update
 
 
 ## Mailgun
@@ -425,8 +425,8 @@ Receive media update and health alert push notifications via an Apprise server.
         - on_health_issue
         - include_health_warnings
         - on_health_restored
-        - on_application_update
         - on_manual_interaction_required
+        - on_application_update
 
 
 
@@ -459,8 +459,8 @@ Receive media update and health alert push notifications via an Apprise server.
         - on_health_issue
         - include_health_warnings
         - on_health_restored
-        - on_application_update
         - on_manual_interaction_required
+        - on_application_update
 
 
 ## ntfy
@@ -498,8 +498,8 @@ Receive media update and health alert push notifications via an Apprise server.
         - on_health_issue
         - include_health_warnings
         - on_health_restored
-        - on_application_update
         - on_manual_interaction_required
+        - on_application_update
 
 
 ## Plex Media Server
@@ -542,8 +542,8 @@ Please add the Plex Media Server notification connection manually in the Radarr 
         - on_health_issue
         - include_health_warnings
         - on_health_restored
-        - on_application_update
         - on_manual_interaction_required
+        - on_application_update
 
 
 ## Pushbullet
@@ -577,8 +577,8 @@ Please add the Plex Media Server notification connection manually in the Radarr 
         - on_health_issue
         - include_health_warnings
         - on_health_restored
-        - on_application_update
         - on_manual_interaction_required
+        - on_application_update
 
 
 ## Pushover
@@ -615,8 +615,8 @@ Please add the Plex Media Server notification connection manually in the Radarr 
         - on_health_issue
         - include_health_warnings
         - on_health_restored
-        - on_application_update
         - on_manual_interaction_required
+        - on_application_update
 
 
 ## Pushsafer
@@ -655,8 +655,8 @@ Please add the Plex Media Server notification connection manually in the Radarr 
         - on_health_issue
         - include_health_warnings
         - on_health_restored
-        - on_application_update
         - on_manual_interaction_required
+        - on_application_update
 
 
 
@@ -690,8 +690,8 @@ Please add the Plex Media Server notification connection manually in the Radarr 
         - on_health_issue
         - include_health_warnings
         - on_health_restored
-        - on_application_update
         - on_manual_interaction_required
+        - on_application_update
 
 
 ## Signal
@@ -728,8 +728,8 @@ Please add the Plex Media Server notification connection manually in the Radarr 
         - on_health_issue
         - include_health_warnings
         - on_health_restored
-        - on_application_update
         - on_manual_interaction_required
+        - on_application_update
 
 
 ## Simplepush
@@ -761,8 +761,8 @@ Please add the Plex Media Server notification connection manually in the Radarr 
         - on_health_issue
         - include_health_warnings
         - on_health_restored
-        - on_application_update
         - on_manual_interaction_required
+        - on_application_update
 
 
 ## Slack
@@ -796,8 +796,8 @@ Please add the Plex Media Server notification connection manually in the Radarr 
         - on_health_issue
         - include_health_warnings
         - on_health_restored
-        - on_application_update
         - on_manual_interaction_required
+        - on_application_update
 
 
 ## Synology Indexer
@@ -856,8 +856,8 @@ Please add the Plex Media Server notification connection manually in the Radarr 
         - on_health_issue
         - include_health_warnings
         - on_health_restored
-        - on_application_update
         - on_manual_interaction_required
+        - on_application_update
 
 
 ## Trakt
@@ -914,5 +914,5 @@ Please add the Twitter notification connection manually in the Radarr UI.
         - on_health_issue
         - include_health_warnings
         - on_health_restored
-        - on_application_update
         - on_manual_interaction_required
+        - on_application_update

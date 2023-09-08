@@ -27,18 +27,7 @@ from .base import Metadata
 
 
 class EmbyLegacyMetadata(Metadata):
-    """
-    Output metadata files in the legacy Emby metadata format.
-
-    ```yaml
-    radarr:
-      settings:
-        metadata:
-          emby_legacy:
-            enable: true
-            movie_metadata: true
-    ```
-    """
+    # Output metadata files in the legacy Emby metadata format.
 
     movie_metadata: bool = True
     """

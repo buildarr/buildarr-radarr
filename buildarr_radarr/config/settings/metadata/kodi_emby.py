@@ -32,23 +32,7 @@ from .base import Metadata
 
 
 class KodiEmbyMetadata(Metadata):
-    """
-    Output metadata files in a format suitable for Kodi (XBMC) or Emby.
-
-    ```yaml
-    radarr:
-      settings:
-        metadata:
-          kodi_emby:
-            enable: true
-            movie_metadata: true
-            movie_metadata_url: true
-            movie_metadata_language: english
-            movie_images: true
-            use_movie_nfo: true
-            add_collection_name: true
-    ```
-    """
+    # Output metadata files in a format suitable for Kodi (XBMC) or Emby.
 
     movie_metadata: bool = True
     """

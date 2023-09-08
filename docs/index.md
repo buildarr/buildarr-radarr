@@ -37,10 +37,10 @@ buildarr:
   watch_config: true
 
 radarr:
-  hostname: "localhost" # Defaults to `radarr`, or the instance name for instance-specific configs.
-  port: 7878 # Defaults to 7878.
-  protocol: "http" # Defaults to `http`.
-  api_key: "..." # Required if authentication is enabled. Auto-fetch if authentication is disabled.
+  hostname: localhost  # Defaults to `radarr`, or the instance name for instance-specific configs.
+  port: 7878  # Defaults to 7878.
+  protocol:  http  # Defaults to `http`.
+  api_key: ...  # Required if authentication is enabled. Auto-fetch if authentication is disabled.
 ```
 
 Buildarr won't modify anything yet since no configuration has been defined, but you are able to test if Buildarr is able to connect to and authenticate with the Radarr instance.

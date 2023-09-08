@@ -32,13 +32,11 @@ from ...types import RadarrConfigBase
 
 
 class Metadata(RadarrConfigBase):
-    """
-    Metadata definition base class.
-    """
+    # Metadata definition base class.
 
     enable: bool = False
     """
-    When set to `True`, enables creating metadata files in the given format.
+    When set to `true`, enables creating metadata files in this format.
     """
 
     _implementation: str

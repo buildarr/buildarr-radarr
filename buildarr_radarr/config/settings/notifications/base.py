@@ -45,7 +45,7 @@ class NotificationTriggers(RadarrConfigBase):
 
     on_import: bool = False
     """
-    Notify when movies are successfully imported.
+    Notify when movies are successfully imported (downloaded).
     """
 
     on_upgrade: bool = False
@@ -63,7 +63,7 @@ class NotificationTriggers(RadarrConfigBase):
     Notify when movies are added to Radarr's library to monitor.
     """
 
-    on_movie_deleted: bool = False
+    on_movie_delete: bool = False
     """
     Notify when movies are deleted.
     """
@@ -105,10 +105,10 @@ class NotificationTriggers(RadarrConfigBase):
 
     _remote_map: List[RemoteMapEntry] = [
         ("on_grab", "onGrab", {}),
-        ("on_import", "onImport", {}),
+        ("on_import", "onDownload", {}),
         ("on_upgrade", "onUpgrade", {}),
         ("on_rename", "onRename", {}),
-        ("on_movie_added", "onMovieAdd", {}),
+        ("on_movie_added", "onMovieAdded", {}),
         ("on_movie_delete", "onMovieDelete", {}),
         ("on_movie_file_delete", "onMovieFileDelete", {}),
         ("on_movie_file_delete_for_upgrade", "onMovieFileDeleteForUpgrade", {}),

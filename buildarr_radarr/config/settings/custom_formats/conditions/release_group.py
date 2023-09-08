@@ -28,9 +28,7 @@ from .base import Condition
 
 
 class ReleaseGroupCondition(Condition):
-    """
-    Custom format condition for matching based on release group.
-    """
+    # Custom format condition for matching based on release group.
 
     type: Literal["release-group", "release_group", "releasegroup"] = "release-group"
     """

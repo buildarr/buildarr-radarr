@@ -76,7 +76,7 @@ CONDITION_TYPE_MAP = {
 
 
 class CustomFormat(RadarrConfigBase):
-    """ """
+    # Custom format definition configuration.
 
     trash_id: Optional[TrashID] = None
     """
@@ -89,18 +89,44 @@ class CustomFormat(RadarrConfigBase):
     """
 
     default_score: Optional[int] = None
-    """ """
+    """
+    The default score assigned to this custom format when it is assigned to a quality profile.
+
+    If this attribute is explicitly defined on the custom format, the defined value will always
+    be used as the default score.
+
+    If `default_score` is not defined, the default value used by Buildarr depends on the
+    type of custom format:
+
+    * If this is a custom format imported from a Trash ID, this will default to the default
+      score TRaSH-Guides has assigned this custom format (`trash_score` in the metadata).
+      If the custom format does not have a default score defined, the default score will be 0.
+    * If this is a manually defined custom format, the default score will be 0.
+    """
 
     include_when_renaming: bool = False
     """
-    Make available in the `{Custom Formats}` template when renaming media titles.
+    Make the custom format available in the `{Custom Formats}` template when renaming media titles.
     """
 
-    delete_unmanaged_conditions: bool = False
-    """ """
+    delete_unmanaged_conditions: bool = True
+    """
+    Delete conditions defined on this custom format on the remote instance
+    not managed by Buildarr.
+
+    It is recommended to keep this option enabled, particularly for
+    custom formats imported from TRaSH-Guides.
+    """
 
     conditions: Dict[str, Annotated[ConditionType, Field(discriminator="type")]] = {}
-    """ """
+    """
+    A list of conditions that will cause the custom format to be applied to a release
+    if matches are found.
+
+    By default, only one of the defined conditions need to match for the custom format
+    to be applied. If one or more conditions have `required` set to `true`, those conditions
+    must **all** match in order for the custom format to be applied.
+    """
 
     # TODO: Validate conditions not empty if `trash_id` is not defined.
 

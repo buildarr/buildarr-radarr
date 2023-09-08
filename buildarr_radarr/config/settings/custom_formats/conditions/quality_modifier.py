@@ -28,9 +28,7 @@ from .base import Condition
 
 
 class QualityModifierCondition(Condition):
-    """
-    Custom format condition for matching based on quality modifiers.
-    """
+    # Custom format condition for matching based on quality modifiers.
 
     type: Literal[
         "quality-modifier",

@@ -28,9 +28,7 @@ from .base import Condition
 
 
 class ResolutionCondition(Condition):
-    """
-    Custom format condition for matching based on media resolution.
-    """
+    # Custom format condition for matching based on media resolution.
 
     type: Literal["resolution"] = "resolution"
     """

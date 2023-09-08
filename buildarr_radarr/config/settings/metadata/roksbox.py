@@ -27,19 +27,7 @@ from .base import Metadata
 
 
 class RoksboxMetadata(Metadata):
-    """
-    Output metadata files in a format suitable for Roksbox.
-
-    ```yaml
-    radarr:
-      settings:
-        metadata:
-          roksbox:
-            enable: true
-            movie_metadata: true
-            movie_images: true
-    ```
-    """
+    # Output metadata files in a format suitable for Roksbox.
 
     movie_metadata: bool = True
     """

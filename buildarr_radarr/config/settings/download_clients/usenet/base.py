@@ -19,20 +19,8 @@ Usenet download client configuration base class.
 
 from __future__ import annotations
 
-from typing import List, Mapping
-
-from buildarr.config import RemoteMapEntry
-
 from ..base import DownloadClient
 
 
 class UsenetDownloadClient(DownloadClient):
-    remove_failed: bool = True
-    """ """
-
-    @classmethod
-    def _get_base_remote_map(cls, tag_ids: Mapping[str, int]) -> List[RemoteMapEntry]:
-        return [
-            *cls._get_base_remote_map(tag_ids=tag_ids),
-            ("remove_failed", "removeFailedDownloads", {}),
-        ]
+    pass

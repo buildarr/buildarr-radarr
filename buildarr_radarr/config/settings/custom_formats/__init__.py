@@ -35,7 +35,7 @@ logger = getLogger(__name__)
 
 
 class RadarrCustomFormatsSettings(RadarrConfigBase):
-    """ """
+    # Custom format settings configuration.
 
     delete_unmanaged: bool = False
     """

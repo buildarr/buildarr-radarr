@@ -42,13 +42,16 @@ METADATA_TYPE_MAP = {
 
 
 class RadarrMetadataSettings(RadarrConfigBase):
-    """
-    Radarr metadata settings.
-    Implementation wise each metadata is a unique object, updated using separate requests.
-    """
+    # Radarr metadata settings.
+    #
+    # Implementation wise each metadata is a unique object, updated using separate requests.
 
     certification_country: LowerCaseNonEmptyStr = "us"  # type: ignore[assignment]
-    """ """
+    """
+    The country to use for movie certifications in Radarr.
+
+    Use the two-letter ICAO country code, e.g. `us` for the United States.
+    """
 
     emby_legacy: EmbyLegacyMetadata = EmbyLegacyMetadata()
     kodi_emby: KodiEmbyMetadata = KodiEmbyMetadata()
@@ -149,9 +152,9 @@ class RadarrMetadataSettings(RadarrConfigBase):
         if config_changed:
             with radarr_api_client(secrets=secrets) as api_client:
                 radarr.MetadataConfigApi(api_client).update_metadata_config(
-                    id=api_config.id,
+                    id=str(api_config.id),
                     metadata_config_resource=radarr.MetadataConfigResource.from_dict(
-                        {**api_config.from_dict(), **config_changed_attrs},
+                        {**api_config.to_dict(), **config_changed_attrs},
                     ),
                 )
         return any(

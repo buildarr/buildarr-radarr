@@ -28,9 +28,7 @@ from .base import Condition
 
 
 class EditionCondition(Condition):
-    """
-    Custom format condition for matching based on media edition.
-    """
+    # Custom format condition for matching based on media edition.
 
     type: Literal["edition"] = "edition"
     """
