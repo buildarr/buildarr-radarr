@@ -96,7 +96,7 @@ Note that these documents do not show how you *should* configure a Radarr instan
 
 !!! note
 
-    The following resources are not yet supported by this plugin (but will be added in future versions):
+    Configuration of the following resources are not yet supported by this plugin (but will be added in future versions):
 
     * Import Lists
 

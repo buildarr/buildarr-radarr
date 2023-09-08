@@ -94,12 +94,6 @@ The following sections cover comprehensive configuration of a Radarr instance.
 
 Note that these documents do not show how you *should* configure a Radarr instance. Rather, they show how you *can* configure a Radarr instance the way you want with Buildarr. For more information on how to optimally configure Radarr, you can refer to the excellent guides from [WikiArr](https://wiki.servarr.com/radarr) and [TRaSH-Guides](https://trash-guides.info/Radarr).
 
-!!! note
-
-    The following resources are not yet supported by this plugin (but will be added in future versions):
-
-    * Import Lists
-
 * [Host Configuration](https://buildarr.github.io/configuration/host)
 * Settings
     * [Media Management](https://buildarr.github.io/configuration/settings/media-management)
@@ -115,6 +109,10 @@ Note that these documents do not show how you *should* configure a Radarr instan
     * [Tags](https://buildarr.github.io/configuration/settings/tags)
     * [General](https://buildarr.github.io/configuration/settings/general)
     * [UI](https://buildarr.github.io/configuration/settings/ui)
+
+Configuration of the following resources are not yet supported by this plugin (but will be added in future versions):
+
+* Import Lists
 
 ## Dumping an existing Radarr instance configuration
 
