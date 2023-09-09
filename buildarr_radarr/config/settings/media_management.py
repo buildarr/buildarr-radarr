@@ -160,7 +160,7 @@ class RootFoldersSettings(RadarrConfigBase):
                         rootfolder_api.delete_root_folder(id=rootfolder_id)
                         changed = True
                     else:
-                        logger.info("%s[%i]: %s -> (unmanaged)", tree, i, repr(str(root_folder)))
+                        logger.debug("%s[%i]: %s (unmanaged)", tree, i, repr(str(root_folder)))
                     i -= 1
         return changed
 
