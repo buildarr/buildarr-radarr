@@ -22,17 +22,17 @@ from __future__ import annotations
 import functools
 
 from getpass import getpass
-from typing import cast
+from typing import TYPE_CHECKING
 from urllib.parse import urlparse
 
 import click
 
-from buildarr.types import NonEmptyStr, Port
-
 from .config import RadarrInstanceConfig
 from .manager import RadarrManager
 from .secrets import RadarrSecrets
-from .types import ArrApiKey, RadarrProtocol
+
+if TYPE_CHECKING:
+    from urllib.parse import ParseResult as Url
 
 HOSTNAME_PORT_TUPLE_LENGTH = 2
 
@@ -52,7 +52,7 @@ def radarr():
         "The configuration is dumped to standard output in Buildarr-compatible YAML format."
     ),
 )
-@click.argument("url", type=click.STRING)
+@click.argument("url", type=urlparse)
 @click.option(
     "-k",
     "--api-key",
@@ -61,15 +61,14 @@ def radarr():
     default=functools.partial(getpass, "Radarr instance API key: "),
     help="API key of the Radarr instance. The user will be prompted if undefined.",
 )
-def dump_config(url: str, api_key: str) -> int:
+def dump_config(url: Url, api_key: str) -> int:
     """
     Dump configuration from a remote Radarr instance.
     The configuration is dumped to standard output in Buildarr-compatible YAML format.
     """
 
-    url_obj = urlparse(url)
-    protocol = url_obj.scheme
-    hostname_port = url_obj.netloc.split(":", 1)
+    protocol = url.scheme
+    hostname_port = url.netloc.split(":", 1)
     hostname = hostname_port[0]
     port = (
         int(hostname_port[1])
@@ -81,15 +80,19 @@ def dump_config(url: str, api_key: str) -> int:
         RadarrManager()
         .from_remote(
             instance_config=RadarrInstanceConfig(
-                hostname=cast(NonEmptyStr, hostname),
-                port=cast(Port, port),
-                protocol=cast(RadarrProtocol, protocol),
+                **{  # type: ignore[arg-type]
+                    "hostname": hostname,
+                    "port": port,
+                    "protocol": protocol,
+                },
             ),
             secrets=RadarrSecrets(
-                hostname=cast(NonEmptyStr, hostname),
-                port=cast(Port, port),
-                protocol=cast(RadarrProtocol, protocol),
-                api_key=cast(ArrApiKey, api_key),
+                **{  # type: ignore[arg-type]
+                    "hostname": hostname,
+                    "port": port,
+                    "protocol": protocol,
+                    "api_key": api_key,
+                },
             ),
         )
         .yaml(),

@@ -20,7 +20,7 @@ Plugin secrets file model.
 from __future__ import annotations
 
 from http import HTTPStatus
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING
 from urllib.parse import urlparse
 
 import radarr
@@ -73,10 +73,12 @@ class RadarrSecrets(_RadarrSecrets):
             else (443 if protocol == "https" else 80)
         )
         return cls(
-            hostname=cast(NonEmptyStr, hostname),
-            port=cast(Port, port),
-            protocol=cast(RadarrProtocol, protocol),
-            api_key=cast(ArrApiKey, api_key),
+            **{  # type: ignore[arg-type]
+                "hostname": hostname,
+                "port": port,
+                "protocol": protocol,
+                "api_key": api_key,
+            },
         )
 
     @classmethod
