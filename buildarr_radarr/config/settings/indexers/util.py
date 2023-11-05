@@ -27,6 +27,7 @@ logger = getLogger(__name__)
 
 
 class NabCategory(BaseEnum):
+    MOVIES = 2000
     MOVIES_FOREIGN = 2010
     MOVIES_OTHER = 2020
     MOVIES_SD = 2030
