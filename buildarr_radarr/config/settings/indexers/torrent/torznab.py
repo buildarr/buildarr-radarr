@@ -67,15 +67,14 @@ class TorznabIndexer(TorrentIndexer):
 
     Values:
 
-    * `TV-WEBDL`
-    * `TV-Foreign`
-    * `TV-SD`
-    * `TV-HD`
-    * `TV-UHD`
-    * `TV-Other`
-    * `TV-Sports`
-    * `TV-Anime`
-    * `TV-Documentary`
+    * `Movies`
+    * `Movies-Foreign`
+    * `Movies-Other`
+    * `Movies-SD`
+    * `Movies-HD`
+    * `Movies-UHD`
+    * `Movies-Bluray`
+    * `Movies-3D`
     """
 
     remove_year: bool = False

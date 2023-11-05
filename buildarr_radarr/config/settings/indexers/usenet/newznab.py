@@ -67,6 +67,7 @@ class NewznabIndexer(UsenetIndexer):
 
     Values:
 
+    * `Movies`
     * `Movies-Foreign`
     * `Movies-Other`
     * `Movies-SD`
