@@ -26,7 +26,8 @@ import radarr
 
 from buildarr.config import RemoteMapEntry
 from buildarr.types import BaseEnum, NonEmptyStr, Password, Port
-from pydantic import Field, SecretStr, validator
+from packaging.version import Version
+from pydantic import Field, SecretStr
 from typing_extensions import Self
 
 from ...api import radarr_api_client
@@ -38,11 +39,12 @@ class AuthenticationMethod(BaseEnum):
     none = "none"
     basic = "basic"
     form = "forms"
+    external = "external"
 
 
-# class AuthenticationRequired(BaseEnum):
-#     enabled = "enabled"
-#     local_disabled = "disabledForLocalAddresses"
+class AuthenticationRequired(BaseEnum):
+    enabled = "enabled"
+    local_disabled = "disabledForLocalAddresses"
 
 
 class CertificateValidation(BaseEnum):
@@ -73,10 +75,24 @@ class UpdateMechanism(BaseEnum):
 
 class GeneralSettings(RadarrConfigBase):
     _remote_map: List[RemoteMapEntry]
+    _v4_remote_map: List[RemoteMapEntry] = []
+    _v5_remote_map: List[RemoteMapEntry] = []
 
     @classmethod
-    def _from_remote(cls, remote_attrs: Mapping[str, Any]) -> Self:
-        return cls(**cls.get_local_attrs(cls._remote_map, remote_attrs))
+    def _from_remote(cls, secrets: RadarrSecrets, remote_attrs: Mapping[str, Any]) -> Self:
+        return cls(
+            **cls.get_local_attrs(
+                remote_map=(
+                    cls._remote_map
+                    + (
+                        cls._v5_remote_map
+                        if Version(secrets.version) >= Version("5.0")
+                        else cls._v4_remote_map
+                    )
+                ),
+                remote_attrs=remote_attrs,
+            ),
+        )
 
     def _update_remote_attrs(
         self,
@@ -86,9 +102,16 @@ class GeneralSettings(RadarrConfigBase):
         check_unmanaged: bool = False,
     ) -> Tuple[bool, Dict[str, Any]]:
         return self.get_update_remote_attrs(
-            tree,
-            remote,
-            self._remote_map,
+            tree=tree,
+            remote=remote,
+            remote_map=(
+                self._remote_map
+                + (
+                    self._v5_remote_map
+                    if Version(secrets.version) >= Version("5.0")
+                    else self._v4_remote_map
+                )
+            ),
             check_unmanaged=check_unmanaged,
             set_unchanged=True,
         )
@@ -205,22 +228,37 @@ class SecurityGeneralSettings(GeneralSettings):
 
     Values:
 
-    * `none` - No authentication
+    * `none` - No authentication (Radarr V4 only)
     * `basic` - Authentication using HTTP basic auth (browser popup)
-    * `form` - Authentication using a login page
+    * `form`/`forms` - Authentication using a login page
+    * `external` - External authentication using a reverse proxy (Radarr V5 and above)
+
+    !!! warning
+
+        When the authentication method is set to `none` or `external`,
+        **authentication is disabled within Radarr itself.**
+
+        **Make sure access to Radarr is secured**, either by using a reverse proxy with
+        forward authentication configured, or not exposing Radarr to the public Internet.
 
     Requires a restart of Radarr to take effect.
+
+    *Changed in version 0.2.0: Added support for the `external` authentication method.*
     """
 
-    # authentication_required: AuthenticationRequired = AuthenticationRequired.enabled
-    # """
-    # Authentication requirement settings for accessing Radarr.
-    #
-    # Values:
-    #
-    # * `enabled` - Enabled
-    # * `local-disabled` - Disabled for Local Addresses
-    # """
+    authentication_required: AuthenticationRequired = AuthenticationRequired.enabled
+    """
+    Authentication requirement settings for accessing Radarr.
+
+    Available on Radarr V5 and above. Ignored on Radarr V4.
+
+    Values:
+
+    * `enabled` - Enabled
+    * `local-disabled` - Disabled for Local Addresses
+
+    *New in version 0.2.0.*
+    """
 
     username: Optional[str] = None
     """
@@ -250,7 +288,6 @@ class SecurityGeneralSettings(GeneralSettings):
 
     _remote_map: List[RemoteMapEntry] = [
         ("authentication", "authenticationMethod", {}),
-        # ("authentication_required", "authenticationRequired", {}),
         (
             "username",
             "username",
@@ -280,37 +317,9 @@ class SecurityGeneralSettings(GeneralSettings):
         ("certificate_validation", "certificateValidation", {}),
     ]
 
-    @validator("username", "password")
-    def required_when_auth_enabled(
-        cls,
-        value: Optional[str],
-        values: Dict[str, Any],
-    ) -> Optional[str]:
-        """
-        Enforce the following constraints on the validated attributes:
-
-        * If `authentication` is `none`, set the attribute value to `None`.
-        * If `authentication` is a value other than `none` (i.e. require authentication),
-          ensure that the attribute set to a value other than `None`.
-
-        This will apply to both the local Buildarr configuration and
-        the remote Radarr instance configuration.
-
-        Args:
-            value (Optional[str]): Value to validate
-            values (Dict[str, Any]): Configuration attributes
-
-        Raises:
-            ValueError: If the attribute is required but empty
-
-        Returns:
-            Validated attribute value
-        """
-        if values["authentication"] == AuthenticationMethod.none:
-            return None
-        elif not value:
-            raise ValueError("required when 'authentication' is not set to 'none'")
-        return value
+    _v5_remote_map: List[RemoteMapEntry] = [
+        ("authentication_required", "authenticationRequired", {}),
+    ]
 
 
 class ProxyGeneralSettings(GeneralSettings):
@@ -553,13 +562,25 @@ class RadarrGeneralSettings(RadarrConfigBase):
         with radarr_api_client(secrets=secrets) as api_client:
             remote_attrs = radarr.HostConfigApi(api_client).get_host_config().to_dict()
         return cls(
-            host=HostGeneralSettings._from_remote(remote_attrs),
-            security=SecurityGeneralSettings._from_remote(remote_attrs),
-            proxy=ProxyGeneralSettings._from_remote(remote_attrs),
-            logging=LoggingGeneralSettings._from_remote(remote_attrs),
-            analytics=AnalyticsGeneralSettings._from_remote(remote_attrs),
-            updates=UpdatesGeneralSettings._from_remote(remote_attrs),
-            backup=BackupGeneralSettings._from_remote(remote_attrs),
+            host=HostGeneralSettings._from_remote(secrets=secrets, remote_attrs=remote_attrs),
+            security=SecurityGeneralSettings._from_remote(
+                secrets=secrets,
+                remote_attrs=remote_attrs,
+            ),
+            proxy=ProxyGeneralSettings._from_remote(secrets=secrets, remote_attrs=remote_attrs),
+            logging=LoggingGeneralSettings._from_remote(
+                secrets=secrets,
+                remote_attrs=remote_attrs,
+            ),
+            analytics=AnalyticsGeneralSettings._from_remote(
+                secrets=secrets,
+                remote_attrs=remote_attrs,
+            ),
+            updates=UpdatesGeneralSettings._from_remote(
+                secrets=secrets,
+                remote_attrs=remote_attrs,
+            ),
+            backup=BackupGeneralSettings._from_remote(secrets=secrets, remote_attrs=remote_attrs),
         )
 
     def update_remote(

@@ -53,6 +53,7 @@ Take care when changing these settings.
     options:
       members:
         - authentication
+        - authentication_required
         - username
         - password
         - certificate_validation

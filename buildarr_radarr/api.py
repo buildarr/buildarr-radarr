@@ -79,9 +79,11 @@ def radarr_api_client(
 def api_get(
     secrets: Union[RadarrSecrets, str],
     api_url: str,
-    session: Optional[requests.Session] = None,
+    *,
+    api_key: Optional[str] = None,
     use_api_key: bool = True,
     expected_status_code: HTTPStatus = HTTPStatus.OK,
+    session: Optional[requests.Session] = None,
 ) -> Any:
     """
     Send a `GET` request to a Radarr instance.
@@ -95,13 +97,17 @@ def api_get(
         Response object
     """
 
-    if isinstance(secrets, str):
-        host_url = secrets
-        api_key = None
-    else:
-        host_url = secrets.host_url
-        api_key = secrets.api_key.get_secret_value() if use_api_key else None
+    host_url = secrets.host_url if isinstance(secrets, RadarrSecrets) else secrets
     url = f"{host_url}/{api_url.lstrip('/')}"
+
+    if api_key:
+        host_api_key: Optional[str] = api_key
+    else:
+        host_api_key = (
+            secrets.api_key.get_secret_value()
+            if isinstance(secrets, RadarrSecrets) and use_api_key
+            else None
+        )
 
     logger.debug("GET %s", url)
 
@@ -109,7 +115,7 @@ def api_get(
         session = requests.Session()
     res = session.get(
         url,
-        headers={"X-Api-Key": api_key} if api_key else None,
+        headers={"X-Api-Key": host_api_key} if host_api_key else None,
         timeout=state.request_timeout,
     )
     res_json = res.json()

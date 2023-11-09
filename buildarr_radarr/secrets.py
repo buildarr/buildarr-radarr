@@ -20,7 +20,7 @@ Plugin secrets file model.
 from __future__ import annotations
 
 from http import HTTPStatus
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 from urllib.parse import urlparse
 
 import radarr
@@ -56,6 +56,7 @@ class RadarrSecrets(_RadarrSecrets):
     port: Port
     protocol: RadarrProtocol
     api_key: ArrApiKey
+    version: NonEmptyStr
 
     @property
     def host_url(self) -> str:
@@ -84,10 +85,14 @@ class RadarrSecrets(_RadarrSecrets):
     @classmethod
     def get(cls, config: RadarrConfig) -> Self:
         if config.api_key:
-            api_key = config.api_key
+            api_key: str = cast(str, config.api_key)
+            remote_metadata = api_get(config.host_url, "/initialize.json", api_key=api_key)
+            # TODO: Switch to `radarr.InitializeJsApi.get_initialize_js` when fixed.
+            # with radarr_api_client(host_url=config.host_url) as api_client:
+            #     remote_metadata = radarr.InitializeJsApi(api_client).get_initialize_js()
         else:
             try:
-                api_key = api_get(config.host_url, "/initialize.json")["apiKey"]
+                remote_metadata = api_get(config.host_url, "/initialize.json")
             except RadarrAPIError as err:
                 if err.status_code == HTTPStatus.UNAUTHORIZED:
                     raise RadarrSecretsUnauthorizedError(
@@ -100,14 +105,14 @@ class RadarrSecrets(_RadarrSecrets):
                     ) from None
                 else:
                     raise
-            # TODO: Switch to `radarr.InitializeJsApi.get_initialize_js` when fixed.
-            # with radarr_api_client(host_url=config.host_url) as api_client:
-            #     api_key = radarr.InitializeJsApi(api_client).get_initialize_js().api_key
+            else:
+                api_key = remote_metadata["apiKey"]
         return cls(
             hostname=config.hostname,
             port=config.port,
             protocol=config.protocol,
-            api_key=api_key,
+            api_key=cast(ArrApiKey, api_key),
+            version=remote_metadata["version"],
         )
 
     def test(self) -> bool:
