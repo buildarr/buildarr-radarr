@@ -221,10 +221,9 @@ class SecurityGeneralSettings(GeneralSettings):
     Radarr instance security (authentication) settings.
     """
 
-    authentication: AuthenticationMethod = AuthenticationMethod.none
+    authentication: AuthenticationMethod = AuthenticationMethod.external
     """
     Authentication method for logging into Radarr.
-    By default, do not require authentication.
 
     Values:
 
@@ -250,7 +249,7 @@ class SecurityGeneralSettings(GeneralSettings):
     """
     Authentication requirement settings for accessing Radarr.
 
-    Available on Radarr V5 and above. Ignored on Radarr V4.
+    Available on Radarr V5 and above. Unused when managing Radarr V4 instances.
 
     Values:
 

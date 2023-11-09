@@ -13,7 +13,7 @@ radarr:
         use_ssl: false
         instance_name: Radarr (Buildarr Example)
       security:
-        authentication: none
+        authentication: external
       proxy:
         enable: false
       logging:
