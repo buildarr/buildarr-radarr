@@ -20,8 +20,7 @@ Plugin secrets file model.
 from __future__ import annotations
 
 from http import HTTPStatus
-from typing import TYPE_CHECKING, cast
-from urllib.parse import urlparse
+from typing import TYPE_CHECKING
 
 import radarr
 
@@ -63,29 +62,9 @@ class RadarrSecrets(_RadarrSecrets):
         return f"{self.protocol}://{self.hostname}:{self.port}"
 
     @classmethod
-    def from_url(cls, base_url: str, api_key: str) -> Self:
-        url_obj = urlparse(base_url)
-        hostname_port = url_obj.netloc.rsplit(":", 1)
-        hostname = hostname_port[0]
-        protocol = url_obj.scheme
-        port = (
-            int(hostname_port[1])
-            if len(hostname_port) > 1
-            else (443 if protocol == "https" else 80)
-        )
-        return cls(
-            **{  # type: ignore[arg-type]
-                "hostname": hostname,
-                "port": port,
-                "protocol": protocol,
-                "api_key": api_key,
-            },
-        )
-
-    @classmethod
     def get(cls, config: RadarrConfig) -> Self:
         if config.api_key:
-            api_key: str = cast(str, config.api_key)
+            api_key = config.api_key.get_secret_value()
             remote_metadata = api_get(config.host_url, "/initialize.json", api_key=api_key)
             # TODO: Switch to `radarr.InitializeJsApi.get_initialize_js` when fixed.
             # with radarr_api_client(host_url=config.host_url) as api_client:
@@ -111,7 +90,7 @@ class RadarrSecrets(_RadarrSecrets):
             hostname=config.hostname,
             port=config.port,
             protocol=config.protocol,
-            api_key=cast(ArrApiKey, api_key),
+            api_key=api_key,  # type: ignore[arg-type]
             version=remote_metadata["version"],
         )
 
