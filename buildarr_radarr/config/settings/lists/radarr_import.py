@@ -209,7 +209,7 @@ class RadarrImportList(ImportList):
         Returns:
             Radarr instance secrets metadata
         """
-        return cast(RadarrSecrets, state.secrets.radarr[instance_name])
+        return cast(RadarrSecrets, state.instance_secrets["radarr"][instance_name])
 
     @classmethod
     def _get_resources(cls, instance_name: str, resource_type: str) -> List[Dict[str, Any]]:
