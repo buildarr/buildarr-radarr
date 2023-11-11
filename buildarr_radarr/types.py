@@ -21,27 +21,9 @@ from __future__ import annotations
 
 from typing import Literal
 
-from pydantic import ConstrainedStr, SecretStr
+from pydantic import SecretStr
 
 RadarrProtocol = Literal["http", "https"]
-
-
-class LowerCaseStr(ConstrainedStr):
-    to_lower = True
-
-
-class LowerCaseNonEmptyStr(LowerCaseStr):
-    min_length = 1
-    strip_whitespace = True
-
-
-class UpperCaseStr(ConstrainedStr):
-    to_upper = True
-
-
-class UpperCaseNonEmptyStr(UpperCaseStr):
-    min_length = 1
-    strip_whitespace = True
 
 
 class ArrApiKey(SecretStr):
