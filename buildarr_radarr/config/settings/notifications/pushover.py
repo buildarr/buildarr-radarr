@@ -22,7 +22,7 @@ from __future__ import annotations
 from typing import Any, List, Literal, Mapping, Optional, Set, Union
 
 from buildarr.config import RemoteMapEntry
-from buildarr.types import BaseEnum, NonEmptyStr
+from buildarr.types import BaseEnum, NonEmptyStr, Password
 from pydantic import ConstrainedInt, Field, SecretStr, validator
 
 from .base import Notification
@@ -60,7 +60,7 @@ class PushoverNotification(Notification):
     User key to use to authenticate with your Pushover account.
     """
 
-    api_key: PushoverApiKey
+    api_key: Password
     """
     API key assigned to this application in Pushover.
     """
