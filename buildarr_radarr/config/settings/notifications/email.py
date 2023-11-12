@@ -103,40 +103,8 @@ class EmailNotification(Notification):
         ("use_encryption", "requireEncryption", {"is_field": True}),
         ("username", "username", {"is_field": True}),
         ("password", "password", {"is_field": True}),
-        (
-            "from_address",
-            "from",
-            {
-                "is_field": True,
-                "formatter": lambda v: str(v),
-                "encoder": lambda v: str(v),
-            },
-        ),
-        (
-            "recipient_addresses",
-            "to",
-            {
-                "is_field": True,
-                "formatter": lambda v: [str(e) for e in v],
-                "encoder": lambda v: [str(e) for e in v],
-            },
-        ),
-        (
-            "cc_addresses",
-            "cc",
-            {
-                "is_field": True,
-                "formatter": lambda v: [str(e) for e in v],
-                "encoder": lambda v: [str(e) for e in v],
-            },
-        ),
-        (
-            "bcc_addresses",
-            "bcc",
-            {
-                "is_field": True,
-                "formatter": lambda v: [str(e) for e in v],
-                "encoder": lambda v: [str(e) for e in v],
-            },
-        ),
+        ("from_address", "from", {"is_field": True}),
+        ("recipient_addresses", "to", {"is_field": True}),
+        ("cc_addresses", "cc", {"is_field": True}),
+        ("bcc_addresses", "bcc", {"is_field": True}),
     ]
