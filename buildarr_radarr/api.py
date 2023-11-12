@@ -104,7 +104,7 @@ def api_get(
         host_url = secrets.host_url
         host_api_key = secrets.api_key.get_secret_value()
 
-    if use_api_key:
+    if not use_api_key:
         host_api_key = None
 
     url = f"{host_url}/{api_url.lstrip('/')}"
