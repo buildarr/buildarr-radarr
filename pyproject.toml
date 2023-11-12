@@ -11,7 +11,7 @@ version = "0.1.2"
 description = "Radarr movie PVR plugin for Buildarr "
 authors = ["Callum Dickinson <callum.dickinson.nz@gmail.com>"]
 license = "GPL-3.0-or-later"
-homepage = "https://buildarr.github.io/plugins/radarr"
+homepage = "https://buildarr.github.io"
 repository = "https://github.com/buildarr/buildarr-radarr"
 documentation = "https://buildarr.github.io/plugins/radarr"
 keywords = [
@@ -29,6 +29,10 @@ classifiers = [
 ]
 readme = "README.md"
 packages = [{include = "buildarr_radarr"}]
+
+[tool.poetry.urls]
+"Changes" = "https://buildarr.github.io/plugins/radarr/release-notes"
+"Issue Tracker" = "https://github.com/buildarr/buildarr-radarr/issues"
 
 [tool.poetry.plugins."buildarr.plugins"]
 "radarr" = "buildarr_radarr.plugin:RadarrPlugin"
