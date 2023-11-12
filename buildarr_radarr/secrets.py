@@ -26,6 +26,7 @@ import radarr
 
 from buildarr.secrets import SecretsPlugin
 from buildarr.types import NonEmptyStr, Port
+from radarr.exceptions import UnauthorizedException
 
 from .api import api_get, radarr_api_client
 from .exceptions import RadarrAPIError, RadarrSecretsUnauthorizedError
@@ -70,19 +71,31 @@ class RadarrSecrets(_RadarrSecrets):
             except RadarrAPIError as err:
                 if err.status_code == HTTPStatus.UNAUTHORIZED:
                     raise RadarrSecretsUnauthorizedError(
-                        "Unable to retrieve the API key for the Radarr instance "
-                        f"at '{config.host_url}': Authentication is enabled. "
-                        "Please try manually setting the "
-                        "'Settings -> General -> Authentication Required' attribute "
-                        "to 'Disabled for Local Addresses', or if that does not work, "
-                        "explicitly define the API key in the Buildarr configuration.",
+                        (
+                            "Unable to retrieve the API key for the Radarr instance "
+                            f"at '{config.host_url}': Authentication is enabled. "
+                            "Please try manually setting the "
+                            "'Settings -> General -> Authentication Required' attribute "
+                            "to 'Disabled for Local Addresses', or if that does not work, "
+                            "explicitly define the API key in the Buildarr configuration."
+                        ),
                     ) from None
                 else:
                     raise
             else:
                 api_key = initialize_json["apiKey"]
-        with radarr_api_client(host_url=config.host_url, api_key=api_key) as api_client:
-            system_status = radarr.SystemApi(api_client).get_system_status()
+        try:
+            with radarr_api_client(host_url=config.host_url, api_key=api_key) as api_client:
+                system_status = radarr.SystemApi(api_client).get_system_status()
+        except UnauthorizedException:
+            raise RadarrSecretsUnauthorizedError(
+                (
+                    f"Incorect API key for the Radarr instance at '{config.host_url}'. "
+                    "Please check that the API key is set correctly in the Buildarr "
+                    "configuration, and that it is set to the value as shown in "
+                    "'Settings -> General -> API Key' on the Radarr instance."
+                ),
+            ) from None
         return cls(
             hostname=config.hostname,
             port=config.port,
