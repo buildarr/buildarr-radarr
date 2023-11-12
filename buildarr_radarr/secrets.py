@@ -65,13 +65,9 @@ class RadarrSecrets(_RadarrSecrets):
     def get(cls, config: RadarrConfig) -> Self:
         if config.api_key:
             api_key = config.api_key.get_secret_value()
-            remote_metadata = api_get(config.host_url, "/initialize.json", api_key=api_key)
-            # TODO: Switch to `radarr.InitializeJsApi.get_initialize_js` when fixed.
-            # with radarr_api_client(host_url=config.host_url) as api_client:
-            #     remote_metadata = radarr.InitializeJsApi(api_client).get_initialize_js()
         else:
             try:
-                remote_metadata = api_get(config.host_url, "/initialize.json")
+                initialize_json = api_get(config.host_url, "/initialize.json")
             except RadarrAPIError as err:
                 if err.status_code == HTTPStatus.UNAUTHORIZED:
                     raise RadarrSecretsUnauthorizedError(
@@ -85,13 +81,15 @@ class RadarrSecrets(_RadarrSecrets):
                 else:
                     raise
             else:
-                api_key = remote_metadata["apiKey"]
+                api_key = initialize_json["apiKey"]
+        with radarr_api_client(host_url=config.host_url, api_key=api_key) as api_client:
+            system_status = radarr.SystemApi(api_client).get_system_status()
         return cls(
             hostname=config.hostname,
             port=config.port,
             protocol=config.protocol,
             api_key=api_key,  # type: ignore[arg-type]
-            version=remote_metadata["version"],
+            version=system_status.version,
         )
 
     def test(self) -> bool:

@@ -45,6 +45,7 @@ def radarr_api_client(
     *,
     secrets: Optional[RadarrSecrets] = None,
     host_url: Optional[str] = None,
+    api_key: Optional[str] = None,
 ) -> Generator[ApiClient, None, None]:
     """
     Create a Radarr API client object, and make it available within a context.
@@ -71,6 +72,8 @@ def radarr_api_client(
 
     if secrets:
         configuration.api_key["X-Api-Key"] = secrets.api_key.get_secret_value()
+    elif api_key:
+        configuration.api_key["X-Api-Key"] = api_key
 
     with ApiClient(configuration) as api_client:
         yield api_client
