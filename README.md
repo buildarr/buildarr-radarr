@@ -6,6 +6,8 @@ The Buildarr Radarr plugin (`buildarr-radarr`) is a plugin for Buildarr that add
 
 Radarr is a PVR application which downloads, renames and manages the lifecycle of movies in your media library. In other words, it is to movies what [Sonarr](https://sonarr.tv) is to TV shoes. It can monitor for both upcoming and current releases and grab them when they become available, as well as upgrade to higher quality versions of monitored releases when a suitable version is available.
 
+Currently, Radarr V4 and Radarr V5 are the supported versions. If you are using Radarr V3 or earlier, please upgrade in order to manage your instances with Buildarr.
+
 ## Installation
 
 When using Buildarr as a [standalone application](https://buildarr.github.io/installation/#standalone-application), the Radarr plugin can simply be installed using `pip`:
