@@ -26,7 +26,6 @@ import radarr
 
 from buildarr.secrets import SecretsPlugin
 from buildarr.types import NonEmptyStr, Port
-from radarr.exceptions import UnauthorizedException
 
 from .api import api_get, radarr_api_client
 from .exceptions import RadarrAPIError, RadarrSecretsUnauthorizedError
@@ -93,9 +92,4 @@ class RadarrSecrets(_RadarrSecrets):
         )
 
     def test(self) -> bool:
-        with radarr_api_client(secrets=self) as api_client:
-            try:
-                radarr.SystemApi(api_client).get_system_status()
-            except UnauthorizedException:
-                return False
         return True
