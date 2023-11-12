@@ -97,17 +97,17 @@ def api_get(
         Response object
     """
 
-    host_url = secrets if isinstance(secrets, str) else secrets.host_url
-    url = f"{host_url}/{api_url.lstrip('/')}"
-
-    if api_key:
-        host_api_key: Optional[str] = api_key
+    if isinstance(secrets, str):
+        host_url = secrets
+        host_api_key = api_key
     else:
-        host_api_key = (
-            secrets.api_key.get_secret_value()
-            if isinstance(secrets, RadarrSecrets) and use_api_key
-            else None
-        )
+        host_url = secrets.host_url
+        host_api_key = secrets.api_key.get_secret_value()
+
+    if use_api_key:
+        host_api_key = None
+
+    url = f"{host_url}/{api_url.lstrip('/')}"
 
     logger.debug("GET %s", url)
 
