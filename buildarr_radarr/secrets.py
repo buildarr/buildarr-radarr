@@ -20,7 +20,7 @@ Plugin secrets file model.
 from __future__ import annotations
 
 from http import HTTPStatus
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 import radarr
 
@@ -100,7 +100,7 @@ class RadarrSecrets(_RadarrSecrets):
             hostname=config.hostname,
             port=config.port,
             protocol=config.protocol,
-            api_key=api_key,  # type: ignore[arg-type]
+            api_key=cast(ArrApiKey, api_key),
             version=system_status.version,
         )
 
