@@ -90,7 +90,7 @@ class RadarrSecrets(_RadarrSecrets):
         except UnauthorizedException:
             raise RadarrSecretsUnauthorizedError(
                 (
-                    f"Incorect API key for the Radarr instance at '{config.host_url}'. "
+                    f"Incorrect API key for the Radarr instance at '{config.host_url}'. "
                     "Please check that the API key is set correctly in the Buildarr "
                     "configuration, and that it is set to the value as shown in "
                     "'Settings -> General -> API Key' on the Radarr instance."
