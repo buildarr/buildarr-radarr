@@ -19,7 +19,7 @@ Torznab indexer configuration.
 
 from __future__ import annotations
 
-from typing import List, Literal, Optional, Set
+from typing import List, Literal, Optional, Set, Union
 
 from buildarr.config import RemoteMapEntry
 from buildarr.types import NonEmptyStr, Password
@@ -52,14 +52,14 @@ class TorznabIndexer(TorrentIndexer):
     API key for use with the Torznab API.
     """
 
-    categories: Set[NabCategory] = {
-        NabCategory.MOVIES_FOREIGN,
-        NabCategory.MOVIES_OTHER,
-        NabCategory.MOVIES_SD,
-        NabCategory.MOVIES_HD,
-        NabCategory.MOVIES_UHD,
-        NabCategory.MOVIES_BLURAY,
-        NabCategory.MOVIES_3D,
+    categories: Set[Union[NabCategory, int]] = {
+        NabCategory.MOVIES_FOREIGN,  # type: ignore[arg-type]
+        NabCategory.MOVIES_OTHER,  # type: ignore[arg-type]
+        NabCategory.MOVIES_SD,  # type: ignore[arg-type]
+        NabCategory.MOVIES_HD,  # type: ignore[arg-type]
+        NabCategory.MOVIES_UHD,  # type: ignore[arg-type]
+        NabCategory.MOVIES_BLURAY,  # type: ignore[arg-type]
+        NabCategory.MOVIES_3D,  # type: ignore[arg-type]
     }
     """
     Categories to monitor for standard/daily shows.
@@ -68,13 +68,16 @@ class TorznabIndexer(TorrentIndexer):
     Values:
 
     * `Movies`
-    * `Movies-Foreign`
-    * `Movies-Other`
-    * `Movies-SD`
-    * `Movies-HD`
-    * `Movies-UHD`
-    * `Movies-Bluray`
-    * `Movies-3D`
+    * `Movies/Foreign`
+    * `Movies/Other`
+    * `Movies/SD`
+    * `Movies/HD`
+    * `Movies/UHD`
+    * `Movies/BluRay`
+    * `Movies/3D`
+    * `Movies/DVD`
+    * `Movies/WEB-DL`
+    * `Movies/x265`
     """
 
     remove_year: bool = False
@@ -92,10 +95,21 @@ class TorznabIndexer(TorrentIndexer):
         ("base_url", "baseUrl", {"is_field": True}),
         ("api_path", "apiPath", {"is_field": True}),
         ("api_key", "apiKey", {"is_field": True}),
-        ("categories", "categories", {"is_field": True}),
+        (
+            "categories",
+            "categories",
+            {"is_field": True},  # , "decoder": },
+        ),
         (
             "additional_parameters",
             "additionalParameters",
             {"is_field": True, "field_default": None, "decoder": lambda v: v or None},
         ),
     ]
+
+    @classmethod
+    def _category_decoder(cls, value: int) -> Union[NabCategory, int]:
+        try:
+            return NabCategory(value)
+        except ValueError:
+            return value

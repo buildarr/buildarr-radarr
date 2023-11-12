@@ -53,13 +53,13 @@ class NewznabIndexer(UsenetIndexer):
     """
 
     categories: Set[NabCategory] = {
-        NabCategory.MOVIES_FOREIGN,
-        NabCategory.MOVIES_OTHER,
-        NabCategory.MOVIES_SD,
-        NabCategory.MOVIES_HD,
-        NabCategory.MOVIES_UHD,
-        NabCategory.MOVIES_BLURAY,
-        NabCategory.MOVIES_3D,
+        NabCategory.MOVIES_FOREIGN,  # type: ignore[arg-type]
+        NabCategory.MOVIES_OTHER,  # type: ignore[arg-type]
+        NabCategory.MOVIES_SD,  # type: ignore[arg-type]
+        NabCategory.MOVIES_HD,  # type: ignore[arg-type]
+        NabCategory.MOVIES_UHD,  # type: ignore[arg-type]
+        NabCategory.MOVIES_BLURAY,  # type: ignore[arg-type]
+        NabCategory.MOVIES_3D,  # type: ignore[arg-type]
     }
     """
     Categories to monitor for release.
@@ -68,13 +68,16 @@ class NewznabIndexer(UsenetIndexer):
     Values:
 
     * `Movies`
-    * `Movies-Foreign`
-    * `Movies-Other`
-    * `Movies-SD`
-    * `Movies-HD`
-    * `Movies-UHD`
-    * `Movies-Bluray`
-    * `Movies-3D`
+    * `Movies/Foreign`
+    * `Movies/Other`
+    * `Movies/SD`
+    * `Movies/HD`
+    * `Movies/UHD`
+    * `Movies/BluRay`
+    * `Movies/3D`
+    * `Movies/DVD`
+    * `Movies/WEB-DL`
+    * `Movies/x265`
     """
 
     remove_year: bool = False

@@ -25,7 +25,7 @@ from typing import Any, Dict, Mapping, Optional, cast
 
 import radarr
 
-from buildarr.config import ConfigBase, ConfigTrashIDNotFoundError
+from buildarr.config import ConfigTrashIDNotFoundError
 from buildarr.state import state
 from buildarr.types import TrashID
 from pydantic import Field, validator
@@ -145,7 +145,7 @@ class QualityDefinition(RadarrConfigBase):
         return value
 
 
-class RadarrQualitySettings(ConfigBase):
+class RadarrQualitySettings(RadarrConfigBase):
     # Quality definition settings configuration.
     #
     # For more information on how to configure this, refer to the plugin docs.

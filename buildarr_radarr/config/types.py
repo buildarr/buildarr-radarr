@@ -21,15 +21,24 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from aenum import MultiValueEnum
 from buildarr.config import ConfigBase
 
 if TYPE_CHECKING:
     from ..secrets import RadarrSecrets
 
-    class RadarrConfigBase(ConfigBase[RadarrSecrets]):
+    class _RadarrConfigBase(ConfigBase[RadarrSecrets]):
         ...
 
 else:
 
-    class RadarrConfigBase(ConfigBase):
+    class _RadarrConfigBase(ConfigBase):
         ...
+
+
+class RadarrConfigBase(_RadarrConfigBase):
+    class Config(_RadarrConfigBase.Config):
+        json_encoders = {
+            **_RadarrConfigBase.Config.json_encoders,
+            MultiValueEnum: lambda v: v.to_name_str(),
+        }
