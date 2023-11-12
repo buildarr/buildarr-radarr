@@ -24,13 +24,12 @@ from typing import Dict, List, Mapping
 import radarr
 
 from buildarr.config import RemoteMapEntry
-from buildarr.types import BaseEnum
+from buildarr.types import BaseEnum, LowerCaseNonEmptyStr
 from pydantic import validator
 from typing_extensions import Self
 
 from ...api import radarr_api_client
 from ...secrets import RadarrSecrets
-from ...types import LowerCaseNonEmptyStr
 from ..types import RadarrConfigBase
 
 

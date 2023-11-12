@@ -22,8 +22,8 @@ from __future__ import annotations
 from typing import Any, Dict, List, Literal, cast
 
 from buildarr.config import RemoteMapEntry
+from buildarr.types import UpperCaseNonEmptyStr
 
-from .....types import UpperCaseNonEmptyStr
 from .base import Condition
 
 

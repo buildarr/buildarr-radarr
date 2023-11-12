@@ -24,11 +24,11 @@ from typing import Dict, List
 import radarr
 
 from buildarr.config import RemoteMapEntry
+from buildarr.types import LowerCaseNonEmptyStr
 from typing_extensions import Self
 
 from ....api import radarr_api_client
 from ....secrets import RadarrSecrets
-from ....types import LowerCaseNonEmptyStr
 from ...types import RadarrConfigBase
 from .emby_legacy import EmbyLegacyMetadata
 from .kodi_emby import KodiEmbyMetadata

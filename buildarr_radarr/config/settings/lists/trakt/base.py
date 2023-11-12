@@ -31,10 +31,9 @@ from typing import (
 )
 
 from buildarr.config import RemoteMapEntry
-from buildarr.types import NonEmptyStr, Password
+from buildarr.types import LowerCaseNonEmptyStr, NonEmptyStr, Password
 from pydantic import ConstrainedStr, PositiveInt
 
-from .....types import LowerCaseNonEmptyStr
 from ....util import trakt_expires_encoder
 from ..base import ImportList
 
