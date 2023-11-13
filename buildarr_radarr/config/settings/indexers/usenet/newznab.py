@@ -78,6 +78,10 @@ class NewznabIndexer(UsenetIndexer):
     * `Movies/DVD`
     * `Movies/WEB-DL`
     * `Movies/x265`
+
+    *Changed in version 0.2.1*: The Radarr-native values for Newznab/Torznab categories
+    (e.g. `Movies/WEB-DL`) can now be specified, instead of the Buildarr-native values
+    (e.g. `MOVIES-WEBDL`). The old values can still be used.
     """
 
     remove_year: bool = False
