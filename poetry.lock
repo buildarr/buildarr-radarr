@@ -56,16 +56,17 @@ uvloop = ["uvloop (>=0.15.2)"]
 
 [[package]]
 name = "buildarr"
-version = "0.7.0"
+version = "0.7.1"
 description = "Constructs and configures Arr PVR stacks"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "buildarr-0.7.0-py3-none-any.whl", hash = "sha256:a66fe550a338584c9bca0ef06eb754a8e25369800ed3443619c0cff9489eade5"},
-    {file = "buildarr-0.7.0.tar.gz", hash = "sha256:23b35ef507b2aa71aae4ceabdf3cfbf2fb454b07378a4c423a9387f6ded776ed"},
+    {file = "buildarr-0.7.1-py3-none-any.whl", hash = "sha256:a7118eaa57dc093a2b61baf98a77a47a86f2c35dc33000ab6cbefc090aade19c"},
+    {file = "buildarr-0.7.1.tar.gz", hash = "sha256:1666050a17a1c0d60aec3fb006e8ee101974d92c5d283ed4042ee319179eaa73"},
 ]
 
 [package.dependencies]
+aenum = "*"
 click = ">=8.0.4"
 click-params = ">=0.4.1"
 importlib-metadata = ">=4.6.0"
@@ -1027,4 +1028,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<4.0"
-content-hash = "ca03936376a9888c21f2ddef03916f36af41f1fa2423d3d95f4e2eea1191927c"
+content-hash = "9f4ef6a94a297ef77e1ab3286be82e8e9804ea63bd91be660ac94498ddb5c1b6"
