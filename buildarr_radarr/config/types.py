@@ -26,14 +26,10 @@ from buildarr.config import ConfigBase
 if TYPE_CHECKING:
     from ..secrets import RadarrSecrets
 
-    class _RadarrConfigBase(ConfigBase[RadarrSecrets]):
+    class RadarrConfigBase(ConfigBase[RadarrSecrets]):
         ...
 
 else:
 
-    class _RadarrConfigBase(ConfigBase):
+    class RadarrConfigBase(ConfigBase):
         ...
-
-
-class RadarrConfigBase(_RadarrConfigBase):
-    pass

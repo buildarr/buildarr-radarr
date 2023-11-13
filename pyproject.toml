@@ -106,6 +106,5 @@ pretty = true
 [[tool.mypy.overrides]]
 module = [
     "radarr.*",
-    "aenum.*",
 ]
 ignore_missing_imports = true
