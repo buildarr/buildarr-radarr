@@ -110,7 +110,7 @@ class NewznabIndexer(UsenetIndexer):
         ),
     ]
 
-    @validator(each_item=True)
+    @validator("categories", each_item=True)
     def validate_category(cls, value: Union[NabCategory, int]) -> Union[NabCategory, int]:
         if isinstance(value, int):
             return NabCategory.decode(value)
