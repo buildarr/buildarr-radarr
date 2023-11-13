@@ -21,7 +21,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from aenum import MultiValueEnum
 from buildarr.config import ConfigBase
 
 if TYPE_CHECKING:
@@ -37,8 +36,4 @@ else:
 
 
 class RadarrConfigBase(_RadarrConfigBase):
-    class Config(_RadarrConfigBase.Config):
-        json_encoders = {
-            **_RadarrConfigBase.Config.json_encoders,
-            MultiValueEnum: lambda v: v.to_name_str(),
-        }
+    pass

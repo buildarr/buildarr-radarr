@@ -19,7 +19,9 @@ Torznab indexer configuration.
 
 from __future__ import annotations
 
-from typing import List, Literal, Optional, Set, Union
+from typing import List, Literal, Mapping, Optional, Set, Union
+
+import radarr
 
 from buildarr.config import RemoteMapEntry
 from buildarr.types import NonEmptyStr, Password
@@ -91,25 +93,37 @@ class TorznabIndexer(TorrentIndexer):
     """
 
     _implementation = "Torznab"
-    _remote_map: List[RemoteMapEntry] = [
-        ("base_url", "baseUrl", {"is_field": True}),
-        ("api_path", "apiPath", {"is_field": True}),
-        ("api_key", "apiKey", {"is_field": True}),
-        (
-            "categories",
-            "categories",
-            {"is_field": True},  # , "decoder": },
-        ),
-        (
-            "additional_parameters",
-            "additionalParameters",
-            {"is_field": True, "field_default": None, "decoder": lambda v: v or None},
-        ),
-    ]
+
+    @classmethod
+    def _get_remote_map(
+        cls,
+        api_schema: radarr.IndexerResource,
+        downloadclient_ids: Mapping[str, int],
+        tag_ids: Mapping[str, int],
+    ) -> List[RemoteMapEntry]:
+        return [
+            ("base_url", "baseUrl", {"is_field": True}),
+            ("api_path", "apiPath", {"is_field": True}),
+            ("api_key", "apiKey", {"is_field": True}),
+            (
+                "categories",
+                "categories",
+                {"is_field": True},
+                # {"is_field": True, "decoder": lambda v: set(cls._category_decoder(c) for c in v)},
+            ),
+            (
+                "additional_parameters",
+                "additionalParameters",
+                {"is_field": True},
+                # {"is_field": True, "field_default": None, "decoder": lambda v: v or None},
+            ),
+        ]
 
     @classmethod
     def _category_decoder(cls, value: int) -> Union[NabCategory, int]:
         try:
+            print("converting to NabCategory")  # noqa: T201
             return NabCategory(value)
         except ValueError:
+            print("converting to NabCategory failed, returning value direct")  # noqa: T201
             return value

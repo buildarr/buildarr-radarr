@@ -41,7 +41,6 @@ packages = [{include = "buildarr_radarr"}]
 python = ">=3.8,<4.0"
 radarr-py = ">=0.4.0,<0.5.0"
 buildarr = ">=0.7.0,<0.8.0"
-aenum = "*"
 packaging = "*"
 
 [tool.poetry.group.dev.dependencies]
