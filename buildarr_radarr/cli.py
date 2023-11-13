@@ -58,7 +58,10 @@ def radarr():
     "--api-key",
     "api_key",
     metavar="API-KEY",
-    default=functools.partial(getpass, "Radarr instance API key: "),
+    default=functools.partial(
+        getpass,
+        "Radarr instance API key (or leave blank to auto-fetch): ",
+    ),
     help="API key of the Radarr instance. The user will be prompted if undefined.",
 )
 def dump_config(url: Url, api_key: str) -> int:
@@ -76,23 +79,23 @@ def dump_config(url: Url, api_key: str) -> int:
         else (443 if protocol == "https" else 80)
     )
 
+    instance_config = RadarrInstanceConfig(
+        **{  # type: ignore[arg-type]
+            "hostname": hostname,
+            "port": port,
+            "protocol": protocol,
+        },
+    )
+
     click.echo(
         RadarrManager()
         .from_remote(
-            instance_config=RadarrInstanceConfig(
-                **{  # type: ignore[arg-type]
-                    "hostname": hostname,
-                    "port": port,
-                    "protocol": protocol,
-                },
-            ),
-            secrets=RadarrSecrets(
-                **{  # type: ignore[arg-type]
-                    "hostname": hostname,
-                    "port": port,
-                    "protocol": protocol,
-                    "api_key": api_key,
-                },
+            instance_config=instance_config,
+            secrets=RadarrSecrets.get_from_url(
+                hostname=hostname,
+                port=port,
+                protocol=protocol,
+                api_key=api_key if api_key else None,
             ),
         )
         .yaml(),

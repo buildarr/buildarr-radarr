@@ -33,6 +33,8 @@ from .exceptions import RadarrAPIError, RadarrSecretsUnauthorizedError
 from .types import ArrApiKey, RadarrProtocol
 
 if TYPE_CHECKING:
+    from typing import Optional
+
     from typing_extensions import Self
 
     from .config import RadarrConfig
@@ -63,17 +65,31 @@ class RadarrSecrets(_RadarrSecrets):
 
     @classmethod
     def get(cls, config: RadarrConfig) -> Self:
-        if config.api_key:
-            api_key = config.api_key.get_secret_value()
-        else:
+        return cls.get_from_url(
+            hostname=config.hostname,
+            port=config.port,
+            protocol=config.protocol,
+            api_key=config.api_key.get_secret_value() if config.api_key else None,
+        )
+
+    @classmethod
+    def get_from_url(
+        cls,
+        hostname: str,
+        port: int,
+        protocol: str,
+        api_key: Optional[str] = None,
+    ) -> Self:
+        host_url = f"{protocol}://{hostname}:{port}"
+        if not api_key:
             try:
-                initialize_json = api_get(config.host_url, "/initialize.json")
+                initialize_json = api_get(host_url, "/initialize.json")
             except RadarrAPIError as err:
                 if err.status_code == HTTPStatus.UNAUTHORIZED:
                     raise RadarrSecretsUnauthorizedError(
                         (
                             "Unable to retrieve the API key for the Radarr instance "
-                            f"at '{config.host_url}': Authentication is enabled. "
+                            f"at '{host_url}': Authentication is enabled. "
                             "Please try manually setting the "
                             "'Settings -> General -> Authentication Required' attribute "
                             "to 'Disabled for Local Addresses', or if that does not work, "
@@ -85,21 +101,21 @@ class RadarrSecrets(_RadarrSecrets):
             else:
                 api_key = initialize_json["apiKey"]
         try:
-            with radarr_api_client(host_url=config.host_url, api_key=api_key) as api_client:
+            with radarr_api_client(host_url=host_url, api_key=api_key) as api_client:
                 system_status = radarr.SystemApi(api_client).get_system_status()
         except UnauthorizedException:
             raise RadarrSecretsUnauthorizedError(
                 (
-                    f"Incorrect API key for the Radarr instance at '{config.host_url}'. "
+                    f"Incorrect API key for the Radarr instance at '{host_url}'. "
                     "Please check that the API key is set correctly in the Buildarr "
                     "configuration, and that it is set to the value as shown in "
                     "'Settings -> General -> API Key' on the Radarr instance."
                 ),
             ) from None
         return cls(
-            hostname=config.hostname,
-            port=config.port,
-            protocol=config.protocol,
+            hostname=cast(NonEmptyStr, hostname),
+            port=cast(Port, port),
+            protocol=cast(RadarrProtocol, protocol),
             api_key=cast(ArrApiKey, api_key),
             version=system_status.version,
         )
