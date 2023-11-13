@@ -99,7 +99,7 @@ class CustomFormat(RadarrConfigBase):
     type of custom format:
 
     * If this is a custom format imported from a Trash ID, this will default to the default
-      score TRaSH-Guides has assigned this custom format (`trash_score` in the metadata).
+      score TRaSH-Guides has assigned this custom format (`trash_scores.default` in the metadata).
       If the custom format does not have a default score defined, the default score will be 0.
     * If this is a manually defined custom format, the default score will be 0.
     """
