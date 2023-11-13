@@ -1,5 +1,26 @@
 # Release Notes (Buildarr Radarr Plugin)
 
+## [v0.2.1](https://github.com/buildarr/buildarr-radarr/releases/tag/v0.2.1) - 2023-11-13
+
+This release fixes the following issues:
+
+* Fix loading the default score of custom formats from TRaSH-Guides metadata, which was broken due to a deprecated metadata field Buildarr was using that was removed.
+* Permanently fix Torznab/Newznab indexer category parsing by making it not error when an unknown category ID is found on the remote instance.
+* Allow the Radarr-native category name (e.g. `Movies/BluRay`) to be defined directly in Buildarr, instead of the Buildarr-native names (e.g. `Movies-Bluray`). The old names are still supported.
+* Fix managing the `remove_year` attribute on Newznab/Torznab indexers, which was being ignored in previous releases.
+* Fix dumping Radarr instance configurations using the CLI, which was failing due to a validation regression introduced in the previous release.
+
+The CLI command for dumping Radarr instance configurations has also been improved, and can now auto-fetch Radarr instance API keys by simply leaving the API key blank, and pressing Enter when prompted. Note that this will only work on Radarr instances that have authentication disabled.
+
+As this release of the Radarr plugin uses the latest plugin API features, Buildarr v0.7.1 or later is required for this release.
+
+### Changed
+
+* Fix and improve configuration dumping ([#26](https://github.com/buildarr/buildarr-radarr/pull/26))
+* Fix getting TRaSH-Guides custom format default score ([#28](https://github.com/buildarr/buildarr-radarr/pull/28))
+* Fix Newznab/Torznab indexer bugs ([#25](https://github.com/buildarr/buildarr-radarr/pull/25))
+
+
 ## [v0.2.0](https://github.com/buildarr/buildarr-radarr/releases/tag/v0.2.0) - 2023-11-12
 
 This release introduces basic support for managing Radarr V5 instances.
@@ -37,7 +58,7 @@ This release fixes the following issues:
 
 ### Changed
 
-* Add support for the `Movies` category in Newznab/Torznab indexers ([#11](https://github.com/buildarr/buildarr-prowlarr/pull/11))
+* Add support for the `Movies` category in Newznab/Torznab indexers ([#11](https://github.com/buildarr/buildarr-radarr/pull/11))
 
 
 ## [v0.1.1](https://github.com/buildarr/buildarr-radarr/releases/tag/v0.1.1) - 2023-09-09
