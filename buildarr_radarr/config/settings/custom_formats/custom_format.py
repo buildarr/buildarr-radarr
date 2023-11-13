@@ -150,10 +150,12 @@ class CustomFormat(RadarrConfigBase):
                 trash_customformat = json.load(f)
                 if cast(str, trash_customformat["trash_id"]).lower() == self.trash_id:
                     if "default_score" not in self.__fields_set__:
-                        self.default_score = trash_customformat.get("trash_scores", {}).get(
-                            "default",
-                            0,
-                        )
+                        try:
+                            self.default_score = trash_customformat.get("trash_scores", {})[
+                                "default"
+                            ]
+                        except KeyError:
+                            pass
                     for trash_condition in trash_customformat["specifications"]:
                         condition_name = trash_condition["name"]
                         if condition_name not in self.conditions:
