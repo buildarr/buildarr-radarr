@@ -19,7 +19,7 @@ Torznab indexer configuration.
 
 from __future__ import annotations
 
-from typing import List, Literal, Optional, Set, Union
+from typing import Iterable, List, Literal, Optional, Set, Union
 
 from buildarr.config import RemoteMapEntry
 from buildarr.types import NonEmptyStr, Password
@@ -108,8 +108,12 @@ class TorznabIndexer(TorrentIndexer):
         ),
     ]
 
-    @validator("categories", each_item=True)
-    def validate_category(cls, value: Union[NabCategory, int]) -> Union[NabCategory, int]:
-        if isinstance(value, int):
-            return NabCategory.decode(value)
-        return value
+    @validator("categories")
+    def validate_categories(
+        cls,
+        value: Iterable[Union[NabCategory, int]],
+    ) -> Set[Union[NabCategory, int]]:
+        return set(
+            NabCategory.decode(category) if isinstance(category, int) else category
+            for category in value
+        )
