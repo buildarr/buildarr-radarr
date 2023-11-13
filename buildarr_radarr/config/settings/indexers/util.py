@@ -20,7 +20,7 @@ Indexer configuration utility classes and functions.
 from __future__ import annotations
 
 from logging import getLogger
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 from buildarr.types import BaseEnum
 
@@ -52,3 +52,7 @@ class NabCategory(BaseEnum):
             return cls(value)
         except ValueError:
             return value
+
+    @classmethod
+    def encode(cls, value: Union[Self, int]) -> int:
+        return value if isinstance(value, int) else cast(int, value.value)
