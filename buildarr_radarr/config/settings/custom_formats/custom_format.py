@@ -99,7 +99,7 @@ class CustomFormat(RadarrConfigBase):
     type of custom format:
 
     * If this is a custom format imported from a Trash ID, this will default to the default
-      score TRaSH-Guides has assigned this custom format (`trash_score` in the metadata).
+      score TRaSH-Guides has assigned this custom format (`trash_scores.default` in the metadata).
       If the custom format does not have a default score defined, the default score will be 0.
     * If this is a manually defined custom format, the default score will be 0.
     """
@@ -128,6 +128,9 @@ class CustomFormat(RadarrConfigBase):
     must **all** match in order for the custom format to be applied.
     """
 
+    # Radarr/Sonarr Custom Format JSON specification:
+    # https://github.com/TRaSH-Guides/Guides/blob/master/CONTRIBUTING.md#radarrsonarr-custom-format-json
+
     # TODO: Validate conditions not empty if `trash_id` is not defined.
 
     _remote_map: List[RemoteMapEntry] = [
@@ -146,11 +149,13 @@ class CustomFormat(RadarrConfigBase):
             with customformat_file.open() as f:
                 trash_customformat = json.load(f)
                 if cast(str, trash_customformat["trash_id"]).lower() == self.trash_id:
-                    if (
-                        "trash_score" in trash_customformat
-                        and "default_score" not in self.__fields_set__
-                    ):
-                        self.default_score = trash_customformat["trash_score"]
+                    if "default_score" not in self.__fields_set__:
+                        try:
+                            self.default_score = trash_customformat.get("trash_scores", {})[
+                                "default"
+                            ]
+                        except KeyError:
+                            pass
                     for trash_condition in trash_customformat["specifications"]:
                         condition_name = trash_condition["name"]
                         if condition_name not in self.conditions:
