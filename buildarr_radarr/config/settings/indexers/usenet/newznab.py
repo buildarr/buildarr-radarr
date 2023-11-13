@@ -103,7 +103,9 @@ class NewznabIndexer(UsenetIndexer):
             {
                 "is_field": True,
                 "decoder": lambda v: set(NabCategory.decode(c) for c in v),
-                "encoder": lambda v: sorted(c.value for c in v),
+                "encoder": lambda v: sorted(
+                    ((c.value if isinstance(c, NabCategory) else c) for c in v),
+                ),
             },
         ),
         ("remove_year", "removeYear", {"is_field": True}),
