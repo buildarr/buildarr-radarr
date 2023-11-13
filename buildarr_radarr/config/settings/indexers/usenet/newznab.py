@@ -53,13 +53,13 @@ class NewznabIndexer(UsenetIndexer):
     """
 
     categories: Set[NabCategory] = {
-        NabCategory.MOVIES_FOREIGN,  # type: ignore[arg-type]
-        NabCategory.MOVIES_OTHER,  # type: ignore[arg-type]
-        NabCategory.MOVIES_SD,  # type: ignore[arg-type]
-        NabCategory.MOVIES_HD,  # type: ignore[arg-type]
-        NabCategory.MOVIES_UHD,  # type: ignore[arg-type]
-        NabCategory.MOVIES_BLURAY,  # type: ignore[arg-type]
-        NabCategory.MOVIES_3D,  # type: ignore[arg-type]
+        NabCategory.MOVIES_FOREIGN,
+        NabCategory.MOVIES_OTHER,
+        NabCategory.MOVIES_SD,
+        NabCategory.MOVIES_HD,
+        NabCategory.MOVIES_UHD,
+        NabCategory.MOVIES_BLURAY,
+        NabCategory.MOVIES_3D,
     }
     """
     Categories to monitor for release.
@@ -100,8 +100,13 @@ class NewznabIndexer(UsenetIndexer):
         (
             "categories",
             "categories",
-            {"is_field": True, "encoder": lambda v: sorted(c.value for c in v)},
+            {
+                "is_field": True,
+                "decoder": lambda v: set(NabCategory.decode(c) for c in v),
+                "encoder": lambda v: sorted(c.value for c in v),
+            },
         ),
+        ("remove_year", "removeYear", {"is_field": True}),
         (
             "additional_parameters",
             "additionalParameters",
