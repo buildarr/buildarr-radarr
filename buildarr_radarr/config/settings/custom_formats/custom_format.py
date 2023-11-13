@@ -128,6 +128,9 @@ class CustomFormat(RadarrConfigBase):
     must **all** match in order for the custom format to be applied.
     """
 
+    # Radarr/Sonarr Custom Format JSON specification:
+    # https://github.com/TRaSH-Guides/Guides/blob/master/CONTRIBUTING.md#radarrsonarr-custom-format-json
+
     # TODO: Validate conditions not empty if `trash_id` is not defined.
 
     _remote_map: List[RemoteMapEntry] = [
