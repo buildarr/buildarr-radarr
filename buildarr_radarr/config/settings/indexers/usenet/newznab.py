@@ -19,11 +19,11 @@ Newznab indexer configuration.
 
 from __future__ import annotations
 
-from typing import List, Literal, Optional, Set
+from typing import List, Literal, Optional, Set, Union
 
 from buildarr.config import RemoteMapEntry
 from buildarr.types import NonEmptyStr, Password
-from pydantic import AnyHttpUrl
+from pydantic import AnyHttpUrl, validator
 
 from ..util import NabCategory
 from .base import UsenetIndexer
@@ -52,7 +52,7 @@ class NewznabIndexer(UsenetIndexer):
     API key for use with the Newznab API.
     """
 
-    categories: Set[NabCategory] = {
+    categories: Set[Union[NabCategory, int]] = {
         NabCategory.MOVIES_FOREIGN,
         NabCategory.MOVIES_OTHER,
         NabCategory.MOVIES_SD,
@@ -100,11 +100,7 @@ class NewznabIndexer(UsenetIndexer):
         (
             "categories",
             "categories",
-            {
-                "is_field": True,
-                "decoder": lambda v: set(NabCategory.decode(c) for c in v),
-                "encoder": lambda v: sorted(NabCategory.encode(c) for c in v),
-            },
+            {"is_field": True, "encoder": lambda v: sorted(NabCategory.encode(c) for c in v)},
         ),
         ("remove_year", "removeYear", {"is_field": True}),
         (
@@ -113,3 +109,9 @@ class NewznabIndexer(UsenetIndexer):
             {"is_field": True, "field_default": None, "decoder": lambda v: v or None},
         ),
     ]
+
+    @validator(each_item=True)
+    def validate_category(cls, value: Union[NabCategory, int]) -> Union[NabCategory, int]:
+        if isinstance(value, int):
+            return NabCategory.decode(value)
+        return value
