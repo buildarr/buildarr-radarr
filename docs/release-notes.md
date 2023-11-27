@@ -1,5 +1,24 @@
 # Release Notes (Buildarr Radarr Plugin)
 
+## [v0.2.2](https://github.com/buildarr/buildarr-radarr/releases/tag/v0.2.2) - 2023-11-27
+
+This release fixes the following issues:
+
+* Fix an attribute reading bug that was preventing management of the following download client types:
+    * FreeBox
+    * Hadouken
+    * qBittorrent
+    * rTorrent
+    * uTorrent
+    * NZBGet
+    * NZBVortex
+    * SABnzbd
+
+### Changed
+
+* Fix reading download client attributes ([#34](https://github.com/buildarr/buildarr-radarr/pull/34))
+
+
 ## [v0.2.1](https://github.com/buildarr/buildarr-radarr/releases/tag/v0.2.1) - 2023-11-13
 
 This release fixes the following issues:
