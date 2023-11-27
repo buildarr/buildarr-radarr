@@ -105,7 +105,7 @@ class FreeboxDownloadClient(TorrentDownloadClient):
     """
 
     _implementation: str = "TorrentFreeboxDownload"
-    _base_remote_map: List[RemoteMapEntry] = [
+    _remote_map: List[RemoteMapEntry] = [
         ("hostname", "host", {"is_field": True}),
         ("port", "port", {"is_field": True}),
         ("use_ssl", "useSsl", {"is_field": True}),
