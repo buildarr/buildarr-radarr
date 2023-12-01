@@ -89,11 +89,11 @@ def api_get(
     session: Optional[requests.Session] = None,
 ) -> Any:
     """
-    Send a `GET` request to a Radarr instance.
+    Send an API `GET` request.
 
     Args:
-        secrets (Union[RadarrSecrets, str]): Radarr secrets metadata, or host URL.
-        api_url (str): Radarr API command.
+        secrets (Union[RadarrSecrets, str]): Secrets metadata, or host URL.
+        api_url (str): API command.
         expected_status_code (HTTPStatus): Expected response status. Defaults to `200 OK`.
 
     Returns:

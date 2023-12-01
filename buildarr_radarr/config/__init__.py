@@ -21,13 +21,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Dict, Optional
 
-import radarr
-
 from buildarr.config import ConfigPlugin
 from buildarr.types import NonEmptyStr, Port
+from pydantic import validator
 from typing_extensions import Self
 
-from ..api import radarr_api_client
 from ..types import ArrApiKey, RadarrProtocol
 from .settings import RadarrSettings
 
@@ -116,6 +114,18 @@ class RadarrInstanceConfig(_RadarrInstanceConfig):
     * `https`
     """
 
+    url_base: Optional[str] = None
+    """
+    The URL path the Radarr instance API is available under, if behind a reverse proxy.
+
+    API URLs are rendered like this: `<protocol>://<hostname>:<port><url_base>/api/v3/...`
+
+    When unset, the URL root will be used as the API endpoint
+    (e.g. `<protocol>://<hostname>:<port>/api/v3/...`).
+
+    *Added in version 0.2.3.*
+    """
+
     api_key: Optional[ArrApiKey] = None
     """
     API key to use to authenticate with the Radarr instance.
@@ -147,6 +157,10 @@ class RadarrInstanceConfig(_RadarrInstanceConfig):
     Configuration options for Radarr itself are set within this structure.
     """
 
+    @validator("url_base")
+    def validate_url_base(cls, value: Optional[str]) -> Optional[str]:
+        return f"/{value.strip('/')}" if value and value.strip("/") else None
+
     def uses_trash_metadata(self) -> bool:
         if self.settings.quality.uses_trash_metadata():
             return True
@@ -170,14 +184,12 @@ class RadarrInstanceConfig(_RadarrInstanceConfig):
 
     @classmethod
     def from_remote(cls, secrets: RadarrSecrets) -> Self:
-        with radarr_api_client(secrets=secrets) as api_client:
-            version = radarr.SystemApi(api_client).get_system_status().version
         return cls(
             hostname=secrets.hostname,
             port=secrets.port,
             protocol=secrets.protocol,
             api_key=secrets.api_key,
-            version=version,
+            version=secrets.version,
             settings=RadarrSettings.from_remote(secrets),
         )
 
