@@ -1,5 +1,16 @@
 # Release Notes (Buildarr Radarr Plugin)
 
+## [v0.2.3](https://github.com/buildarr/buildarr-radarr/releases/tag/v0.2.3) - 2023-12-02
+
+This release adds support for defining a URL base for the Radarr instance in the Buildarr configuration, using the `url_base` host configuration attribute.
+
+This allows Radarr instances with APIs available under a custom path (e.g. `http://localhost:7878/radarr`) to be managed by Buildarr.
+
+### Changed
+
+* Add Radarr instance URL base support ([#38](https://github.com/buildarr/buildarr-radarr/pull/38))
+
+
 ## [v0.2.2](https://github.com/buildarr/buildarr-radarr/releases/tag/v0.2.2) - 2023-11-27
 
 This release fixes the following issues:
