@@ -138,7 +138,7 @@ def api_error(
     parse_response: bool = True,
 ) -> None:
     """
-    Process an error response from the Radarr API.
+    Process an API error response.
 
     Args:
         method (str): HTTP method.
@@ -147,7 +147,7 @@ def api_error(
         parse_response (bool, optional): Parse response error JSON. Defaults to True.
 
     Raises:
-        Radarr API exception
+        API error
     """
 
     error_message = (

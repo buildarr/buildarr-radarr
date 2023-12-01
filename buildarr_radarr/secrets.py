@@ -149,4 +149,6 @@ class RadarrSecrets(_RadarrSecrets):
         )
 
     def test(self) -> bool:
+        # We already perform API requests as part of instantiating the secrets object.
+        # If the object exists, then the connection test is already successful.
         return True
