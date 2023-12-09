@@ -508,9 +508,12 @@ Buildarr is unable to manage Plex Media Server notification connections at this 
 
 Please add the Plex Media Server notification connection manually in the Radarr UI.
 
-!!! warning
+!!! note
 
-    Ensure `delete_unmanaged` is set to `false` in Buildarr, otherwise the Plex Media Server notification connection will be removed from Radarr whenever Buildarr performs an update run.
+    When a Plex Media Server notification connection exists on the Radarr instance,
+    Buildarr will log warnings recognising it as an unsupported type.
+
+    These warnings can be ignored, as Buildarr will not modify the notification connection in any way.
 
 
 ## Prowl
@@ -866,9 +869,12 @@ Buildarr is unable to manage Trakt notification connections at this time, due to
 
 Please add the Trakt notification connection manually in the Radarr UI.
 
-!!! warning
+!!! note
 
-    Ensure `delete_unmanaged` is set to `false` in Buildarr, otherwise the Trakt notification connection will be removed from Radarr whenever Buildarr performs an update run.
+    When a Trakt notification connection exists on the Radarr instance,
+    Buildarr will log warnings recognising it as an unsupported type.
+
+    These warnings can be ignored, as Buildarr will not modify the notification connection in any way.
 
 
 ## Twitter
@@ -877,9 +883,12 @@ Buildarr is unable to manage Twitter notification connections at this time, due 
 
 Please add the Twitter notification connection manually in the Radarr UI.
 
-!!! warning
+!!! note
 
-    Ensure `delete_unmanaged` is set to `false` in Buildarr, otherwise the Twitter notification connection will be removed from Radarr whenever Buildarr performs an update run.
+    When a Twitter notification connection exists on the Radarr instance,
+    Buildarr will log warnings recognising it as an unsupported type.
+
+    These warnings can be ignored, as Buildarr will not modify the notification connection in any way.
 
 
 ## Webhook
