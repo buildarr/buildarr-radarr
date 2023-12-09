@@ -62,9 +62,12 @@ class RadarrCustomFormatsSettings(RadarrConfigBase):
                 api_schema_dict["implementation"]: api_schema_dict
                 for api_schema_dict in api_get(secrets, "/api/v3/customformat/schema")
             }
-        for customformat in self.definitions.values():
+        for customformat_name, customformat in self.definitions.items():
             if customformat.uses_trash_metadata():
-                customformat._post_init_render(api_condition_schema_dicts)
+                customformat._post_init_render(
+                    customformat_name=customformat_name,
+                    api_condition_schema_dicts=api_condition_schema_dicts,
+                )
 
     @classmethod
     def from_remote(cls, secrets: RadarrSecrets) -> Self:

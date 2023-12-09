@@ -33,6 +33,7 @@ from pydantic import Field
 from typing_extensions import Annotated, Self
 
 from ....api import radarr_api_client
+from ....exceptions import RadarrConfigUnsupportedError
 from ....secrets import RadarrSecrets
 from ...types import RadarrConfigBase
 from .conditions.edition import EditionCondition
@@ -140,7 +141,11 @@ class CustomFormat(RadarrConfigBase):
     def uses_trash_metadata(self) -> bool:
         return bool(self.trash_id)
 
-    def _post_init_render(self, api_condition_schema_dicts: Dict[str, Dict[str, Any]]) -> None:
+    def _post_init_render(
+        self,
+        customformat_name: str,
+        api_condition_schema_dicts: Dict[str, Dict[str, Any]],
+    ) -> None:
         if not self.trash_id:
             return
         for customformat_file in (
@@ -166,13 +171,23 @@ class CustomFormat(RadarrConfigBase):
                                     for name, value in trash_condition["fields"].items()
                                 ],
                             }
+                            condition_implementation = api_condition_dict["implementation"]
+                            try:
+                                condition_type = CONDITION_TYPE_MAP[condition_implementation]
+                            except KeyError:
+                                raise RadarrConfigUnsupportedError(
+                                    (
+                                        f"Unsupported condition '{condition_name}' "
+                                        f"with implementation '{condition_implementation}' "
+                                        f"found in dynamic custom format '{customformat_name}' "
+                                        f"(trash_id='{self.trash_id}')"
+                                    ),
+                                ) from None
                             self.conditions[
                                 condition_name
-                            ] = CONDITION_TYPE_MAP[  # type: ignore[attr-defined]
-                                api_condition_dict["implementation"]
-                            ]._from_remote(
+                            ] = condition_type._from_remote(  # type: ignore[attr-defined]
                                 api_schema_dict=api_condition_schema_dicts[
-                                    api_condition_dict["implementation"]
+                                    condition_implementation
                                 ],
                                 api_condition=radarr.CustomFormatSpecificationSchema.from_dict(
                                     api_condition_dict,
@@ -191,23 +206,34 @@ class CustomFormat(RadarrConfigBase):
         api_condition_schema_dicts: Dict[str, Dict[str, Any]],
         api_customformat: radarr.CustomFormatResource,
     ) -> CustomFormat:
+        conditions: Dict[str, ConditionType] = {}
+        for api_condition in cast(
+            List[radarr.CustomFormatSpecificationSchema],
+            api_customformat.specifications,
+        ):
+            condition_implementation = api_condition.implementation
+            try:
+                condition_type = CONDITION_TYPE_MAP[condition_implementation]
+            except KeyError:
+                raise RadarrConfigUnsupportedError(
+                    (
+                        f"Unsupported condition '{api_condition.name}' "
+                        f"with implementation '{condition_implementation}' "
+                        f"found in remote custom format '{api_customformat.name}'"
+                    ),
+                ) from None
+            conditions[
+                api_condition.name
+            ] = condition_type._from_remote(  # type: ignore[attr-defined]
+                api_schema_dict=api_condition_schema_dicts[condition_implementation],
+                api_condition=api_condition,
+            )
         return cls(
             **cls.get_local_attrs(
                 remote_map=cls._remote_map,
                 remote_attrs=api_customformat.to_dict(),
             ),
-            conditions={
-                api_condition.name: CONDITION_TYPE_MAP[  # type: ignore[attr-defined]
-                    api_condition.implementation
-                ]._from_remote(
-                    api_schema_dict=api_condition_schema_dicts[api_condition.implementation],
-                    api_condition=api_condition,
-                )
-                for api_condition in cast(
-                    List[radarr.CustomFormatSpecificationSchema],
-                    api_customformat.specifications,
-                )
-            },
+            conditions=conditions,
         )
 
     def _create_remote(

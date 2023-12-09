@@ -118,14 +118,24 @@ class RadarrDownloadClientsSettings(RadarrConfigBase):
                 if any(api_downloadclient.tags for api_downloadclient in api_downloadclients)
                 else {}
             )
-        return cls(
-            definitions={
-                api_downloadclient.name: DOWNLOADCLIENT_TYPE_MAP[  # type: ignore[attr-defined]
-                    api_downloadclient.implementation
-                ]._from_remote(tag_ids=tag_ids, remote_attrs=api_downloadclient.to_dict())
-                for api_downloadclient in api_downloadclients
-            },
-        )
+        definitions: Dict[str, DownloadClientType] = {}
+        for api_downloadclient in api_downloadclients:
+            try:
+                downloadclient_type = DOWNLOADCLIENT_TYPE_MAP[api_downloadclient.implementation]
+            except KeyError:
+                logger.warning(
+                    "Unsupported remote download client '%s' with implementation '%s', ignoring",
+                    api_downloadclient.name,
+                    api_downloadclient.implementation,
+                )
+                continue
+            definitions[
+                api_downloadclient.name
+            ] = downloadclient_type._from_remote(  # type: ignore[attr-defined]
+                tag_ids=tag_ids,
+                remote_attrs=api_downloadclient.to_dict(),
+            )
+        return cls(definitions=definitions)
 
     def update_remote(
         self,

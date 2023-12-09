@@ -140,17 +140,27 @@ class RadarrNotificationsSettings(RadarrConfigBase):
                 if any(api_notification.tags for api_notification in api_notifications)
                 else {}
             )
-        return cls(
-            definitions={
-                api_notification.name: NOTIFICATION_TYPE_MAP[  # type: ignore[attr-defined]
-                    api_notification.implementation
-                ]._from_remote(
-                    tag_ids=tag_ids,
-                    remote_attrs=api_notification.to_dict(),
+        definitions: Dict[str, NotificationType] = {}
+        for api_notification in api_notifications:
+            try:
+                notification_type = NOTIFICATION_TYPE_MAP[api_notification.implementation]
+            except KeyError:
+                logger.warning(
+                    (
+                        "Unsupported remote notification connection '%s' "
+                        "with implementation '%s', ignoring"
+                    ),
+                    api_notification.name,
+                    api_notification.implementation,
                 )
-                for api_notification in api_notifications
-            },
-        )
+                continue
+            definitions[
+                api_notification.name
+            ] = notification_type._from_remote(  # type: ignore[attr-defined]
+                tag_ids=tag_ids,
+                remote_attrs=api_notification.to_dict(),
+            )
+        return cls(definitions=definitions)
 
     def update_remote(
         self,

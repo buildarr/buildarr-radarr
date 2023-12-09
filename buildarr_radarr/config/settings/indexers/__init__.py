@@ -192,19 +192,26 @@ class RadarrIndexersSettings(RadarrConfigBase):
                 if any(api_indexer.tags for api_indexer in api_indexers.values())
                 else {}
             )
+        definitions: Dict[str, IndexerType] = {}
+        for indexer_name, api_indexer in api_indexers.items():
+            try:
+                indexer_type = INDEXER_TYPE_MAP[api_indexer.implementation]
+            except KeyError:
+                logger.warning(
+                    "Unsupported remote indexer '%s' with implementation '%s', ignoring",
+                    indexer_name,
+                    api_indexer.implementation,
+                )
+                continue
+            definitions[indexer_name] = indexer_type._from_remote(  # type: ignore[attr-defined]
+                api_schema=api_indexer_schemas[api_indexer.implementation],
+                downloadclient_ids=downloadclient_ids,
+                tag_ids=tag_ids,
+                api_indexer=api_indexer,
+            )
         return cls(
             **cls.get_local_attrs(cls._remote_map, api_indexer_config.to_dict()),
-            definitions={
-                indexer_name: INDEXER_TYPE_MAP[  # type: ignore[attr-defined]
-                    api_indexer.implementation
-                ]._from_remote(
-                    api_schema=api_indexer_schemas[api_indexer.implementation],
-                    downloadclient_ids=downloadclient_ids,
-                    tag_ids=tag_ids,
-                    api_indexer=api_indexer,
-                )
-                for indexer_name, api_indexer in api_indexers.items()
-            },
+            definitions=definitions,
         )
 
     def update_remote(

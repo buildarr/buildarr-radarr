@@ -42,6 +42,22 @@ class RadarrAPIError(RadarrError):
         super().__init__(msg)
 
 
+class RadarrConfigError(RadarrError):
+    """
+    Configuration exception base class.
+    """
+
+    pass
+
+
+class RadarrConfigUnsupportedError(RadarrError):
+    """
+    Error raised when Buildarr attemps to manage an unsupported remote instance resource type.
+    """
+
+    pass
+
+
 class RadarrSecretsError(RadarrError):
     """
     Secrets exception base class.

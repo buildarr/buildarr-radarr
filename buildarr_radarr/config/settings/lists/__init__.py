@@ -165,6 +165,7 @@ class RadarrListsSettings(RadarrConfigBase):
                 else {}
             )
         api_importlist_config_dict = api_importlist_config.to_dict()
+        # TODO: Ignore unsupported import list types.
         return cls(
             **cls.get_local_attrs(cls._remote_map, api_importlist_config_dict),
             exclusions=ListExclusionsSettings.from_remote(secrets),
