@@ -50,7 +50,7 @@ class RadarrConfigError(RadarrError):
     pass
 
 
-class RadarrConfigUnsupportedError(RadarrError):
+class RadarrConfigUnsupportedError(RadarrConfigError):
     """
     Error raised when Buildarr attemps to manage an unsupported remote instance resource type.
     """
