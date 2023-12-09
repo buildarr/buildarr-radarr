@@ -171,7 +171,7 @@ class CustomFormat(RadarrConfigBase):
                                     for name, value in trash_condition["fields"].items()
                                 ],
                             }
-                            condition_implementation = api_condition_dict["implementation"]
+                            condition_implementation: str = api_condition_dict["implementation"]
                             try:
                                 condition_type = CONDITION_TYPE_MAP[condition_implementation]
                             except KeyError:
@@ -211,21 +211,20 @@ class CustomFormat(RadarrConfigBase):
             List[radarr.CustomFormatSpecificationSchema],
             api_customformat.specifications,
         ):
-            condition_implementation = api_condition.implementation
             try:
-                condition_type = CONDITION_TYPE_MAP[condition_implementation]
+                condition_type = CONDITION_TYPE_MAP[api_condition.implementation]
             except KeyError:
                 raise RadarrConfigUnsupportedError(
                     (
                         f"Unsupported condition '{api_condition.name}' "
-                        f"with implementation '{condition_implementation}' "
+                        f"with implementation '{api_condition.implementation}' "
                         f"found in remote custom format '{api_customformat.name}'"
                     ),
                 ) from None
             conditions[
                 api_condition.name
             ] = condition_type._from_remote(  # type: ignore[attr-defined]
-                api_schema_dict=api_condition_schema_dicts[condition_implementation],
+                api_schema_dict=api_condition_schema_dicts[api_condition.implementation],
                 api_condition=api_condition,
             )
         return cls(
