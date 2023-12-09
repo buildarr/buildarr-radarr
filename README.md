@@ -115,6 +115,8 @@ Note that these documents do not show how you *should* configure a Radarr instan
 Configuration of the following resources are not yet supported by this plugin (but will be added in future versions):
 
 * Import Lists
+* Indexer Restrictions (Radarr V4 only)
+* Release Profiles (Radarr V5+)
 
 ## Dumping an existing Radarr instance configuration
 

@@ -1,5 +1,18 @@
 # Release Notes (Buildarr Radarr Plugin)
 
+## [v0.2.4](https://github.com/buildarr/buildarr-radarr/releases/tag/v0.2.4) - 2023-12-10
+
+This release fixes the following issues:
+
+* Add error handling for when an unsupported condition type is found in a dynamic (loaded from TRaSH-Guides) or remote custom format, so the error message is easier to understand.
+    * Buildarr is not capable of ignoring remote custom formats with unsupported condition types defined on them at the moment, so return an error instead. If this happens, it is recommended to [create a bug report](https://github.com/buildarr/buildarr-radarr/issues/new).
+* If an unsupported resource type (download client, indexer, notification) is found on the remote instance, ignore it (while logging the implementation name), instead of returning an error.
+
+### Changed
+
+* Improve handling of unsupported resource types ([#43](https://github.com/buildarr/buildarr-radarr/pull/43))
+
+
 ## [v0.2.3](https://github.com/buildarr/buildarr-radarr/releases/tag/v0.2.3) - 2023-12-02
 
 This release adds support for defining a URL base for the Radarr instance in the Buildarr configuration, using the `url_base` host configuration attribute.
