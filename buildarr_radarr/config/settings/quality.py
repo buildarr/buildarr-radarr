@@ -239,6 +239,7 @@ class RadarrQualitySettings(RadarrConfigBase):
                     remote_map=[
                         ("title", "title", {"encoder": lambda v: v or definition_name}),
                         ("min", "minSize", {}),
+                        ("preferred", "preferredSize", {}),
                         ("max", "maxSize", {}),
                     ],
                     check_unmanaged=False,
