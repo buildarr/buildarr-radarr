@@ -4,7 +4,7 @@
 
 This release fixes the following issues:
 
-* Fixed an issue where the preferred fize size in quality definitions was not being applied to Radarr instances. Thanks to **@ChadTaljaardt** for the contribution.
+* Fixed an issue where the preferred file size in quality definitions was not being applied to Radarr instances. Thanks to **@ChadTaljaardt** for the contribution.
 * Made username/password authentication optional for qBittorrent download clients, as qBittorrent allows API access without authentication in certain cases.
 
 ### Changed
