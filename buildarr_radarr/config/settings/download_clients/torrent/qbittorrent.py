@@ -22,7 +22,8 @@ from __future__ import annotations
 from typing import List, Literal, Optional
 
 from buildarr.config import RemoteMapEntry
-from buildarr.types import BaseEnum, NonEmptyStr, Password, Port
+from buildarr.types import BaseEnum, NonEmptyStr, Port
+from pydantic import SecretStr
 
 from .base import TorrentDownloadClient
 
@@ -66,14 +67,14 @@ class QbittorrentDownloadClient(TorrentDownloadClient):
     Adds a prefix to the qBittorrent URL, e.g. `http://[host]:[port]/[url_base]/api`.
     """
 
-    username: NonEmptyStr
+    username: Optional[str] = None
     """
-    User name to use when authenticating with the download client.
+    User name to use when authenticating with the download client, if required.
     """
 
-    password: Password
+    password: Optional[SecretStr] = None
     """
-    Password to use to authenticate the download client user.
+    Password to use to authenticate the download client user, if required.
     """
 
     category: Optional[str] = "radarr"
@@ -143,8 +144,16 @@ class QbittorrentDownloadClient(TorrentDownloadClient):
             "urlBase",
             {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
         ),
-        ("username", "username", {"is_field": True}),
-        ("password", "password", {"is_field": True}),
+        (
+            "username",
+            "username",
+            {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
+        ),
+        (
+            "password",
+            "password",
+            {"is_field": True, "decoder": lambda v: v or None, "encoder": lambda v: v or ""},
+        ),
         (
             "category",
             "movieCategory",
