@@ -1,5 +1,19 @@
 # Release Notes (Buildarr Radarr Plugin)
 
+## [v0.2.5](https://github.com/buildarr/buildarr-radarr/releases/tag/v0.2.5) - 2024-03-02
+
+This release fixes the following issues:
+
+* Fixed an issue where the preferred fize size in quality definitions was not being applied to Radarr instances. Thanks to **@ChadTaljaardt** for the contribution.
+* Made username/password authentication optional for qBittorrent download clients, as qBittorrent allows API access without authentication in certain cases.
+
+### Changed
+
+* Add missing preferred quality size definition ([#47](https://github.com/buildarr/buildarr-radarr/pull/47))
+* Update Poetry and lock file ([#51](https://github.com/buildarr/buildarr-radarr/pull/51))
+* Make auth optional for qBittorrent download clients ([#53](https://github.com/buildarr/buildarr-radarr/pull/53))
+
+
 ## [v0.2.4](https://github.com/buildarr/buildarr-radarr/releases/tag/v0.2.4) - 2023-12-10
 
 This release fixes the following issues:
