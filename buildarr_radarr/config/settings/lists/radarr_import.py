@@ -25,12 +25,11 @@ from typing import Any, Dict, Iterable, List, Literal, Mapping, Optional, Set, U
 from buildarr.config import RemoteMapEntry
 from buildarr.state import state
 from buildarr.types import InstanceName, NonEmptyStr
-from pydantic import AnyHttpUrl, Field, PositiveInt, validator
+from pydantic import AnyHttpUrl, Field, PositiveInt, SecretStr, validator
 from typing_extensions import Self
 
 from ....api import api_get
 from ....secrets import RadarrSecrets
-from ....types import ArrApiKey
 from .base import ImportList
 
 logger = getLogger(__name__)
@@ -120,7 +119,7 @@ class RadarrImportList(ImportList):
     The URL that this Radarr instance will use to connect to the source Radarr instance.
     """
 
-    api_key: Optional[ArrApiKey] = None
+    api_key: Optional[SecretStr] = None
     """
     API key used to access the source Radarr instance.
 
@@ -228,9 +227,9 @@ class RadarrImportList(ImportList):
     @validator("api_key", always=True)
     def validate_api_key(
         cls,
-        value: Optional[ArrApiKey],
+        value: Optional[SecretStr],
         values: Mapping[str, Any],
-    ) -> Optional[ArrApiKey]:
+    ) -> Optional[SecretStr]:
         """
         Validate the `api_key` attribute after parsing.
 
